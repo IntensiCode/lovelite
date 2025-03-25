@@ -64,11 +64,13 @@ function player.handle_movement(movement, original_movement, dt)
         -- Try horizontal movement
         if original_movement.x ~= 0 and _game.map_manager.is_walkable(slide_x.x, slide_x.y) then
             player.pos = slide_x
+            return
         end
         
         -- Try vertical movement
         if original_movement.y ~= 0 and _game.map_manager.is_walkable(slide_y.x, slide_y.y) then
             player.pos = slide_y
+            return
         end
     end
 end

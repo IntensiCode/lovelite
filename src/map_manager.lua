@@ -27,6 +27,7 @@ local map_manager = {
     chest_anim = {}
 }
 
+---@return number The tile ID of the player tile
 function map_manager.find_player_tile_id()
     local found_tile_id = nil
     for gid, tile in pairs(map_manager.map.tiles) do
@@ -79,24 +80,9 @@ function map_manager.get_player_start_position()
     }
 end
 
-function map_manager.load()
-    -- Load the map
-    map_manager.map = STI("assets/maps/level1.lua")
-    print("Map loaded:", map_manager.map.width, "x", map_manager.map.height)
-    
-    -- Find player tile ID in the Objects layer
-    map_manager.player_tile_id = map_manager.find_player_tile_id()
-    
-    -- Calculate tile center once
-    map_manager.tile_center = Vector2.new(map_manager.map.tilewidth/2, map_manager.map.tileheight/2)
-    
-    -- Calculate map size once
-    map_manager.map_size = Vector2.new(
-        map_manager.map.width * map_manager.map.tilewidth,
-        map_manager.map.height * map_manager.map.tileheight
-    )
-
-    -- Process all tiles and their properties
+---Process all tiles and their properties, populating the various tile type tables
+---@return nil
+function map_manager.process_tiles()
     print("\nProcessing tiles:")
     for gid, tile in pairs(map_manager.map.tiles) do
         local props = tile.properties
@@ -138,6 +124,29 @@ function map_manager.load()
 
         ::continue::
     end
+end
+
+---Load and initialize the map, processing all tiles and their properties
+---@return nil
+function map_manager.load()
+    -- Load the map
+    map_manager.map = STI("assets/maps/level1.lua")
+    print("Map loaded:", map_manager.map.width, "x", map_manager.map.height)
+    
+    -- Find player tile ID in the Objects layer
+    map_manager.player_tile_id = map_manager.find_player_tile_id()
+    
+    -- Calculate tile center once
+    map_manager.tile_center = Vector2.new(map_manager.map.tilewidth/2, map_manager.map.tileheight/2)
+    
+    -- Calculate map size once
+    map_manager.map_size = Vector2.new(
+        map_manager.map.width * map_manager.map.tilewidth,
+        map_manager.map.height * map_manager.map.tileheight
+    )
+
+    -- Process all tiles and their properties
+    map_manager.process_tiles()
 
     -- Hide the Objects layer
     map_manager.map.layers[OBJECTS_LAYER_ID].visible = false
