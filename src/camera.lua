@@ -20,7 +20,7 @@ local camera = {
 
 function camera.load()
     -- Set up window
-    love.window.setMode(800, 600, {
+    love.window.setMode(1600, 1200, {
         resizable = true,
         minwidth = camera.width,
         minheight = camera.height
