@@ -1,0 +1,15 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Code Rules
+
+## Refactoring
+- Refactorings should never change behavior. The functionality of the code must remain exactly the same before and after a refactoring.
+- The purpose of refactoring is to improve code structure, readability, or maintainability, not to modify what the code does.
+- When adding or modifying functions:
+  - Add type annotations for all parameters and return values
+  - Update all callsites to match the new type signatures
+  - Use descriptive type names (e.g., `PlayerSetup` instead of just `table`)
+  - Make sure and/or change names to use snake_case instead of camelCase and update callsites appropriately
