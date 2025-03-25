@@ -127,8 +127,11 @@ function map_manager.process_tiles()
                 }
             elseif props["kind"] == "weapon" then
                 map_manager.weapons[gid] = {
-                    attack= props.attack,
-                    melee= props.melee,
+                    attack = props.attack,
+                    melee = props.melee,
+                    fire = props.fire,
+                    ice = props.ice,
+                    lightning = props.lightning,
                     speed = props.speed,
                     initial = props.initial or false,
                     cooldown = props.cooldown or 0,  -- Default to 0 if not specified

@@ -360,6 +360,7 @@
   <properties>
    <property name="attack" value="magic"/>
    <property name="cooldown" type="float" value="1"/>
+   <property name="fire" type="int" value="33"/>
    <property name="kind" value="weapon"/>
    <property name="speed" type="int" value="10"/>
   </properties>
@@ -368,17 +369,17 @@
   <properties>
    <property name="attack" value="magic"/>
    <property name="cooldown" type="float" value="1"/>
+   <property name="ice" type="int" value="33"/>
    <property name="kind" value="weapon"/>
    <property name="speed" type="int" value="10"/>
   </properties>
  </tile>
  <tile id="131">
   <properties>
-   <property name="attack" value="melee"/>
+   <property name="attack" value="magic"/>
    <property name="cooldown" type="float" value="1"/>
    <property name="kind" value="weapon"/>
-   <property name="melee" type="int" value="50"/>
-   <property name="piercing" type="bool" value="true"/>
+   <property name="lightning" type="int" value="33"/>
    <property name="speed" type="int" value="8"/>
   </properties>
  </tile>

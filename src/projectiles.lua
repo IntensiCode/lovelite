@@ -36,6 +36,11 @@ function projectiles.update(dt)
         -- Update rotation
         proj.rotation = proj.rotation + projectiles.rotation_speed * dt
         
+        -- Use proj.pulse_time to pulse the circle
+        if proj.weapon.attack == "magic" then
+            proj.pulse_time = (proj.pulse_time or 0) + dt
+        end
+
         -- Check if outside map bounds
         if proj.pos.x < 1 or proj.pos.y < 1 or 
            proj.pos.x > _game.map_manager.map.width or 
@@ -67,16 +72,41 @@ function projectiles.draw()
         love.graphics.circle("fill", screen_x , screen_y + tile_height/3, 3)
         love.graphics.setColor(1, 1, 1, 1)
         
-        -- Draw projectile centered and rotated
-        love.graphics.draw(
-            _game.map_manager.map.tilesets[1].image,
+        if proj.weapon.attack == "melee" then
+            -- Draw projectile centered and rotated
+            love.graphics.draw(
+                _game.map_manager.map.tilesets[1].image,
             proj.weapon.tile.quad,
             screen_x,
-            screen_y,
-            proj.rotation,  -- Current rotation
-            1, 1,  -- Scale
-            tile_width/2, tile_height/2  -- Center origin
-        )
+                screen_y,
+                proj.rotation,  -- Current rotation
+                1, 1,  -- Scale
+                tile_width/2, tile_height/2  -- Center origin
+            )
+        elseif proj.weapon.attack == "magic" then
+            -- Draw a pulsing circle, with white border, pulsing bigger and smaller
+            local pulse_radius = 3 + math.sin(proj.pulse_time * 2) * 2
+            -- Look at the properties to determine the color
+            -- - if lightning is set, use bluewhite
+            -- - if fire is set, use red
+            -- - if ice is set, use blue
+            -- - if poison is set, use green
+            -- - if electric is set, use yellow
+            -- - if dark is set, use black
+            -- - if light is set, use white
+            local color = {1, 1, 1, 1}
+            if proj.weapon.lightning then
+                color = {0.8, 0.8, 1, 1}
+            elseif proj.weapon.fire then
+                color = {1, 0.5, 0, 1}
+            elseif proj.weapon.ice then
+                color = {0, 0.5, 1, 1}
+            end
+            love.graphics.setColor(color[1], color[2], color[3], color[4])
+            love.graphics.circle("fill", screen_x, screen_y, pulse_radius)
+            love.graphics.setColor(1, 1, 1, 1)
+            love.graphics.circle("line", screen_x, screen_y, pulse_radius)
+        end
     end
 end
 
