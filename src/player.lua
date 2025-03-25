@@ -143,6 +143,13 @@ function player.update(dt)
     
     -- Handle shooting
     player.handle_shooting()
+
+    -- Check for collectibles
+    local collected = _game.collectibles.check_collection(player.pos)
+    if collected then
+        -- Store reference to the collected weapon
+        player.weapon = collected.weapon
+    end
 end
 
 function player.draw()
