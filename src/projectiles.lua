@@ -61,6 +61,11 @@ function projectiles.draw()
         
         -- Get tile dimensions
         local _, _, tile_width, tile_height = proj.weapon.tile.quad:getViewport()
+
+        -- Draw a dark gray circle below as pseudo-shadow
+        love.graphics.setColor(0.2, 0.2, 0.2, 0.5)
+        love.graphics.circle("fill", screen_x , screen_y + tile_height/3, 3)
+        love.graphics.setColor(1, 1, 1, 1)
         
         -- Draw projectile centered and rotated
         love.graphics.draw(
