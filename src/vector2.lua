@@ -203,6 +203,14 @@ function Vector2:__tostring()
     return string.format("Vector2(%f, %f)", self.x, self.y)
 end
 
+function Vector2:normalized()
+    local length = self:length()
+    if length == 0 then
+        return Vector2.new(0, 0)
+    end
+    return Vector2.new(self.x / length, self.y / length)
+end
+
 -- Add Vector2 to global game variable when loaded
 _game = _game or {}
 _game.Vector2 = Vector2

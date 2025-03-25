@@ -3,6 +3,7 @@ local camera = require("src.camera")
 local map_manager = require("src.map_manager")
 local debug = require("src.debug")
 local player = require("src.player")
+local projectiles = require("src.projectiles")
 
 print("Game module loaded!")
 
@@ -11,7 +12,8 @@ _game = {
     camera = camera,
     map_manager = map_manager,
     debug = debug,
-    player = player
+    player = player,
+    projectiles = projectiles
 }
 
 function _game.load()
@@ -39,6 +41,8 @@ function _game.update(dt)
     
     -- Update debug
     _game.debug.update(dt)
+    
+    _game.projectiles.update(dt)
 end
 
 function _game.draw()
@@ -57,6 +61,9 @@ function _game.draw()
     
     -- Draw walls that should appear above player
     _game.map_manager.draw_walls_above_player(_game.player.pos)
+    
+    -- Draw projectiles
+    _game.projectiles.draw()
     
     -- Undo camera transform for debug overlay
     love.graphics.translate(-translation.x, -translation.y)

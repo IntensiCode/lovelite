@@ -247,46 +247,51 @@ return {
           id = 103,
           properties = {
             ["attack"] = "melee",
+            ["cooldown"] = 0.5,
             ["initial"] = true,
             ["kind"] = "weapon",
             ["melee"] = 25,
-            ["speed"] = 1
+            ["speed"] = 10
           }
         },
         {
           id = 104,
           properties = {
             ["attack"] = "melee",
+            ["cooldown"] = 0.5,
             ["kind"] = "weapon",
             ["melee"] = 25,
-            ["speed"] = 1
+            ["speed"] = 8
           }
         },
         {
           id = 105,
           properties = {
             ["attack"] = "melee",
+            ["cooldown"] = 0.5,
             ["kind"] = "weapon",
             ["melee"] = 25,
-            ["speed"] = 1
+            ["speed"] = 8
           }
         },
         {
           id = 106,
           properties = {
             ["attack"] = "melee",
+            ["cooldown"] = 0.5,
             ["kind"] = "weapon",
             ["melee"] = 25,
-            ["speed"] = 1
+            ["speed"] = 8
           }
         },
         {
           id = 107,
           properties = {
             ["attack"] = "melee",
+            ["cooldown"] = 0.5,
             ["kind"] = "weapon",
             ["melee"] = 100,
-            ["speed"] = 1
+            ["speed"] = 8
           }
         },
         {
@@ -356,27 +361,30 @@ return {
           id = 117,
           properties = {
             ["attack"] = "melee",
+            ["cooldown"] = 1,
             ["kind"] = "weapon",
             ["melee"] = 50,
-            ["speed"] = 2
+            ["speed"] = 6
           }
         },
         {
           id = 118,
           properties = {
             ["attack"] = "melee",
+            ["cooldown"] = 1,
             ["kind"] = "weapon",
             ["melee"] = 50,
-            ["speed"] = 2
+            ["speed"] = 6
           }
         },
         {
           id = 119,
           properties = {
             ["attack"] = "melee",
+            ["cooldown"] = 1,
             ["kind"] = "weapon",
             ["melee"] = 50,
-            ["speed"] = 2
+            ["speed"] = 6
           }
         },
         {
@@ -446,25 +454,29 @@ return {
           id = 129,
           properties = {
             ["attack"] = "magic",
+            ["cooldown"] = 1,
             ["kind"] = "weapon",
-            ["speed"] = 1
+            ["speed"] = 10
           }
         },
         {
           id = 130,
           properties = {
             ["attack"] = "magic",
+            ["cooldown"] = 1,
             ["kind"] = "weapon",
-            ["speed"] = 1
+            ["speed"] = 10
           }
         },
         {
           id = 131,
           properties = {
             ["attack"] = "melee",
+            ["cooldown"] = 1,
             ["kind"] = "weapon",
             ["melee"] = 50,
-            ["speed"] = 2
+            ["piercing"] = true,
+            ["speed"] = 8
           }
         }
       }

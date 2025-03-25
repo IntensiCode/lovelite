@@ -178,42 +178,47 @@
  <tile id="103">
   <properties>
    <property name="attack" value="melee"/>
+   <property name="cooldown" type="float" value="0.5"/>
    <property name="initial" type="bool" value="true"/>
    <property name="kind" value="weapon"/>
    <property name="melee" type="int" value="25"/>
-   <property name="speed" type="int" value="1"/>
+   <property name="speed" type="int" value="10"/>
   </properties>
  </tile>
  <tile id="104">
   <properties>
    <property name="attack" value="melee"/>
+   <property name="cooldown" type="float" value="0.5"/>
    <property name="kind" value="weapon"/>
    <property name="melee" type="int" value="25"/>
-   <property name="speed" type="int" value="1"/>
+   <property name="speed" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="105">
   <properties>
    <property name="attack" value="melee"/>
+   <property name="cooldown" type="float" value="0.5"/>
    <property name="kind" value="weapon"/>
    <property name="melee" type="int" value="25"/>
-   <property name="speed" type="int" value="1"/>
+   <property name="speed" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="106">
   <properties>
    <property name="attack" value="melee"/>
+   <property name="cooldown" type="float" value="0.5"/>
    <property name="kind" value="weapon"/>
    <property name="melee" type="int" value="25"/>
-   <property name="speed" type="int" value="1"/>
+   <property name="speed" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="107">
   <properties>
    <property name="attack" value="melee"/>
+   <property name="cooldown" type="float" value="0.5"/>
    <property name="kind" value="weapon"/>
    <property name="melee" type="int" value="100"/>
-   <property name="speed" type="int" value="1"/>
+   <property name="speed" type="int" value="8"/>
   </properties>
  </tile>
  <tile id="108">
@@ -273,25 +278,28 @@
  <tile id="117">
   <properties>
    <property name="attack" value="melee"/>
+   <property name="cooldown" type="float" value="1"/>
    <property name="kind" value="weapon"/>
    <property name="melee" type="int" value="50"/>
-   <property name="speed" type="int" value="2"/>
+   <property name="speed" type="int" value="6"/>
   </properties>
  </tile>
  <tile id="118">
   <properties>
    <property name="attack" value="melee"/>
+   <property name="cooldown" type="float" value="1"/>
    <property name="kind" value="weapon"/>
    <property name="melee" type="int" value="50"/>
-   <property name="speed" type="int" value="2"/>
+   <property name="speed" type="int" value="6"/>
   </properties>
  </tile>
  <tile id="119">
   <properties>
    <property name="attack" value="melee"/>
+   <property name="cooldown" type="float" value="1"/>
    <property name="kind" value="weapon"/>
    <property name="melee" type="int" value="50"/>
-   <property name="speed" type="int" value="2"/>
+   <property name="speed" type="int" value="6"/>
   </properties>
  </tile>
  <tile id="120">
@@ -351,23 +359,27 @@
  <tile id="129">
   <properties>
    <property name="attack" value="magic"/>
+   <property name="cooldown" type="float" value="1"/>
    <property name="kind" value="weapon"/>
-   <property name="speed" type="int" value="1"/>
+   <property name="speed" type="int" value="10"/>
   </properties>
  </tile>
  <tile id="130">
   <properties>
    <property name="attack" value="magic"/>
+   <property name="cooldown" type="float" value="1"/>
    <property name="kind" value="weapon"/>
-   <property name="speed" type="int" value="1"/>
+   <property name="speed" type="int" value="10"/>
   </properties>
  </tile>
  <tile id="131">
   <properties>
    <property name="attack" value="melee"/>
+   <property name="cooldown" type="float" value="1"/>
    <property name="kind" value="weapon"/>
    <property name="melee" type="int" value="50"/>
-   <property name="speed" type="int" value="2"/>
+   <property name="piercing" type="bool" value="true"/>
+   <property name="speed" type="int" value="8"/>
   </properties>
  </tile>
 </tileset>
