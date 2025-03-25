@@ -8,6 +8,12 @@ local Vector2 = require("src.vector2")
 ---@field life number
 ---@field max_life number
 ---@field kind string
+---@field jitter1 Vector2 Random offset for first zag point
+---@field jitter2 Vector2 Random offset for middle point
+---@field jitter3 Vector2 Random offset for second zag point
+---@field jitter_time number Time counter for jitter movement
+---@field delay number Delay before particle becomes visible (for lightning)
+---@field flip_x boolean Whether to flip the x-axis for lightning strikes
 
 local particles = {
     active = {},  -- Array of active particles
@@ -21,7 +27,10 @@ local particles = {
     magic_speed = 1,  -- Base upward speed for magic particles
     magic_size = 3,   -- Size of magic particles in pixels
     magic_life = 0.8,  -- Life in seconds for magic particles
-    magic_spread = 0.3  -- Horizontal spread for magic particles
+    magic_spread = 0.3,  -- Horizontal spread for magic particles
+    -- Lightning specific settings
+    lightning_delay_max = 0.1,  -- Maximum random delay for lightning strikes
+    lightning_drift_speed = 0.1  -- How fast lightning particles drift horizontally
 }
 
 ---Get the color for an ice particle based on its lifetime
@@ -89,6 +98,30 @@ local function get_fire_color(t)
     end
 end
 
+---Draw a stylized lightning strike
+---@param x number Center x position
+---@param y number Center y position
+---@param size number Base size of the lightning
+---@param jitter1 Vector2 Offset for first zag point
+---@param jitter2 Vector2 Offset for middle point
+---@param jitter3 Vector2 Offset for second zag point
+---@param scale_y number Vertical scale factor (0 to 1)
+---@param flip_x boolean Whether to flip the x-axis pattern
+local function draw_lightning_strike(x, y, size, jitter1, jitter2, jitter3, scale_y, flip_x)
+    -- Draw a vertical zigzag pattern with jittered points
+    -- Scale the zigzag width progressively larger towards the bottom
+    -- Apply vertical scaling to make it grow
+    love.graphics.setLineWidth(1)
+    local x_mult = flip_x and -1 or 1  -- Multiplier for x coordinates
+    love.graphics.line(
+        x, y,     -- Start point (at center)
+        x + x_mult * (-size/6) + jitter1.x, y + (-size/4 + jitter1.y) * scale_y,  -- First zag (small)
+        x + jitter2.x, y + jitter2.y * scale_y,         -- Middle point
+        x + x_mult * (size/3) + jitter3.x, y + (size/2 + jitter3.y) * scale_y,   -- Second zag (larger)
+        x, y + size * scale_y       -- End point (scaled by growth)
+    )
+end
+
 ---@param pos Vector2 The position to spawn particles at (in tile space)
 ---@param direction Vector2 The direction the particles should move in
 function particles.spawn_dust(pos, direction)
@@ -146,22 +179,40 @@ function particles.spawn_magic(pos, kind)
             (math.random() - 0.5) * 4
         )
         
-        -- Create upward velocity with some horizontal spread
-        local velocity = Vector2.new(
-            (math.random() - 0.5) * particles.magic_spread * particles.magic_speed,  -- Small horizontal movement
-            -particles.magic_speed * (0.1 + math.random() * 0.4)  -- Upward movement with some variation
-        )
+        -- Create velocity based on particle type
+        local velocity
+        if kind == "lightning" then
+            -- Lightning moves horizontally with slight random direction
+            local direction = math.random() < 0.5 and -1 or 1  -- Random left or right
+            velocity = Vector2.new(
+                direction * particles.lightning_drift_speed * (0.8 + math.random() * 0.4),
+                0  -- No vertical movement
+            )
+        else
+            -- Other particles move upward with spread
+            velocity = Vector2.new(
+                (math.random() - 0.5) * particles.magic_spread * particles.magic_speed,
+                -particles.magic_speed * (0.1 + math.random() * 0.4)
+            )
+        end
         
-        -- Create particle
-        table.insert(particles.active, {
+        -- Create particle with jitter points for lightning
+        local particle = {
             pos = screen_pos + offset,
             velocity = velocity,
             color = {1, 1, 1, 1},  -- Start white
-            size = particles.magic_size * (0.8 + math.random() * 0.4),  -- Random size variation
-            life = particles.magic_life * (0.8 + math.random() * 0.4),  -- Random life variation
+            size = particles.magic_size * (0.8 + math.random() * 0.4),
+            life = particles.magic_life * (0.8 + math.random() * 0.4),
             max_life = particles.magic_life,
-            kind = kind  -- Store the specific magic kind
-        })
+            kind = kind,
+            jitter_time = math.random() * math.pi * 2,
+            jitter1 = Vector2.new(0, 0),
+            jitter2 = Vector2.new(0, 0),
+            jitter3 = Vector2.new(0, 0),
+            delay = kind == "lightning" and math.random() * particles.lightning_delay_max or 0,
+            flip_x = math.random() < 0.5  -- 50% chance to flip x-axis
+        }
+        table.insert(particles.active, particle)
     end
 end
 
@@ -170,11 +221,36 @@ function particles.update(dt)
     while i <= #particles.active do
         local particle = particles.active[i]
         
+        -- Update delay
+        if particle.delay > 0 then
+            particle.delay = particle.delay - dt
+        end
+        
         -- Update position
         particle.pos = particle.pos + particle.velocity
         
         -- Update life
         particle.life = particle.life - dt
+        
+        -- Update jitter for lightning particles
+        if particle.kind == "lightning" and particle.delay <= 0 then
+            particle.jitter_time = particle.jitter_time + dt * 10  -- Speed of jitter movement
+            local jitter_amount = particle.size * 0.5  -- Scale jitter with particle size
+            
+            -- Update each jitter point with smooth random movement
+            particle.jitter1 = Vector2.new(
+                math.sin(particle.jitter_time * 0.7) * jitter_amount,
+                math.cos(particle.jitter_time * 0.3) * jitter_amount
+            )
+            particle.jitter2 = Vector2.new(
+                math.sin(particle.jitter_time * 0.1) * jitter_amount,
+                math.cos(particle.jitter_time * 0.9) * jitter_amount
+            )
+            particle.jitter3 = Vector2.new(
+                math.sin(particle.jitter_time * 0.5) * jitter_amount,
+                math.cos(particle.jitter_time * 0.5) * jitter_amount
+            )
+        end
         
         -- Update color based on particle kind
         local t = particle.life / particle.max_life
@@ -203,8 +279,26 @@ end
 
 function particles.draw()
     for _, particle in ipairs(particles.active) do
-        love.graphics.setColor(unpack(particle.color))
-        love.graphics.circle("fill", particle.pos.x, particle.pos.y, particle.size)
+        -- Only draw if delay has elapsed
+        if particle.delay <= 0 then
+            love.graphics.setColor(unpack(particle.color))
+            if particle.kind == "lightning" then
+                -- Calculate growth based on lifetime (start small, reach full size at 75% life)
+                local growth = math.min(1, (1 - particle.life / particle.max_life) * 4)
+                draw_lightning_strike(
+                    particle.pos.x, 
+                    particle.pos.y, 
+                    particle.size * 3,
+                    particle.jitter1,
+                    particle.jitter2,
+                    particle.jitter3,
+                    growth,
+                    particle.flip_x
+                )
+            else
+                love.graphics.circle("fill", particle.pos.x, particle.pos.y, particle.size)
+            end
+        end
     end
     love.graphics.setColor(1, 1, 1, 1)  -- Reset color
 end
