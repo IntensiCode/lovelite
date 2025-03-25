@@ -158,17 +158,18 @@ end
 ---Check if a tile position is walkable (with buffer zone for movement)
 ---@param x number The x coordinate in tile space
 ---@param y number The y coordinate in tile space
+---@param buffer Vector2 The buffer zone size in tile space (default: Vector2(0.4, 0.2))
 ---@return boolean walkable Whether the tile at (x,y) is walkable
-function map_manager.is_walkable(x, y)
-    -- Add buffer zone in tile space
-    local buffer = 0.4
+function map_manager.is_walkable(x, y, buffer)
+    -- Default buffer zone in tile space
+    buffer = buffer or Vector2.new(0.4, 0.2)
     
     -- Check all corners of the player's collision box
     local points_to_check = {
-        {x = x - buffer, y = y - buffer}, -- Top left
-        {x = x + buffer, y = y - buffer}, -- Top right
-        {x = x - buffer, y = y + buffer}, -- Bottom left
-        {x = x + buffer, y = y + buffer}  -- Bottom right
+        {x = x - buffer.x, y = y - buffer.y}, -- Top left
+        {x = x + buffer.x, y = y - buffer.y}, -- Top right
+        {x = x - buffer.x, y = y + buffer.y}, -- Bottom left
+        {x = x + buffer.x, y = y + buffer.y}  -- Bottom right
     }
     
     for _, point in ipairs(points_to_check) do

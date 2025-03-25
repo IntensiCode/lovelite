@@ -42,7 +42,12 @@ function projectiles.update(dt)
            proj.pos.y > _game.map_manager.map.height then
             table.remove(projectiles.active, i)
         else
-            i = i + 1
+            -- Check if projectile hit a non-walkable tile with a smaller buffer
+            if not _game.map_manager.is_walkable(proj.pos.x, proj.pos.y, Vector2.new(0.25, 0.1)) then
+                table.remove(projectiles.active, i)
+            else
+                i = i + 1
+            end
         end
     end
 end
