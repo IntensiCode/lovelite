@@ -24,8 +24,31 @@ local map_manager = {
     enemies = {},
     weapons = {},
     shields = {},
-    chest_anim = {}
+    chest_anim = {},
+    objects_layer = nil
 }
+
+---Get the objects layer from the map
+---@return table The objects layer
+function map_manager.get_objects_layer()
+    -- If the objects layer is not already cached, get it from the map
+    if not map_manager.objects_layer then
+        map_manager.objects_layer = map_manager.map.layers[OBJECTS_LAYER_ID]
+    end
+    return map_manager.objects_layer
+end
+
+---Get a tile from the objects layer at the specified coordinates
+---@param x number The x coordinate in tile space
+---@param y number The y coordinate in tile space
+---@return table|nil The tile at the specified coordinates, or nil if not found
+function map_manager.get_objects_tile(x, y)
+    local objects_layer = map_manager.get_objects_layer()
+    if x < 1 or x > objects_layer.width or y < 1 or y > objects_layer.height then
+        return nil
+    end
+    return objects_layer.data[y][x]
+end
 
 ---@return number The tile ID of the player tile
 function map_manager.find_player_tile_id()
@@ -47,10 +70,10 @@ end
 function map_manager.find_tile_by_id(tile_id)
     assert(map_manager.map ~= nil, "Map not loaded! This should never happen as we verify the map exists before calling this function.")
     
-    local objects_layer = map_manager.map.layers[OBJECTS_LAYER_ID]
+    local objects_layer = map_manager.get_objects_layer()
     for y = 1, objects_layer.height do
         for x = 1, objects_layer.width do
-            local tile = objects_layer.data[y][x]
+            local tile = map_manager.get_objects_tile(x, y)
             if tile and tile.gid == tile_id then
                 return {
                     x = x,
