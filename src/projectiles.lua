@@ -49,8 +49,21 @@ function projectiles.update(dt)
         else
             -- Check if projectile hit a non-walkable tile with a smaller buffer
             if not _game.map_manager.is_walkable(proj.pos.x, proj.pos.y, Vector2.new(0.25, 0.1)) then
-                -- Spawn dust particles at the point of impact
-                _game.particles.spawn_dust(proj.pos, proj.direction)
+                -- Spawn particles at the point of impact based on weapon type
+                if proj.weapon.attack == "magic" then
+                    -- Determine magic kind from weapon properties
+                    local kind = "fire"  -- Default to fire
+                    if proj.weapon.lightning then
+                        kind = "lightning"
+                    elseif proj.weapon.ice then
+                        kind = "ice"
+                    elseif proj.weapon.fire then
+                        kind = "fire"
+                    end
+                    _game.particles.spawn_magic(proj.pos, kind)
+                else
+                    _game.particles.spawn_dust(proj.pos, proj.direction)
+                end
                 table.remove(projectiles.active, i)
             else
                 i = i + 1
