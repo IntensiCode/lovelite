@@ -96,7 +96,10 @@ end
 
 ---@param dt number Delta time in seconds
 function player.handle_shooting()
-    if not (love.keyboard.isDown("space") or love.keyboard.isDown("z")) or not player.weapon then
+    local shoot = love.keyboard.isDown("space") or love.keyboard.isDown("z")
+        or love.keyboard.isDown("lctrl") or love.keyboard.isDown("rctrl")
+
+    if not shoot or not player.weapon then
         return
     end
 
