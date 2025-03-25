@@ -4,6 +4,7 @@ local map_manager = require("src.map_manager")
 local debug = require("src.debug")
 local player = require("src.player")
 local projectiles = require("src.projectiles")
+local particles = require("src.particles")
 
 print("Game module loaded!")
 
@@ -13,7 +14,8 @@ _game = {
     map_manager = map_manager,
     debug = debug,
     player = player,
-    projectiles = projectiles
+    projectiles = projectiles,
+    particles = particles
 }
 
 function _game.load()
@@ -43,6 +45,7 @@ function _game.update(dt)
     _game.debug.update(dt)
     
     _game.projectiles.update(dt)
+    _game.particles.update(dt)
 end
 
 function _game.draw()
@@ -64,6 +67,9 @@ function _game.draw()
     
     -- Draw projectiles
     _game.projectiles.draw()
+    
+    -- Draw particles
+    _game.particles.draw()
     
     -- Undo camera transform for debug overlay
     love.graphics.translate(-translation.x, -translation.y)
