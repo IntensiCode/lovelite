@@ -14,6 +14,11 @@ local Vector2 = require("src.vector2")
 ---@field jitter_time number Time counter for jitter movement
 ---@field delay number Delay before particle becomes visible (for lightning)
 ---@field flip_x boolean Whether to flip the x-axis for lightning strikes
+---@field current_frame number Current animation frame
+---@field frame_timer number Time until next frame
+---@field animation table Animation data for this particle
+---@field rotation number Current rotation angle for animated particles
+---@field rotation_speed number Speed of rotation in radians per second
 
 local particles = {
     active = {},  -- Array of active particles
@@ -31,6 +36,78 @@ local particles = {
     -- Lightning specific settings
     lightning_delay_max = 0.1,  -- Maximum random delay for lightning strikes
     lightning_drift_speed = 0.1  -- How fast lightning particles drift horizontally
+}
+
+-- Animation data
+local animations = {
+    fire = {
+        frames = {
+            {
+                {0,0,1,0,0},
+                {0,1,1,1,0},
+                {1,1,1,1,1},
+                {0,1,1,1,0},
+                {0,0,1,0,0}
+            },
+            {
+                {0,1,0,1,0},
+                {1,1,1,1,1},
+                {0,1,1,1,0},
+                {0,1,1,1,0},
+                {0,0,1,0,0}
+            },
+            {
+                {0,0,1,0,0},
+                {0,1,1,1,0},
+                {1,1,1,1,1},
+                {0,1,1,1,0},
+                {0,1,0,1,0}
+            },
+            {
+                {0,1,0,1,0},
+                {1,1,1,1,1},
+                {0,1,1,1,0},
+                {0,1,0,1,0},
+                {0,0,1,0,0}
+            }
+        },
+        frame_duration = 0.1,
+        pixel_size = 2  -- Size of each pixel in the animation
+    },
+    ice = {
+        frames = {
+            {   -- Frame 1: Basic crystal
+                {0,0,1,0,0},
+                {0,1,1,1,0},
+                {1,1,0,1,1},
+                {0,1,1,1,0},
+                {0,0,1,0,0}
+            },
+            {   -- Frame 2: Sparkle top-right
+                {0,0,1,1,0},
+                {0,1,1,1,0},
+                {1,1,0,1,1},
+                {0,1,1,1,0},
+                {0,0,1,0,0}
+            },
+            {   -- Frame 3: Sparkle bottom-left
+                {0,0,1,0,0},
+                {0,1,1,1,0},
+                {1,1,0,1,1},
+                {1,1,1,1,0},
+                {0,0,1,0,0}
+            },
+            {   -- Frame 4: Crystal slightly rotated
+                {0,1,1,0,0},
+                {0,1,1,1,0},
+                {1,1,0,1,1},
+                {0,1,1,1,0},
+                {0,0,1,1,0}
+            }
+        },
+        frame_duration = 0.15,  -- Slightly slower than fire
+        pixel_size = 2
+    }
 }
 
 ---Get the color for an ice particle based on its lifetime
@@ -200,7 +277,7 @@ function particles.spawn_magic(pos, kind)
         local particle = {
             pos = screen_pos + offset,
             velocity = velocity,
-            color = {1, 1, 1, 1},  -- Start white
+            color = {1, 1, 1, 1},
             size = particles.magic_size * (0.8 + math.random() * 0.4),
             life = particles.magic_life * (0.8 + math.random() * 0.4),
             max_life = particles.magic_life,
@@ -210,7 +287,13 @@ function particles.spawn_magic(pos, kind)
             jitter2 = Vector2.new(0, 0),
             jitter3 = Vector2.new(0, 0),
             delay = kind == "lightning" and math.random() * particles.lightning_delay_max or 0,
-            flip_x = math.random() < 0.5  -- 50% chance to flip x-axis
+            flip_x = math.random() < 0.5,
+            -- Animation fields
+            current_frame = 1,
+            frame_timer = 0,
+            animation = kind == "fire" and animations.fire or kind == "ice" and animations.ice or nil,
+            rotation = kind == "ice" and math.random() * math.pi * 2 or 0,  -- Random initial rotation for ice
+            rotation_speed = kind == "ice" and (math.random() - 0.5) * 2 or 0  -- Random rotation speed for ice (-1 to 1 rad/sec)
         }
         table.insert(particles.active, particle)
     end
@@ -222,7 +305,7 @@ function particles.update(dt)
         local particle = particles.active[i]
         
         -- Update delay
-        if particle.delay > 0 then
+        if particle.delay and particle.delay > 0 then
             particle.delay = particle.delay - dt
         end
         
@@ -268,6 +351,23 @@ function particles.update(dt)
             end
         end
         
+        -- Update animation if particle has one
+        if particle.animation then
+            particle.frame_timer = particle.frame_timer + dt
+            if particle.frame_timer >= particle.animation.frame_duration then
+                particle.frame_timer = particle.frame_timer - particle.animation.frame_duration
+                particle.current_frame = particle.current_frame + 1
+                if particle.current_frame > #particle.animation.frames then
+                    particle.current_frame = 1
+                end
+            end
+        end
+        
+        -- Update rotation if particle has one
+        if particle.rotation then
+            particle.rotation = particle.rotation + particle.rotation_speed * dt
+        end
+        
         -- Remove dead particles
         if particle.life <= 0 then
             table.remove(particles.active, i)
@@ -277,30 +377,81 @@ function particles.update(dt)
     end
 end
 
-function particles.draw()
-    for _, particle in ipairs(particles.active) do
-        -- Only draw if delay has elapsed
-        if particle.delay <= 0 then
-            love.graphics.setColor(unpack(particle.color))
-            if particle.kind == "lightning" then
-                -- Calculate growth based on lifetime (start small, reach full size at 75% life)
-                local growth = math.min(1, (1 - particle.life / particle.max_life) * 4)
-                draw_lightning_strike(
-                    particle.pos.x, 
-                    particle.pos.y, 
-                    particle.size * 3,
-                    particle.jitter1,
-                    particle.jitter2,
-                    particle.jitter3,
-                    growth,
-                    particle.flip_x
+local function draw_animated_particle(particle)
+    local frame = particle.animation.frames[particle.current_frame]
+    local pixel_size = particle.animation.pixel_size
+    
+    -- Save current transform
+    love.graphics.push()
+    
+    -- Move to particle center and apply rotation if it exists
+    love.graphics.translate(particle.pos.x, particle.pos.y)
+    if particle.rotation then
+        love.graphics.rotate(particle.rotation)
+    end
+    
+    for y = 1, #frame do
+        for x = 1, #frame[y] do
+            if frame[y][x] == 1 then
+                if particle.kind == "fire" then
+                    -- Fire gradient: red to yellow
+                    local yellow = math.max(0, 1 - (y / #frame))
+                    love.graphics.setColor(1, yellow, 0, particle.color[4])
+                elseif particle.kind == "ice" then
+                    -- Ice gradient: white-blue-white cycle
+                    local progress = (particle.life / particle.max_life + particle.frame_timer / particle.animation.frame_duration) * 2
+                    local blue_intensity = math.abs(math.sin(progress * math.pi))
+                    -- Blend between white (1,1,1) and light blue (0.7,0.8,1)
+                    love.graphics.setColor(
+                        0.7 + (1 - blue_intensity) * 0.3,  -- red
+                        0.8 + (1 - blue_intensity) * 0.2,  -- green
+                        1,                                  -- blue
+                        particle.color[4]                   -- alpha
+                    )
+                end
+                
+                love.graphics.rectangle(
+                    "fill",
+                    (x-1) * pixel_size - (#frame[y] * pixel_size)/2,
+                    (y-1) * pixel_size - (#frame * pixel_size)/2,
+                    pixel_size,
+                    pixel_size
                 )
-            else
-                love.graphics.circle("fill", particle.pos.x, particle.pos.y, particle.size)
             end
         end
     end
-    love.graphics.setColor(1, 1, 1, 1)  -- Reset color
+    
+    -- Restore transform
+    love.graphics.pop()
+end
+
+function particles.draw()
+    for _, particle in ipairs(particles.active) do
+        if particle.delay and particle.delay > 0 then
+            return
+        end
+
+        love.graphics.setColor(unpack(particle.color))
+        if particle.kind == "lightning" then
+            -- Calculate growth based on lifetime
+            local growth = math.min(1, (1 - particle.life / particle.max_life) * 4)
+            draw_lightning_strike(
+                particle.pos.x, 
+                particle.pos.y, 
+                particle.size * 3,
+                particle.jitter1,
+                particle.jitter2,
+                particle.jitter3,
+                growth,
+                particle.flip_x
+            )
+        elseif particle.animation then
+            draw_animated_particle(particle)
+        else
+            love.graphics.circle("fill", particle.pos.x, particle.pos.y, particle.size)
+        end
+    end
+    love.graphics.setColor(1, 1, 1, 1)
 end
 
 -- Add particles to global game variable when loaded
