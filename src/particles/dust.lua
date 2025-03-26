@@ -72,11 +72,11 @@ function DustParticle.spawn(pos, direction)
             (math.random() - 0.5) * 4
         )
         
-        -- Add some randomness to velocity
-        local angle = math.atan2(direction.y, direction.x)
+        -- Use direction as base velocity with random spread
         local spread = math.pi / 4  -- 45 degree spread
+        local angle = math.atan2(direction.y, direction.x)
         local particle_angle = angle + (math.random() - 0.5) * spread
-        local speed = 2 * (0.5 + math.random() * 0.5)  -- 50-100% of base speed
+        local speed = direction:length() * (0.5 + math.random() * 0.5)  -- 50-100% of base speed
         local velocity = Vector2.new(
             math.cos(particle_angle) * speed,
             math.sin(particle_angle) * speed
