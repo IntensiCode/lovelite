@@ -39,26 +39,47 @@ end
 
 function _game.draw()
     _game.camera.beginDraw()
-    
+
     local translation = _game.camera.translation()
     love.graphics.translate(translation.x, translation.y)
-    
+
     _game.map_manager.map:draw(translation.x, translation.y)
-    
+
     _game.collectibles.draw()
     _game.player.draw()
     _game.projectiles.draw()
+
+    -- Find and draw all overlapping tiles
+    local positions = _game.find_overlappable_positions()
+    local overlapping_tiles = _game.map_manager.find_overlapping_tiles(positions)
+    _game.map_manager.draw_overlapping_tiles(overlapping_tiles)
+
     _game.particles.draw()
 
-    local overlapping_tiles = _game.map_manager.find_overlapping_tiles(_game.player.pos)
-    _game.map_manager.draw_overlapping_tiles(overlapping_tiles)
-    
     love.graphics.translate(-translation.x, -translation.y)
-    
+
     _game.player.draw_ui()
     _game.debug.draw()
-    
+
     _game.camera.endDraw()
+end
+
+---Find all positions that need wall checking
+---@return Vector2[] List of positions that need wall checking
+function _game.find_overlappable_positions()
+    local positions = { _game.player.pos }
+
+    -- Add collectible positions
+    for _, item in ipairs(_game.collectibles.items) do
+        table.insert(positions, item.pos)
+    end
+
+    -- Add projectile positions
+    for _, proj in ipairs(_game.projectiles.active) do
+        table.insert(positions, proj.pos)
+    end
+
+    return positions
 end
 
 function _game.keypressed(key)
@@ -74,4 +95,4 @@ function _game.resize(w, h)
     _game.camera.resize(w, h)
 end
 
-return _game 
+return _game

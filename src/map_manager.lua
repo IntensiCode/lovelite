@@ -197,22 +197,13 @@ function map_manager.is_walkable(x, y, buffer)
         { x = x - buffer.x, y = y - buffer.y }, -- Top left
         { x = x + buffer.x, y = y - buffer.y }, -- Top right
         { x = x - buffer.x, y = y + buffer.y }, -- Bottom left
-        { x = x + buffer.x, y = y + buffer.y } -- Bottom right
+        { x = x + buffer.x, y = y + buffer.y }  -- Bottom right
     }
 
     for _, point in ipairs(points_to_check) do
         local tile_x = math.floor(point.x)
         local tile_y = math.floor(point.y)
-
-        -- Check map boundaries
-        if tile_x < 1 or tile_x > map_manager.map.width or
-            tile_y < 1 or tile_y > map_manager.map.height then
-            return false
-        end
-
-        -- Get the tile at this position from the first layer
-        local tile = map_manager.map.layers[1].data[tile_y][tile_x]
-        if not tile or not map_manager.walkable_tiles[tile.gid] then
+        if not map_manager.is_walkable_tile(tile_x, tile_y) then
             return false
         end
     end
@@ -238,12 +229,32 @@ function map_manager.is_walkable_tile(x, y)
     return map_manager.walkable_tiles[tile.gid] or false
 end
 
----Find tiles that should appear above the player
----@param pos Vector2 The player's current position
+---Check a single offset position for overlapping tiles
+---@param player_x number The player's x position in tile space
+---@param player_y number The player's y position in tile space
+---@param offset table The offset to check {dx: number, dy: number}
+---@return table|nil The tile data and screen position if found, nil otherwise
+local function check_offset_position(player_x, player_y, offset)
+    local tile_x = player_x + offset.dx
+    local tile_y = player_y + offset.dy
+
+    -- If this is a non-walkable tile (wall), add it to the result
+    if not map_manager.is_walkable_tile(tile_x, tile_y) then
+        local tile = map_manager.map.layers[1].data[tile_y][tile_x]
+        if tile then
+            -- Calculate screen position
+            local screen_x = math.floor((tile_x - 1) * map_manager.map.tilewidth) - 0.5
+            local screen_y = math.floor((tile_y - 1) * map_manager.map.tileheight) - 0.5
+            return { tile = tile, screen_x = screen_x, screen_y = screen_y }
+        end
+    end
+    return nil
+end
+
+---Find tiles that should appear above the given positions
+---@param positions Vector2[] List of positions to check
 ---@return table[] List of {tile, screen_x, screen_y} tuples
-function map_manager.find_overlapping_tiles(pos)
-    local tile_x = math.floor(pos.x)
-    local tile_y = math.floor(pos.y)
+function map_manager.find_overlapping_tiles(positions)
     local result = {}
 
     -- List of (dx,dy) offsets to check
@@ -251,24 +262,18 @@ function map_manager.find_overlapping_tiles(pos)
         { dx = -1, dy = 0 },
         { dx = -1, dy = 1 },
         { dx = 0,  dy = 1 },
-        { dx = 1,  dy = 1 },
-        { dx = 1,  dy = 0 }, -- For the weapon
-        { dx = 1,  dy = -1 } -- For the weapon
+        { dx = 1,  dy = 1 }
     }
 
-    -- Check each offset
-    for _, offset in ipairs(offsets) do
-        local tile_x = tile_x + offset.dx
-        local tile_y = tile_y + offset.dy
+    for _, pos in ipairs(positions) do
+        local player_x = math.floor(pos.x)
+        local player_y = math.floor(pos.y)
 
-        -- If this is a non-walkable tile (wall), add it to the result
-        if not map_manager.is_walkable_tile(tile_x, tile_y) then
-            local tile = map_manager.map.layers[1].data[tile_y][tile_x]
-            if tile then
-                -- Calculate screen position
-                local screen_x = math.floor((tile_x - 1) * map_manager.map.tilewidth) - 0.5
-                local screen_y = math.floor((tile_y - 1) * map_manager.map.tileheight) - 0.5
-                table.insert(result, { tile = tile, screen_x = screen_x, screen_y = screen_y })
+        -- Check each offset
+        for _, offset in ipairs(offsets) do
+            local tile_data = check_offset_position(player_x, player_y, offset)
+            if tile_data then
+                table.insert(result, tile_data)
             end
         end
     end
@@ -290,4 +295,3 @@ _game = _game or {}
 _game.map_manager = map_manager
 
 return map_manager
-
