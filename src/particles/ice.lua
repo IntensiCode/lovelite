@@ -2,42 +2,6 @@ local Vector2 = require("src.vector2")
 local animation = require("src.particles.animation")
 local constants = require("src.particles.constants")
 
--- Ice particle animation data
-local ice_animation = {
-    frames = {
-        {     -- Frame 1: Basic crystal
-            { 0, 0, 1, 0, 0 },
-            { 0, 1, 1, 1, 0 },
-            { 1, 1, 0, 1, 1 },
-            { 0, 1, 1, 1, 0 },
-            { 0, 0, 1, 0, 0 }
-        },
-        {     -- Frame 2: Sparkle top-right
-            { 0, 0, 1, 1, 0 },
-            { 0, 1, 1, 1, 0 },
-            { 1, 1, 0, 1, 1 },
-            { 0, 1, 1, 1, 0 },
-            { 0, 0, 1, 0, 0 }
-        },
-        {     -- Frame 3: Sparkle bottom-left
-            { 0, 0, 1, 0, 0 },
-            { 0, 1, 1, 1, 0 },
-            { 1, 1, 0, 1, 1 },
-            { 1, 1, 1, 1, 0 },
-            { 0, 0, 1, 0, 0 }
-        },
-        {     -- Frame 4: Crystal slightly rotated
-            { 0, 1, 1, 0, 0 },
-            { 0, 1, 1, 1, 0 },
-            { 1, 1, 0, 1, 1 },
-            { 0, 1, 1, 1, 0 },
-            { 0, 0, 1, 1, 0 }
-        }
-    },
-    frame_duration = 0.15,     -- Slightly slower than fire
-    pixel_size = 2
-}
-
 ---Get the color for an ice particle based on its lifetime
 ---@param t number Normalized lifetime (0 to 1)
 ---@return table color RGBA color array
@@ -95,7 +59,7 @@ local IceParticle = {
                 constants.magic_life * (0.8 + math.random() * 0.4),
                 "ice",
                 get_ice_color,
-                ice_animation
+                constants.ice_animation
             )
             
             table.insert(particles, particle)

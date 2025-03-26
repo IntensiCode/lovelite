@@ -2,42 +2,6 @@ local Vector2 = require("src.vector2")
 local animation = require("src.particles.animation")
 local constants = require("src.particles.constants")
 
--- Fire particle animation data
-local fire_animation = {
-    frames = {
-        {
-            { 0, 0, 1, 0, 0 },
-            { 0, 1, 1, 1, 0 },
-            { 1, 1, 1, 1, 1 },
-            { 0, 1, 1, 1, 0 },
-            { 0, 0, 1, 0, 0 }
-        },
-        {
-            { 0, 1, 0, 1, 0 },
-            { 1, 1, 1, 1, 1 },
-            { 0, 1, 1, 1, 0 },
-            { 0, 1, 1, 1, 0 },
-            { 0, 0, 1, 0, 0 }
-        },
-        {
-            { 0, 0, 1, 0, 0 },
-            { 0, 1, 1, 1, 0 },
-            { 1, 1, 1, 1, 1 },
-            { 0, 1, 1, 1, 0 },
-            { 0, 1, 0, 1, 0 }
-        },
-        {
-            { 0, 1, 0, 1, 0 },
-            { 1, 1, 1, 1, 1 },
-            { 0, 1, 1, 1, 0 },
-            { 0, 1, 0, 1, 0 },
-            { 0, 0, 1, 0, 0 }
-        }
-    },
-    frame_duration = 0.1,
-    pixel_size = 2     -- Size of each pixel in the animation
-}
-
 ---Get the color for a fire particle based on its lifetime
 ---@param t number Normalized lifetime (0 to 1)
 ---@return table color RGBA color array
@@ -85,7 +49,7 @@ local FireParticle = {
                 constants.magic_life * (0.8 + math.random() * 0.4),
                 "fire",
                 get_fire_color,
-                fire_animation
+                constants.fire_animation
             )
             
             table.insert(particles, particle)
