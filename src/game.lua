@@ -6,6 +6,7 @@ local player = require("src.player")
 local projectiles = require("src.projectiles")
 local particles = require("src.particles")
 local collectibles = require("src.collectibles")
+local enemies = require("src.enemies")
 
 print("Game module loaded!")
 
@@ -17,7 +18,8 @@ _game = {
     player = player,
     projectiles = projectiles,
     particles = particles,
-    collectibles = collectibles
+    collectibles = collectibles,
+    enemies = enemies
 }
 
 function _game.load()
@@ -25,6 +27,9 @@ function _game.load()
     _game.map_manager.load()
     _game.player.load()
     _game.collectibles.load()
+    _game.enemies.load()
+
+    -- No loading for projectiles and particles
 end
 
 function _game.update(dt)
@@ -35,6 +40,7 @@ function _game.update(dt)
     _game.projectiles.update(dt)
     _game.particles.update(dt)
     _game.collectibles.update(dt)
+    _game.enemies.update(dt)
 end
 
 function _game.draw()
@@ -48,12 +54,14 @@ function _game.draw()
     _game.collectibles.draw()
     _game.player.draw()
     _game.projectiles.draw()
+    _game.enemies.draw()
 
     -- Find and draw all overlapping tiles
     local positions = _game.find_overlappable_positions()
     local overlapping_tiles = _game.map_manager.find_overlapping_tiles(positions)
     _game.map_manager.draw_overlapping_tiles(overlapping_tiles)
 
+    -- Draw particles above the redrawn wall tiles
     _game.particles.draw()
 
     love.graphics.translate(-translation.x, -translation.y)
