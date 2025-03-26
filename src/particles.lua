@@ -5,6 +5,7 @@ local DustParticle = require("src.particles.dust")
 local FireParticle = require("src.particles.fire")
 local IceParticle = require("src.particles.ice")
 local events = require("src.events")
+local constants = require("src.particles.constants")
 
 ---@class Particle
 ---@field pos Vector2
@@ -50,31 +51,11 @@ function particles.spawn_magic(pos, kind)
     local spawned_particles = {}
     
     if kind == "fire" then
-        spawned_particles = FireParticle.spawn(
-            pos,
-            particles.magic_count,
-            particles.magic_speed,
-            particles.magic_spread,
-            particles.magic_life
-        )
+        spawned_particles = FireParticle.spawn(pos)
     elseif kind == "ice" then
-        spawned_particles = IceParticle.spawn(
-            pos,
-            particles.magic_count,
-            particles.magic_speed,
-            particles.magic_spread,
-            particles.magic_life
-        )
+        spawned_particles = IceParticle.spawn(pos)
     elseif kind == "lightning" then
-        spawned_particles = LightningParticle.spawn(
-            pos,
-            particles.magic_count,
-            particles.magic_speed,
-            particles.magic_size,
-            particles.magic_life,
-            particles.lightning_delay_max,
-            particles.lightning_drift_speed
-        )
+        spawned_particles = LightningParticle.spawn(pos)
     end
     
     -- Add all spawned particles to active particles
