@@ -61,9 +61,15 @@ function projectiles.update(dt)
                     elseif proj.weapon.fire then
                         kind = "fire"
                     end
-                    _game.particles.spawn_magic(proj.pos, kind)
+                    events.send("particles.spawn.magic", {
+                        pos = proj.pos,
+                        kind = kind
+                    })
                 else
-                    _game.particles.spawn_dust(proj.pos, proj.direction)
+                    events.send("particles.spawn.dust", {
+                        pos = proj.pos,
+                        direction = proj.direction
+                    })
                 end
                 table.remove(projectiles.active, i)
             else

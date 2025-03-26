@@ -2,6 +2,7 @@ local Vector2 = require("src.vector2")
 local animation = require("src.particles.animation")
 local LightningParticle = require("src.particles.lightning")
 local DustParticle = require("src.particles.dust")
+local events = require("src.events")
 
 ---@class Particle
 ---@field pos Vector2
@@ -215,5 +216,14 @@ end
 -- Add particles to global game variable when loaded
 _game = _game or {}
 _game.particles = particles
+
+-- Register for particle spawn events
+events.register("particles.spawn.magic", function(data)
+    particles.spawn_magic(data.pos, data.kind)
+end)
+
+events.register("particles.spawn.dust", function(data)
+    particles.spawn_dust(data.pos, data.direction)
+end)
 
 return particles 
