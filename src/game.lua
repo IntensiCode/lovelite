@@ -49,7 +49,9 @@ function _game.draw()
     _game.player.draw()
     _game.projectiles.draw()
     _game.particles.draw()
-    _game.map_manager.draw_walls_above_player(_game.player.pos)
+
+    local overlapping_tiles = _game.map_manager.find_overlapping_tiles(_game.player.pos)
+    _game.map_manager.draw_overlapping_tiles(overlapping_tiles)
     
     love.graphics.translate(-translation.x, -translation.y)
     

@@ -238,11 +238,13 @@ function map_manager.is_walkable_tile(x, y)
     return map_manager.walkable_tiles[tile.gid] or false
 end
 
----Draw walls that should appear above the player
----@param player_pos Vector2 The player's current position
-function map_manager.draw_walls_above_player(player_pos)
-    local player_x = math.floor(player_pos.x)
-    local player_y = math.floor(player_pos.y)
+---Find tiles that should appear above the player
+---@param pos Vector2 The player's current position
+---@return table[] List of {tile, screen_x, screen_y} tuples
+function map_manager.find_overlapping_tiles(pos)
+    local tile_x = math.floor(pos.x)
+    local tile_y = math.floor(pos.y)
+    local result = {}
 
     -- List of (dx,dy) offsets to check
     local offsets = {
@@ -256,20 +258,30 @@ function map_manager.draw_walls_above_player(player_pos)
 
     -- Check each offset
     for _, offset in ipairs(offsets) do
-        local tile_x = player_x + offset.dx
-        local tile_y = player_y + offset.dy
+        local tile_x = tile_x + offset.dx
+        local tile_y = tile_y + offset.dy
 
-        -- If this is a non-walkable tile (wall), redraw it
+        -- If this is a non-walkable tile (wall), add it to the result
         if not map_manager.is_walkable_tile(tile_x, tile_y) then
             local tile = map_manager.map.layers[1].data[tile_y][tile_x]
             if tile then
-                local tileset = map_manager.map.tilesets[tile.tileset]
-                -- Ensure pixel-perfect alignment by snapping to tile grid
+                -- Calculate screen position
                 local screen_x = math.floor((tile_x - 1) * map_manager.map.tilewidth) - 0.5
                 local screen_y = math.floor((tile_y - 1) * map_manager.map.tileheight) - 0.5
-                love.graphics.draw(tileset.image, tile.quad, screen_x, screen_y)
+                table.insert(result, { tile = tile, screen_x = screen_x, screen_y = screen_y })
             end
         end
+    end
+
+    return result
+end
+
+---Draw tiles that should appear above the player
+---@param tiles table[] List of {tile, screen_x, screen_y} tuples
+function map_manager.draw_overlapping_tiles(tiles)
+    for _, data in ipairs(tiles) do
+        local tileset = map_manager.map.tilesets[data.tile.tileset]
+        love.graphics.draw(tileset.image, data.tile.quad, data.screen_x, data.screen_y)
     end
 end
 
@@ -278,3 +290,4 @@ _game = _game or {}
 _game.map_manager = map_manager
 
 return map_manager
+
