@@ -246,51 +246,51 @@ return {
         {
           id = 103,
           properties = {
-            ["attack"] = "melee",
             ["cooldown"] = 0.5,
             ["initial"] = true,
             ["kind"] = "weapon",
             ["melee"] = 25,
+            ["name"] = "sword",
             ["speed"] = 10
           }
         },
         {
           id = 104,
           properties = {
-            ["attack"] = "melee",
             ["cooldown"] = 0.5,
             ["kind"] = "weapon",
             ["melee"] = 25,
+            ["name"] = "longsword",
             ["speed"] = 8
           }
         },
         {
           id = 105,
           properties = {
-            ["attack"] = "melee",
             ["cooldown"] = 0.5,
             ["kind"] = "weapon",
             ["melee"] = 25,
+            ["name"] = "broadsword",
             ["speed"] = 8
           }
         },
         {
           id = 106,
           properties = {
-            ["attack"] = "melee",
             ["cooldown"] = 0.5,
             ["kind"] = "weapon",
             ["melee"] = 25,
+            ["name"] = "paladinsword",
             ["speed"] = 8
           }
         },
         {
           id = 107,
           properties = {
-            ["attack"] = "melee",
             ["cooldown"] = 0.5,
             ["kind"] = "weapon",
             ["melee"] = 100,
+            ["name"] = "magicsword",
             ["speed"] = 8
           }
         },
@@ -360,30 +360,30 @@ return {
         {
           id = 117,
           properties = {
-            ["attack"] = "melee",
             ["cooldown"] = 1,
             ["kind"] = "weapon",
             ["melee"] = 50,
+            ["name"] = "thorhammer",
             ["speed"] = 6
           }
         },
         {
           id = 118,
           properties = {
-            ["attack"] = "melee",
             ["cooldown"] = 1,
             ["kind"] = "weapon",
             ["melee"] = 50,
+            ["name"] = "conanaxe",
             ["speed"] = 6
           }
         },
         {
           id = 119,
           properties = {
-            ["attack"] = "melee",
             ["cooldown"] = 1,
             ["kind"] = "weapon",
             ["melee"] = 50,
+            ["name"] = "elvenaxe",
             ["speed"] = 6
           }
         },
@@ -453,30 +453,30 @@ return {
         {
           id = 129,
           properties = {
-            ["attack"] = "magic",
             ["cooldown"] = 1,
             ["fire"] = 33,
             ["kind"] = "weapon",
+            ["name"] = "firestaff",
             ["speed"] = 10
           }
         },
         {
           id = 130,
           properties = {
-            ["attack"] = "magic",
             ["cooldown"] = 1,
             ["ice"] = 33,
             ["kind"] = "weapon",
+            ["name"] = "icestaff",
             ["speed"] = 10
           }
         },
         {
           id = 131,
           properties = {
-            ["attack"] = "magic",
             ["cooldown"] = 1,
             ["kind"] = "weapon",
             ["lightning"] = 33,
+            ["name"] = "lightningstaff",
             ["speed"] = 8
           }
         }

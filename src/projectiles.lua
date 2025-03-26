@@ -37,10 +37,8 @@ function projectiles.update(dt)
         -- Update rotation
         proj.rotation = proj.rotation + projectiles.rotation_speed * dt
 
-        -- Use proj.pulse_time to pulse the circle
-        if proj.weapon.attack == "magic" then
-            proj.pulse_time = (proj.pulse_time or 0) + dt
-        end
+        -- Use proj.pulse_time to pulse the circle (magic projectiles only)
+        proj.pulse_time = (proj.pulse_time or 0) + dt
 
         -- Check if outside map bounds
         if proj.pos.x < 1 or proj.pos.y < 1 or
@@ -88,7 +86,7 @@ function projectiles.draw()
         love.graphics.circle("fill", screen_x, screen_y + tile_height / 3, 3)
         love.graphics.setColor(1, 1, 1, 1)
 
-        if proj.weapon.attack == "melee" then
+        if proj.weapon.melee then
             -- Draw projectile centered and rotated
             love.graphics.draw(
                 _game.map_manager.map.tilesets[1].image,
@@ -99,7 +97,7 @@ function projectiles.draw()
                 1, 1,                       -- Scale
                 tile_width / 2, tile_height / 2 -- Center origin
             )
-        elseif proj.weapon.attack == "magic" then
+        else 
             -- Draw a pulsing circle, with white border, pulsing bigger and smaller
             local pulse_radius = 3 + math.sin(proj.pulse_time * 2) * 2
             -- Look at the properties to determine the color

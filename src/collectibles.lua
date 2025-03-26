@@ -23,7 +23,6 @@ function collectibles.load()
             if tile and tile.properties and tile.properties["kind"] == "weapon" then
                 -- Get the weapon reference from map_manager
                 local weapon = _game.map_manager.weapons[tile.gid]
-                print(weapon.attack)
                 if weapon then
                     -- Create a collectible for this weapon tile
                     table.insert(collectibles.items, {
@@ -95,7 +94,7 @@ function collectibles.check_collection(pos, collect_range)
         if distance <= collect_range then
             -- Debug print collection
             print(string.format("\nCollectible collected at (%d, %d)! Weapon: %s", 
-                item.pos.x, item.pos.y, item.weapon.attack))
+                item.pos.x, item.pos.y, item.weapon.name))
             
             -- Remove and return the collected item
             local collected = table.remove(collectibles.items, i)
