@@ -36,18 +36,9 @@ local particles = {
 }
 
 ---@param pos Vector2 The position to spawn particles at (in tile space)
----@param direction Vector2 The direction the particles should move in
-function particles.spawn_dust(pos, direction)
-    -- Create dust particles and add them to active particles
-    local dust_particles = DustParticle.spawn(pos, direction)
-    for _, particle in ipairs(dust_particles) do
-        table.insert(particles.active, particle)
-    end
-end
-
----@param pos Vector2 The position to spawn particles at (in tile space)
----@param kind string The kind of magic effect ("fire", "ice", "lightning", etc.)
-function particles.spawn_magic(pos, kind)
+---@param kind string The kind of particle effect ("fire", "ice", "lightning", "dust")
+---@param direction? Vector2 Optional direction for dust particles
+function particles.spawn(pos, kind, direction)
     local spawned_particles = {}
     
     if kind == "fire" then
@@ -56,6 +47,9 @@ function particles.spawn_magic(pos, kind)
         spawned_particles = IceParticle.spawn(pos)
     elseif kind == "lightning" then
         spawned_particles = LightningParticle.spawn(pos)
+    elseif kind == "dust" then
+        assert(direction, "Direction is required for dust particles")
+        spawned_particles = DustParticle.spawn(pos, direction)
     end
     
     -- Add all spawned particles to active particles
@@ -129,12 +123,8 @@ _game = _game or {}
 _game.particles = particles
 
 -- Register for particle spawn events
-events.register("particles.spawn.magic", function(data)
-    particles.spawn_magic(data.pos, data.kind)
-end)
-
-events.register("particles.spawn.dust", function(data)
-    particles.spawn_dust(data.pos, data.direction)
+events.register("particles.spawn", function(data)
+    particles.spawn(data.pos, data.kind, data.direction)
 end)
 
 return particles 

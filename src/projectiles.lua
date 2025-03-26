@@ -61,13 +61,14 @@ function projectiles.update(dt)
                     elseif proj.weapon.fire then
                         kind = "fire"
                     end
-                    events.send("particles.spawn.magic", {
+                    events.send("particles.spawn", {
                         pos = proj.pos,
                         kind = kind
                     })
                 else
-                    events.send("particles.spawn.dust", {
+                    events.send("particles.spawn", {
                         pos = proj.pos,
+                        kind = "dust",
                         direction = proj.direction
                     })
                 end
