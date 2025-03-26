@@ -15,6 +15,7 @@ local constants = require("src.particles.constants")
 ---@field jitter_time number Time counter for jitter movement
 ---@field delay number Delay before particle becomes visible
 ---@field flip_x boolean Whether to flip the x-axis pattern
+---@field blink boolean Whether to skip drawing this frame
 local LightningParticle = {}
 LightningParticle.__index = LightningParticle
 
@@ -39,7 +40,8 @@ function LightningParticle.new(pos, velocity, life, size, delay)
         jitter2 = Vector2.new(0, 0),
         jitter3 = Vector2.new(0, 0),
         delay = delay,
-        flip_x = math.random() < 0.5
+        flip_x = math.random() < 0.5,
+        blink = false
     }
     setmetatable(particle, LightningParticle)
     return particle
@@ -81,6 +83,9 @@ function LightningParticle:update(dt)
     -- Update color based on lifetime
     local t = self.life / self.max_life
     self.color = LightningParticle.get_color(t)
+
+    -- Randomly blink (10% chance)
+    self.blink = math.random() < 0.1
 end
 
 ---Draw a stylized lightning strike
@@ -109,7 +114,7 @@ end
 
 ---Draw the lightning particle
 function LightningParticle:draw()
-    if self.delay > 0 then
+    if self.delay > 0 or self.blink then
         return
     end
 
