@@ -120,7 +120,7 @@ function map_manager.process_tiles()
 
         -- Process by kind
         if props["kind"] then
-            print(string.format("  Has kind: %s", props["kind"]))
+            -- print(string.format("  Has kind: %s", props["kind"]))
             if props["kind"] == "enemy" then
                 map_manager.enemies[gid] = {
                     hitpoints = props["hitpoints"] or 100
@@ -178,7 +178,7 @@ function map_manager.load()
     map_manager.map.layers[OBJECTS_LAYER_ID].visible = false
 
     -- Print debug information about processed tiles
-    _game.debug.print_map_tiles()
+    -- _game.debug.print_map_tiles()
 end
 
 ---Check if a tile position is walkable (with buffer zone for movement)

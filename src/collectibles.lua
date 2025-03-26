@@ -38,10 +38,10 @@ function collectibles.load()
     end
 
     -- Debug print collectibles
-    print("\nCollectibles loaded:")
-    for i, item in ipairs(collectibles.items) do
-        print(string.format("  %d. Collectible at (%d, %d)", i, item.pos.x, item.pos.y))
-    end
+    -- print("\nCollectibles loaded:")
+    -- for i, item in ipairs(collectibles.items) do
+    --     print(string.format("  %d. Collectible at (%d, %d)", i, item.pos.x, item.pos.y))
+    -- end
 end
 
 function collectibles.update(dt)
