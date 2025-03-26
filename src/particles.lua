@@ -2,6 +2,8 @@ local Vector2 = require("src.vector2")
 local animation = require("src.particles.animation")
 local LightningParticle = require("src.particles.lightning")
 local DustParticle = require("src.particles.dust")
+local FireParticle = require("src.particles.fire")
+local IceParticle = require("src.particles.ice")
 local events = require("src.events")
 
 ---@class Particle
@@ -45,56 +47,38 @@ end
 ---@param pos Vector2 The position to spawn particles at (in tile space)
 ---@param kind string The kind of magic effect ("fire", "ice", "lightning", etc.)
 function particles.spawn_magic(pos, kind)
-    -- Convert tile space position to screen space
-    local screen_pos = Vector2.new(
-        (pos.x - 1) * _game.map_manager.map.tilewidth,
-        (pos.y - 1) * _game.map_manager.map.tileheight
-    )
+    local spawned_particles = {}
     
-    -- Create multiple particles in a small area
-    for i = 1, particles.magic_count do
-        -- Add some randomness to position
-        local offset = Vector2.new(
-            (math.random() - 0.5) * 4,  -- ±2 pixels
-            (math.random() - 0.5) * 4
+    if kind == "fire" then
+        spawned_particles = FireParticle.spawn(
+            pos,
+            particles.magic_count,
+            particles.magic_speed,
+            particles.magic_spread,
+            particles.magic_life
         )
-        
-        -- Create velocity based on particle type
-        local velocity
-        if kind == "lightning" then
-            -- Lightning moves horizontally with slight random direction
-            local direction = math.random() < 0.5 and -1 or 1  -- Random left or right
-            velocity = Vector2.new(
-                direction * particles.lightning_drift_speed * (0.8 + math.random() * 0.4),
-                0  -- No vertical movement
-            )
-        else
-            -- Other particles move upward with spread
-            velocity = Vector2.new(
-                (math.random() - 0.5) * particles.magic_spread * particles.magic_speed,
-                -particles.magic_speed * (0.1 + math.random() * 0.4)
-            )
-        end
-        
-        -- Create particle
-        local particle
-        if kind == "fire" or kind == "ice" then
-            particle = animation.new(
-                screen_pos + offset,
-                velocity * 60,
-                particles.magic_life * (0.8 + math.random() * 0.4),
-                kind
-            )
-        elseif kind == "lightning" then
-            particle = LightningParticle.new(
-                screen_pos + offset,
-                velocity * 60,
-                particles.magic_life * (0.8 + math.random() * 0.4),
-                particles.magic_size * (0.8 + math.random() * 0.4),
-                math.random() * particles.lightning_delay_max
-            )
-        end
-        
+    elseif kind == "ice" then
+        spawned_particles = IceParticle.spawn(
+            pos,
+            particles.magic_count,
+            particles.magic_speed,
+            particles.magic_spread,
+            particles.magic_life
+        )
+    elseif kind == "lightning" then
+        spawned_particles = LightningParticle.spawn(
+            pos,
+            particles.magic_count,
+            particles.magic_speed,
+            particles.magic_size,
+            particles.magic_life,
+            particles.lightning_delay_max,
+            particles.lightning_drift_speed
+        )
+    end
+    
+    -- Add all spawned particles to active particles
+    for _, particle in ipairs(spawned_particles) do
         table.insert(particles.active, particle)
     end
 end

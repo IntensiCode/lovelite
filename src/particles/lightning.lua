@@ -147,4 +147,48 @@ function LightningParticle.get_color(t)
     end
 end
 
+---@param pos Vector2 The position to spawn particles at (in tile space)
+---@param count number Number of particles to spawn
+---@param speed number Base speed of particles
+---@param size number Base size of particles
+---@param life number Base lifetime of particles
+---@param delay_max number Maximum random delay for lightning strikes
+---@param drift_speed number How fast lightning particles drift horizontally
+---@return table Array of lightning particles
+function LightningParticle.spawn(pos, count, speed, size, life, delay_max, drift_speed)
+    -- Convert tile space position to screen space
+    local screen_pos = Vector2.new(
+        (pos.x - 1) * _game.map_manager.map.tilewidth,
+        (pos.y - 1) * _game.map_manager.map.tileheight
+    )
+    
+    local particles = {}
+    for i = 1, count do
+        -- Add some randomness to position
+        local offset = Vector2.new(
+            (math.random() - 0.5) * 4,  -- ±2 pixels
+            (math.random() - 0.5) * 4
+        )
+        
+        -- Lightning moves horizontally with slight random direction
+        local direction = math.random() < 0.5 and -1 or 1  -- Random left or right
+        local velocity = Vector2.new(
+            direction * drift_speed * (0.8 + math.random() * 0.4),
+            0  -- No vertical movement
+        )
+        
+        local particle = LightningParticle.new(
+            screen_pos + offset,
+            velocity * 60,
+            life * (0.8 + math.random() * 0.4),
+            size * (0.8 + math.random() * 0.4),
+            math.random() * delay_max
+        )
+        
+        table.insert(particles, particle)
+    end
+    
+    return particles
+end
+
 return LightningParticle 
