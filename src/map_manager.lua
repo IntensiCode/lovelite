@@ -58,7 +58,8 @@ function map_manager.find_player_tile_id()
             found_tile_id = gid
         end
     end
-    assert(found_tile_id ~= nil, "No player tile found in map! Make sure there is a tile with property 'kind' set to 'player'")
+    assert(found_tile_id ~= nil,
+        "No player tile found in map! Make sure there is a tile with property 'kind' set to 'player'")
     return found_tile_id
 end
 
@@ -68,8 +69,9 @@ end
 ---@field tile table
 ---@return TileLocation|nil
 function map_manager.find_tile_by_id(tile_id)
-    assert(map_manager.map ~= nil, "Map not loaded! This should never happen as we verify the map exists before calling this function.")
-    
+    assert(map_manager.map ~= nil,
+        "Map not loaded! This should never happen as we verify the map exists before calling this function.")
+
     local objects_layer = map_manager.get_objects_layer()
     for y = 1, objects_layer.height do
         for x = 1, objects_layer.width do
@@ -95,7 +97,7 @@ function map_manager.get_player_start_position()
 
     local location = map_manager.find_tile_by_id(map_manager.player_tile_id)
     assert(location ~= nil, "Player tile not found in map! This should never happen as we verified the tile exists.")
-    
+
     -- Add 0.5 to center the player in the tile
     return {
         pos = Vector2.new(location.x + 0.5, location.y + 0.5),
@@ -134,8 +136,8 @@ function map_manager.process_tiles()
                     lightning = props.lightning,
                     speed = props.speed,
                     initial = props.initial or false,
-                    cooldown = props.cooldown or 0,  -- Default to 0 if not specified
-                    tile = tile  -- Store tile data for rendering
+                    cooldown = props.cooldown or 0, -- Default to 0 if not specified
+                    tile = tile                     -- Store tile data for rendering
                 }
             elseif props["kind"] == "shield" then
                 map_manager.shields[gid] = {
@@ -158,13 +160,13 @@ function map_manager.load()
     -- Load the map
     map_manager.map = STI("assets/maps/level1.lua")
     print("Map loaded:", map_manager.map.width, "x", map_manager.map.height)
-    
+
     -- Find player tile ID in the Objects layer
     map_manager.player_tile_id = map_manager.find_player_tile_id()
-    
+
     -- Calculate tile center once
-    map_manager.tile_center = Vector2.new(map_manager.map.tilewidth/2, map_manager.map.tileheight/2)
-    
+    map_manager.tile_center = Vector2.new(map_manager.map.tilewidth / 2, map_manager.map.tileheight / 2)
+
     -- Calculate map size once
     map_manager.map_size = Vector2.new(
         map_manager.map.width * map_manager.map.tilewidth,
@@ -189,32 +191,32 @@ end
 function map_manager.is_walkable(x, y, buffer)
     -- Default buffer zone in tile space
     buffer = buffer or Vector2.new(0.4, 0.2)
-    
+
     -- Check all corners of the player's collision box
     local points_to_check = {
-        {x = x - buffer.x, y = y - buffer.y}, -- Top left
-        {x = x + buffer.x, y = y - buffer.y}, -- Top right
-        {x = x - buffer.x, y = y + buffer.y}, -- Bottom left
-        {x = x + buffer.x, y = y + buffer.y}  -- Bottom right
+        { x = x - buffer.x, y = y - buffer.y }, -- Top left
+        { x = x + buffer.x, y = y - buffer.y }, -- Top right
+        { x = x - buffer.x, y = y + buffer.y }, -- Bottom left
+        { x = x + buffer.x, y = y + buffer.y } -- Bottom right
     }
-    
+
     for _, point in ipairs(points_to_check) do
         local tile_x = math.floor(point.x)
         local tile_y = math.floor(point.y)
-        
+
         -- Check map boundaries
-        if tile_x < 1 or tile_x > map_manager.map.width or 
-           tile_y < 1 or tile_y > map_manager.map.height then
+        if tile_x < 1 or tile_x > map_manager.map.width or
+            tile_y < 1 or tile_y > map_manager.map.height then
             return false
         end
-        
+
         -- Get the tile at this position from the first layer
         local tile = map_manager.map.layers[1].data[tile_y][tile_x]
         if not tile or not map_manager.walkable_tiles[tile.gid] then
             return false
         end
     end
-    
+
     return true
 end
 
@@ -227,11 +229,11 @@ function map_manager.is_walkable_tile(x, y)
     if x < 1 or x > map_manager.map.width or y < 1 or y > map_manager.map.height then
         return false
     end
-    
+
     -- Get the tile at this position from the first layer
     local tile = map_manager.map.layers[1].data[y][x]
     if not tile then return false end
-    
+
     -- Check if the tile's gid is in our walkable_tiles table
     return map_manager.walkable_tiles[tile.gid] or false
 end
@@ -241,20 +243,30 @@ end
 function map_manager.draw_walls_above_player(player_pos)
     local player_x = math.floor(player_pos.x)
     local player_y = math.floor(player_pos.y)
-    
-    -- Check the two tiles below the player
-    for dx = 0, 1 do
-        local tile_x = player_x + dx
-        local tile_y = player_y + 1
-        
+
+    -- List of (dx,dy) offsets to check
+    local offsets = {
+        { dx = -1, dy = 0 },
+        { dx = -1, dy = 1 },
+        { dx = 0,  dy = 1 },
+        { dx = 1,  dy = 1 },
+        { dx = 1,  dy = 0 }, -- For the weapon
+        { dx = 1,  dy = -1 } -- For the weapon
+    }
+
+    -- Check each offset
+    for _, offset in ipairs(offsets) do
+        local tile_x = player_x + offset.dx
+        local tile_y = player_y + offset.dy
+
         -- If this is a non-walkable tile (wall), redraw it
         if not map_manager.is_walkable_tile(tile_x, tile_y) then
             local tile = map_manager.map.layers[1].data[tile_y][tile_x]
             if tile then
                 local tileset = map_manager.map.tilesets[tile.tileset]
                 -- Ensure pixel-perfect alignment by snapping to tile grid
-                local screen_x = (tile_x - 1) * map_manager.map.tilewidth
-                local screen_y = (tile_y - 1) * map_manager.map.tileheight
+                local screen_x = math.floor((tile_x - 1) * map_manager.map.tilewidth) - 0.5
+                local screen_y = math.floor((tile_y - 1) * map_manager.map.tileheight) - 0.5
                 love.graphics.draw(tileset.image, tile.quad, screen_x, screen_y)
             end
         end
@@ -265,4 +277,4 @@ end
 _game = _game or {}
 _game.map_manager = map_manager
 
-return map_manager 
+return map_manager
