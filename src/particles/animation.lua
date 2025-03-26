@@ -200,4 +200,54 @@ function AnimatedParticle:draw()
     love.graphics.pop()
 end
 
-return AnimatedParticle 
+---Get the color for an ice particle based on its lifetime
+---@param t number Normalized lifetime (0 to 1)
+---@return table color RGBA color array
+local function get_ice_color(t)
+    if t > 0.6 then
+        -- Dark blue to blue (0,0,0.8) -> (0,0.3,1)
+        local blend = (t - 0.6) / 0.4
+        return {
+            0,                   -- stays 0
+            0.3 * blend,        -- 0 -> 0.3
+            0.8 + 0.2 * blend,  -- 0.8 -> 1
+            1
+        }
+    elseif t > 0.2 then
+        -- Blue to turkish blue (0,0.3,1) -> (0,0.6,1)
+        local blend = (t - 0.2) / 0.4
+        return {
+            0,                   -- stays 0
+            0.3 + 0.3 * blend,  -- 0.3 -> 0.6
+            1,                   -- stays 1
+            1
+        }
+    else
+        -- Fade out turkish blue
+        return {0, 0.6, 1, t * 5}
+    end
+end
+
+---Get the color for a fire particle based on its lifetime
+---@param t number Normalized lifetime (0 to 1)
+---@return table color RGBA color array
+local function get_fire_color(t)
+    if t > 0.6 then
+        -- White to yellow (1,1,1) -> (1,1,0)
+        local yellow = (t - 0.6) / 0.4  -- 0 to 1
+        return {1, 1, yellow, 1}
+    elseif t > 0.2 then
+        -- Yellow to red (1,1,0) -> (1,0,0)
+        local red = (t - 0.2) / 0.4  -- 0 to 1
+        return {1, red, 0, 1}
+    else
+        -- Red to transparent (1,0,0) -> (1,0,0,0)
+        return {1, 0, 0, t * 5}  -- Fade out in last 20%
+    end
+end
+
+return {
+    new = AnimatedParticle.new,
+    get_ice_color = get_ice_color,
+    get_fire_color = get_fire_color
+} 

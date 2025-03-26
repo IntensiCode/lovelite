@@ -32,52 +32,6 @@ local particles = {
     lightning_drift_speed = 0.1  -- How fast lightning particles drift horizontally
 }
 
----Get the color for an ice particle based on its lifetime
----@param t number Normalized lifetime (0 to 1)
----@return table color RGBA color array
-local function get_ice_color(t)
-    if t > 0.6 then
-        -- Dark blue to blue (0,0,0.8) -> (0,0.3,1)
-        local blend = (t - 0.6) / 0.4
-        return {
-            0,                   -- stays 0
-            0.3 * blend,        -- 0 -> 0.3
-            0.8 + 0.2 * blend,  -- 0.8 -> 1
-            1
-        }
-    elseif t > 0.2 then
-        -- Blue to turkish blue (0,0.3,1) -> (0,0.6,1)
-        local blend = (t - 0.2) / 0.4
-        return {
-            0,                   -- stays 0
-            0.3 + 0.3 * blend,  -- 0.3 -> 0.6
-            1,                   -- stays 1
-            1
-        }
-    else
-        -- Fade out turkish blue
-        return {0, 0.6, 1, t * 5}
-    end
-end
-
----Get the color for a fire particle based on its lifetime
----@param t number Normalized lifetime (0 to 1)
----@return table color RGBA color array
-local function get_fire_color(t)
-    if t > 0.6 then
-        -- White to yellow (1,1,1) -> (1,1,0)
-        local yellow = (t - 0.6) / 0.4  -- 0 to 1
-        return {1, 1, yellow, 1}
-    elseif t > 0.2 then
-        -- Yellow to red (1,1,0) -> (1,0,0)
-        local red = (t - 0.2) / 0.4  -- 0 to 1
-        return {1, red, 0, 1}
-    else
-        -- Red to transparent (1,0,0) -> (1,0,0,0)
-        return {1, 0, 0, t * 5}  -- Fade out in last 20%
-    end
-end
-
 ---@param pos Vector2 The position to spawn particles at (in tile space)
 ---@param direction Vector2 The direction the particles should move in
 function particles.spawn_dust(pos, direction)
@@ -139,14 +93,6 @@ function particles.spawn_magic(pos, kind)
                 particles.magic_size * (0.8 + math.random() * 0.4),
                 math.random() * particles.lightning_delay_max
             )
-        elseif kind == "dust" then
-            -- Create dust particle for any other kind
-            particle = DustParticle.new(
-                screen_pos + offset,
-                velocity * 60,
-                particles.magic_life * (0.8 + math.random() * 0.4),
-                particles.magic_size * (0.8 + math.random() * 0.4)
-            )
         end
         
         table.insert(particles.active, particle)
@@ -183,9 +129,9 @@ function particles.update(dt)
         -- Update color based on particle kind
         local t = particle.life / particle.max_life
         if particle.kind == "ice" then
-            particle.color = get_ice_color(t)
+            particle.color = animation.get_ice_color(t)
         elseif particle.kind == "fire" then
-            particle.color = get_fire_color(t)
+            particle.color = animation.get_fire_color(t)
         elseif particle.kind == "lightning" then
             particle.color = LightningParticle.get_color(t)
         end
