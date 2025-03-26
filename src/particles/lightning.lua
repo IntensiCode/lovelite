@@ -47,12 +47,11 @@ end
 
 ---Update the lightning particle
 ---@param dt number Delta time in seconds
----@return boolean Whether the particle should be removed
 function LightningParticle:update(dt)
     -- Update delay
     if self.delay > 0 then
         self.delay = self.delay - dt
-        return false
+        return
     end
     
     -- Update position
@@ -60,9 +59,6 @@ function LightningParticle:update(dt)
     
     -- Update life
     self.life = self.life - dt
-    if self.life <= 0 then
-        return true
-    end
     
     -- Update jitter
     self.jitter_time = self.jitter_time + dt * 10  -- Speed of jitter movement
@@ -81,8 +77,6 @@ function LightningParticle:update(dt)
         math.sin(self.jitter_time * 0.5) * jitter_amount,
         math.cos(self.jitter_time * 0.5) * jitter_amount
     )
-    
-    return false
 end
 
 ---Draw a stylized lightning strike

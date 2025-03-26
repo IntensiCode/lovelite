@@ -119,16 +119,12 @@ end
 
 ---Update the animated particle
 ---@param dt number Delta time in seconds
----@return boolean Whether the particle should be removed
 function AnimatedParticle:update(dt)
     -- Update position
     self.pos = self.pos + self.velocity * dt
     
     -- Update life
     self.life = self.life - dt
-    if self.life <= 0 then
-        return true
-    end
     
     -- Update animation
     self.frame_timer = self.frame_timer + dt
@@ -145,8 +141,6 @@ function AnimatedParticle:update(dt)
     if self.rotation_speed ~= 0 then
         self.rotation = self.rotation + self.rotation_speed * dt
     end
-    
-    return false
 end
 
 ---Draw the animated particle

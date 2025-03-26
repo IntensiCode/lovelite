@@ -69,7 +69,10 @@ function particles.update(dt)
         end
 
         -- Update particle
-        if particle:update(dt) then
+        particle:update(dt)
+
+        -- Check if particle should be removed
+        if particle.life <= 0 then
             table.remove(particles.active, i)
             goto continue
         end
