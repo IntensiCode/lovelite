@@ -1,5 +1,5 @@
 local map_manager = require("src.map_manager")
-local constants = require("src.particles.constants")
+local constants = require("src.base.constants")
 
 ---@class Pathfinder
 ---@field grid table The jumper grid instance

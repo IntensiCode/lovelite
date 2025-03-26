@@ -1,10 +1,10 @@
 local LightningParticle = require("src.particles.lightning")
-local Vector2 = require("src.vector2")
+local Vector2 = require("src.base.vector2")
 local DustParticle = require("src.particles.dust")
 local FireParticle = require("src.particles.fire")
 local IceParticle = require("src.particles.ice")
-local events = require("src.events")
-local constants = require("src.particles.constants")
+local events = require("src.base.events")
+local constants = require("src.base.constants")
 
 ---@class Particle
 ---@field pos Vector2 The position of the particle

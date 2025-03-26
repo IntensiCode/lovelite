@@ -1,7 +1,7 @@
-local Vector2 = require("src.vector2")
-local events = require("src.events")
-local table_utils = require("src.table")
-local m = require("src.math")
+local Vector2 = require("src.base.vector2")
+local events = require("src.base.events")
+local table_utils = require("src.base.table")
+local m = require("src.base.math")
 
 ---@class Enemy
 ---@field pos Vector2

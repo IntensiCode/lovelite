@@ -1,4 +1,4 @@
-local Vector2 = require("src.vector2")
+local Vector2 = require("src.base.vector2")
 
 ---@class Camera
 ---@field canvas love.Canvas

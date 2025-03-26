@@ -1,6 +1,6 @@
 local STI = require("src/libraries/sti.init")
-local Vector2 = require("src.vector2")
-local table_utils = require("src.table")
+local Vector2 = require("src.base.vector2")
+local table_utils = require("src.base.table")
 
 -- Constants
 local OBJECTS_LAYER_ID = 2

@@ -1,5 +1,5 @@
-local Vector2 = require("src.vector2")
-local constants = require("src.particles.constants")
+local Vector2 = require("src.base.vector2")
+local constants = require("src.base.constants")
 
 ---@class LightningParticle
 ---@field pos Vector2

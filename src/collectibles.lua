@@ -1,4 +1,4 @@
-local Vector2 = require("src.vector2")
+local Vector2 = require("src.base.vector2")
 
 ---@class Collectible
 ---@field pos Vector2

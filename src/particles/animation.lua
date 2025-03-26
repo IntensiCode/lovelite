@@ -1,4 +1,4 @@
-local Vector2 = require("src.vector2")
+local Vector2 = require("src.base.vector2")
 
 ---@class Animation
 ---@field frames table Array of frame data

@@ -1,6 +1,6 @@
-local Vector2 = require("src.vector2")
+local Vector2 = require("src.base.vector2")
 local animation = require("src.particles.animation")
-local constants = require("src.particles.constants")
+local constants = require("src.base.constants")
 
 ---Get the color for an ice particle based on its lifetime
 ---@param t number Normalized lifetime (0 to 1)

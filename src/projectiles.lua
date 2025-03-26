@@ -1,5 +1,5 @@
-local Vector2 = require("src.vector2")
-local events = require("src.events")
+local Vector2 = require("src.base.vector2")
+local events = require("src.base.events")
 
 ---@class Projectile
 ---@field pos Vector2
