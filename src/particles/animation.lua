@@ -36,7 +36,7 @@ function AnimatedParticle.new(pos, velocity, life, kind, color_hook, anim)
     local particle = {
         pos = pos,
         velocity = velocity,
-        color = {1, 1, 1, 1},
+        color = { 1, 1, 1, 1 },
         life = life,
         max_life = life,
         kind = kind,
@@ -56,10 +56,10 @@ end
 function AnimatedParticle:update(dt)
     -- Update position
     self.pos = self.pos + self.velocity * dt
-    
+
     -- Update life
     self.life = self.life - dt
-    
+
     -- Update animation
     self.frame_timer = self.frame_timer + dt
     local anim = self.anim
@@ -70,7 +70,7 @@ function AnimatedParticle:update(dt)
             self.current_frame = 1
         end
     end
-    
+
     -- Update rotation
     if self.rotation_speed ~= 0 then
         self.rotation = self.rotation + self.rotation_speed * dt
@@ -86,16 +86,16 @@ function AnimatedParticle:draw()
     local anim = self.anim
     local frame = anim.frames[self.current_frame]
     local pixel_size = anim.pixel_size
-    
+
     -- Save current transform
     love.graphics.push()
-    
+
     -- Move to particle center and apply rotation
     love.graphics.translate(self.pos.x, self.pos.y)
     if self.rotation ~= 0 then
         love.graphics.rotate(self.rotation)
     end
-    
+
     -- Draw each pixel of the frame
     for y = 1, #frame do
         for x = 1, #frame[y] do
@@ -110,28 +110,28 @@ function AnimatedParticle:draw()
                     local blue_intensity = math.abs(math.sin(progress * math.pi))
                     -- Blend between white (1,1,1) and light blue (0.7,0.8,1)
                     love.graphics.setColor(
-                        0.7 + (1 - blue_intensity) * 0.3,  -- red
-                        0.8 + (1 - blue_intensity) * 0.2,  -- green
-                        1,                                  -- blue
-                        self.color[4]                      -- alpha
+                        0.7 + (1 - blue_intensity) * 0.3, -- red
+                        0.8 + (1 - blue_intensity) * 0.2, -- green
+                        1,                                -- blue
+                        self.color[4]                     -- alpha
                     )
                 end
-                
+
                 love.graphics.rectangle(
                     "fill",
-                    (x-1) * pixel_size - (#frame[y] * pixel_size)/2,
-                    (y-1) * pixel_size - (#frame * pixel_size)/2,
+                    (x - 1) * pixel_size - (#frame[y] * pixel_size) / 2,
+                    (y - 1) * pixel_size - (#frame * pixel_size) / 2,
                     pixel_size,
                     pixel_size
                 )
             end
         end
     end
-    
+
     -- Restore transform
     love.graphics.pop()
 end
 
 return {
     new = AnimatedParticle.new
-} 
+}
