@@ -20,18 +20,35 @@ function collectibles.load()
     for y = 1, objects_layer.height do
         for x = 1, objects_layer.width do
             local tile = _game.map_manager.get_objects_tile(x, y)
-            if tile and tile.properties and tile.properties["kind"] == "weapon" then
-                -- Get the weapon reference from map_manager
-                local weapon = _game.map_manager.weapons[tile.gid]
-                if weapon then
-                    -- Create a collectible for this weapon tile
-                    table.insert(collectibles.items, {
-                        pos = Vector2.new(x, y),
-                        tile = tile,  -- Store reference to the tile
-                        weapon = weapon,  -- Store reference to the weapon
-                        hover_offset = 0,
-                        hover_time = math.random() * 2 * math.pi
-                    })
+            if tile and tile.properties then
+                if tile.properties["kind"] == "weapon" then
+                    -- Get the weapon reference from map_manager
+                    local weapon = _game.map_manager.weapons[tile.gid]
+                    if weapon then
+                        -- Create a collectible for this weapon tile
+                        table.insert(collectibles.items, {
+                            pos = Vector2.new(x, y),
+                            tile = tile,  -- Store reference to the tile
+                            name = weapon.name,
+                            weapon = weapon,  -- Store reference to the weapon
+                            hover_offset = 0,
+                            hover_time = math.random() * 2 * math.pi
+                        })
+                    end
+                elseif tile.properties["kind"] == "shield" then
+                    -- Get the shield reference from map_manager
+                    local shield = _game.map_manager.shields[tile.gid]
+                    if shield then
+                        -- Create a collectible for this shield tile
+                        table.insert(collectibles.items, {
+                            pos = Vector2.new(x, y),
+                            name = shield.name,
+                            tile = tile,  -- Store reference to the tile
+                            shield = shield,  -- Store reference to the shield
+                            hover_offset = 0,
+                            hover_time = math.random() * 2 * math.pi
+                        })
+                    end
                 end
             end
         end
@@ -94,7 +111,7 @@ function collectibles.check_collection(pos, collect_range)
         if distance <= collect_range then
             -- Debug print collection
             print(string.format("\nCollectible collected at (%d, %d)! Weapon: %s", 
-                item.pos.x, item.pos.y, item.weapon.name))
+                item.pos.x, item.pos.y, item.name))
             
             -- Remove and return the collected item
             local collected = table.remove(collectibles.items, i)

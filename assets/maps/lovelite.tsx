@@ -167,12 +167,14 @@
   <properties>
    <property name="amount" type="int" value="25"/>
    <property name="kind" value="shield"/>
+   <property name="name" value="smallshield"/>
   </properties>
  </tile>
  <tile id="102">
   <properties>
    <property name="amount" type="int" value="50"/>
    <property name="kind" value="shield"/>
+   <property name="name" value="largeshield"/>
   </properties>
  </tile>
  <tile id="103">

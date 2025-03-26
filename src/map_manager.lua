@@ -12,8 +12,8 @@ local OBJECTS_LAYER_ID = 2
 ---@field map_size Vector2
 ---@field walkable_tiles table<number, boolean>
 ---@field enemies table<number, {hitpoints: number}>
----@field weapons table<number, {melee: number, speed: number, initial: boolean, tile: table, cooldown: number}>
----@field shields table<number, {amount: number}>
+---@field weapons table<number, {name: string, melee: number, speed: number, initial: boolean, tile: table, cooldown: number}>
+---@field shields table<number, {name: string, amount: number, tile: table}>
 ---@field chest_anim number[] Array of tile IDs for chest animation frames
 local map_manager = {
     -- map = nil,
@@ -141,6 +141,8 @@ function map_manager.process_tiles()
                 }
             elseif props["kind"] == "shield" then
                 map_manager.shields[gid] = {
+                    tile = tile,
+                    name = props.name,
                     amount = props["amount"] or 0
                 }
             elseif props["kind"] == "chest" then

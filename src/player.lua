@@ -7,6 +7,7 @@ local events = require("src.events")
 ---@field tile table
 ---@field speed number
 ---@field weapon table
+---@field shield table
 ---@field tile_size number
 ---@field last_direction Vector2
 ---@field cooldown number
@@ -16,6 +17,7 @@ local player = {
     tile = nil,
     speed = 5,  -- tiles per second
     weapon = nil,
+    shield = nil,
     tile_size = nil,
     last_direction = Vector2.new(1, 0),  -- Default facing right
     cooldown = 0  -- Initialize cooldown to 0
@@ -148,10 +150,15 @@ function player.update(dt)
     -- Check for collectibles
     local collected = _game.collectibles.check_collection(player.pos)
     if collected then
-        -- Store reference to the collected weapon
-        player.weapon = collected.weapon
-        -- Reset cooldown when switching weapons
-        player.cooldown = 0
+        if collected.weapon then
+            -- Store reference to the collected weapon
+            player.weapon = collected.weapon
+            -- Reset cooldown when switching weapons
+            player.cooldown = 0
+        elseif collected.shield then
+            -- Store reference to the collected shield
+            player.shield = collected.shield
+        end
     end
 end
 
@@ -179,6 +186,17 @@ function player.draw()
         )
     end
 
+    -- Draw active shield on the left side of player
+    if player.shield then
+        -- Draw shield centered on player position with rotation
+        love.graphics.draw(
+            _game.map_manager.map.tilesets[1].image,
+            player.shield.tile.quad,
+            screen_x - tile_width,
+            screen_y - tile_height/3
+        )
+    end
+
     -- Draw active weapon on top of player
     if player.weapon then
         -- Draw weapon centered on player position with rotation
@@ -203,6 +221,20 @@ function player.draw_ui()
             _game.map_manager.map.tilesets[1].image,
             player.weapon.tile.quad,
             padding,  -- x position
+            _game.camera.height - padding - tile_height  -- y position
+        )
+    end
+
+    -- Draw active shield in UI
+    if player.shield then
+        local padding = 8  -- Virtual pixels padding
+        local _, _, tile_width, tile_height = player.shield.tile.quad:getViewport()
+        
+        -- Draw at bottom left with padding, next to weapon
+        love.graphics.draw(
+            _game.map_manager.map.tilesets[1].image,
+            player.shield.tile.quad,
+            padding + tile_width + 8,  -- x position (after weapon)
             _game.camera.height - padding - tile_height  -- y position
         )
     end
