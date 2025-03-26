@@ -19,78 +19,7 @@ local Vector2 = require("src.vector2")
 ---@field rotation number
 ---@field rotation_speed number
 ---@field color_hook function Function to update particle color based on lifetime
-
--- Animation data
-local animations = {
-    fire = {
-        frames = {
-            {
-                {0,0,1,0,0},
-                {0,1,1,1,0},
-                {1,1,1,1,1},
-                {0,1,1,1,0},
-                {0,0,1,0,0}
-            },
-            {
-                {0,1,0,1,0},
-                {1,1,1,1,1},
-                {0,1,1,1,0},
-                {0,1,1,1,0},
-                {0,0,1,0,0}
-            },
-            {
-                {0,0,1,0,0},
-                {0,1,1,1,0},
-                {1,1,1,1,1},
-                {0,1,1,1,0},
-                {0,1,0,1,0}
-            },
-            {
-                {0,1,0,1,0},
-                {1,1,1,1,1},
-                {0,1,1,1,0},
-                {0,1,0,1,0},
-                {0,0,1,0,0}
-            }
-        },
-        frame_duration = 0.1,
-        pixel_size = 2  -- Size of each pixel in the animation
-    },
-    ice = {
-        frames = {
-            {   -- Frame 1: Basic crystal
-                {0,0,1,0,0},
-                {0,1,1,1,0},
-                {1,1,0,1,1},
-                {0,1,1,1,0},
-                {0,0,1,0,0}
-            },
-            {   -- Frame 2: Sparkle top-right
-                {0,0,1,1,0},
-                {0,1,1,1,0},
-                {1,1,0,1,1},
-                {0,1,1,1,0},
-                {0,0,1,0,0}
-            },
-            {   -- Frame 3: Sparkle bottom-left
-                {0,0,1,0,0},
-                {0,1,1,1,0},
-                {1,1,0,1,1},
-                {1,1,1,1,0},
-                {0,0,1,0,0}
-            },
-            {   -- Frame 4: Crystal slightly rotated
-                {0,1,1,0,0},
-                {0,1,1,1,0},
-                {1,1,0,1,1},
-                {0,1,1,1,0},
-                {0,0,1,1,0}
-            }
-        },
-        frame_duration = 0.15,  -- Slightly slower than fire
-        pixel_size = 2
-    }
-}
+---@field anim Animation The animation data for this particle
 
 local AnimatedParticle = {}
 AnimatedParticle.__index = AnimatedParticle
@@ -101,8 +30,9 @@ AnimatedParticle.__index = AnimatedParticle
 ---@param life number Lifetime in seconds
 ---@param kind string Type of particle ("fire" or "ice")
 ---@param color_hook function Function to update particle color based on lifetime
+---@param anim Animation The animation data for this particle
 ---@return AnimatedParticle
-function AnimatedParticle.new(pos, velocity, life, kind, color_hook)
+function AnimatedParticle.new(pos, velocity, life, kind, color_hook, anim)
     local particle = {
         pos = pos,
         velocity = velocity,
@@ -114,7 +44,8 @@ function AnimatedParticle.new(pos, velocity, life, kind, color_hook)
         frame_timer = 0,
         rotation = kind == "ice" and math.random() * math.pi * 2 or 0,
         rotation_speed = kind == "ice" and (math.random() - 0.5) * 2 or 0,
-        color_hook = color_hook
+        color_hook = color_hook,
+        anim = anim
     }
     setmetatable(particle, AnimatedParticle)
     return particle
@@ -131,7 +62,7 @@ function AnimatedParticle:update(dt)
     
     -- Update animation
     self.frame_timer = self.frame_timer + dt
-    local anim = animations[self.kind]
+    local anim = self.anim
     if self.frame_timer >= anim.frame_duration then
         self.frame_timer = self.frame_timer - anim.frame_duration
         self.current_frame = self.current_frame + 1
@@ -152,7 +83,7 @@ end
 
 ---Draw the animated particle
 function AnimatedParticle:draw()
-    local anim = animations[self.kind]
+    local anim = self.anim
     local frame = anim.frames[self.current_frame]
     local pixel_size = anim.pixel_size
     
