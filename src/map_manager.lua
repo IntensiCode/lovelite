@@ -2,22 +2,22 @@ local STI = require("src/libraries/sti.init")
 local Vector2 = require("src.vector2")
 
 -- Constants
-local TILE_SIZE = 32
 local OBJECTS_LAYER_ID = 2
 
 ---@class MapManager
----@field map table
----@field player_tile_id number
----@field tile_center Vector2
----@field map_size Vector2
----@field walkable_tiles table<number, boolean>
+---@field map table The STI map object
+---@field player_tile_id number The tile ID for the player
+---@field tile_center Vector2 The center position of the current tile
+---@field map_size Vector2 The size of the map in tiles
+---@field walkable_tiles table<number, boolean> Map of tile IDs to walkable status
 ---@field enemies table<number, {hitpoints: number}>
 ---@field weapons table<number, {name: string, melee: number, speed: number, initial: boolean, tile: table, cooldown: number}>
 ---@field shields table<number, {name: string, armorclass: number, hitpoints: number, max_hitpoints: number}>
 ---@field chest_anim number[] Array of tile IDs for chest animation frames
+---@field objects_layer table The layer containing game objects
 local map_manager = {
-    -- map = nil,
-    -- player_tile_id = nil,
+    map = nil,
+    player_tile_id = nil,
     tile_center = Vector2.new(0, 0),
     map_size = Vector2.new(0, 0),
     walkable_tiles = {},
@@ -292,6 +292,26 @@ function map_manager.draw_overlapping_tiles(tiles)
         local tileset = map_manager.map.tilesets[data.tile.tileset]
         love.graphics.draw(tileset.image, data.tile.quad, data.screen_x, data.screen_y)
     end
+end
+
+---Convert world coordinates to grid coordinates
+---@param world_pos Vector2 World position
+---@return number, number grid_x, grid_y Grid coordinates
+function map_manager.world_to_grid(world_pos)
+    local grid_x = math.floor(world_pos.x / map_manager.map.tilewidth)
+    local grid_y = math.floor(world_pos.y / map_manager.map.tileheight)
+    return grid_x, grid_y
+end
+
+---Convert grid coordinates to world coordinates
+---@param grid_x number Grid X coordinate
+---@param grid_y number Grid Y coordinate
+---@return Vector2 world_pos World position
+function map_manager.grid_to_world(grid_x, grid_y)
+    return Vector2.new(
+        grid_x * map_manager.map.tilewidth + map_manager.map.tilewidth / 2,
+        grid_y * map_manager.map.tileheight + map_manager.map.tileheight / 2
+    )
 end
 
 -- Add map manager to global game variable when loaded

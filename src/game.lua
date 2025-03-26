@@ -1,6 +1,7 @@
 -- Import modules
 local camera = require("src.camera")
 local map_manager = require("src.map_manager")
+local pathfinder = require("src.pathfinder")
 local debug = require("src.debug")
 local player = require("src.player")
 local projectiles = require("src.projectiles")
@@ -14,6 +15,7 @@ print("Game module loaded!")
 _game = {
     camera = camera,
     map_manager = map_manager,
+    pathfinder = pathfinder,
     debug = debug,
     player = player,
     projectiles = projectiles,
@@ -25,6 +27,7 @@ _game = {
 function _game.load()
     _game.camera.load()
     _game.map_manager.load()
+    _game.pathfinder.load()
     _game.player.load()
     _game.collectibles.load()
     _game.enemies.load()
