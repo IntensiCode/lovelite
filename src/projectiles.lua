@@ -26,6 +26,49 @@ function projectiles.spawn(pos, direction, weapon)
     })
 end
 
+---@param proj Projectile The projectile that hit something
+function projectiles.spawn_hit_particles(proj)
+    -- Determine particle kind from weapon properties
+    local kind = nil
+    if proj.weapon.lightning then
+        kind = "lightning"
+    elseif proj.weapon.ice then
+        kind = "ice"
+    elseif proj.weapon.fire then
+        kind = "fire"
+    elseif proj.weapon.melee then
+        kind = "dust"
+    end
+    assert(kind, "No kind found for projectile")
+    events.send("particles.spawn", {
+        pos = proj.pos,
+        kind = kind,
+        direction = proj.direction
+    })
+end
+
+---@param proj Projectile The projectile that hit the enemy
+---@param nearby_enemies Enemy[] Array of nearby enemies
+function projectiles.handle_enemy_hit(proj, nearby_enemies)
+    -- Find the closest enemy
+    local closest_enemy = nearby_enemies[1]
+    local min_distance = (closest_enemy.pos - proj.pos):length()
+    
+    for j = 2, #nearby_enemies do
+        local distance = (nearby_enemies[j].pos - proj.pos):length()
+        if distance < min_distance then
+            closest_enemy = nearby_enemies[j]
+            min_distance = distance
+        end
+    end
+
+    -- Hit the closest enemy
+    _game.enemies.on_hit(closest_enemy, proj)
+
+    -- Spawn hit particles
+    projectiles.spawn_hit_particles(proj)
+end
+
 function projectiles.update(dt)
     local i = 1
     while i <= #projectiles.active do
@@ -46,25 +89,14 @@ function projectiles.update(dt)
             proj.pos.y > _game.map_manager.map.height then
             table.remove(projectiles.active, i)
         else
+            -- Check for enemy collisions
+            local nearby_enemies = _game.enemies.find_enemies_close_to(proj.pos)
+            if #nearby_enemies > 0 then
+                projectiles.handle_enemy_hit(proj, nearby_enemies)
+                table.remove(projectiles.active, i)
             -- Check if projectile hit a non-walkable tile with a smaller buffer
-            if not _game.map_manager.is_walkable(proj.pos.x, proj.pos.y, Vector2.new(0.25, 0.1)) then
-                -- Determine particle kind from weapon properties
-                local kind = nil
-                if proj.weapon.lightning then
-                    kind = "lightning"
-                elseif proj.weapon.ice then
-                    kind = "ice"
-                elseif proj.weapon.fire then
-                    kind = "fire"
-                elseif proj.weapon.melee then
-                    kind = "dust"
-                end
-                assert(kind, "No kind found for projectile")
-                events.send("particles.spawn", {
-                    pos = proj.pos,
-                    kind = kind,
-                    direction = proj.direction
-                })
+            elseif not _game.map_manager.is_walkable(proj.pos.x, proj.pos.y, Vector2.new(0.25, 0.1)) then
+                projectiles.spawn_hit_particles(proj)
                 table.remove(projectiles.active, i)
             else
                 i = i + 1

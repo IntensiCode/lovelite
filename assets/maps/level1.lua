@@ -134,14 +134,19 @@ return {
         {
           id = 84,
           properties = {
+            ["armorclass"] = 0,
             ["behavior"] = "wizard",
             ["hitpoints"] = 50,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["resistance_fire"] = 10,
+            ["resistance_ice"] = 10,
+            ["resistance_lightning"] = 10
           }
         },
         {
           id = 85,
           properties = {
+            ["armorclass"] = 5,
             ["behavior"] = "bully",
             ["hitpoints"] = 75,
             ["kind"] = "enemy"
@@ -150,6 +155,7 @@ return {
         {
           id = 86,
           properties = {
+            ["armorclass"] = 5,
             ["behavior"] = "blacksmith",
             ["hitpoints"] = 75,
             ["kind"] = "enemy"
@@ -166,6 +172,7 @@ return {
         {
           id = 88,
           properties = {
+            ["armorclass"] = 5,
             ["behavior"] = "weirdo",
             ["hitpoints"] = 50,
             ["kind"] = "enemy"
@@ -202,6 +209,7 @@ return {
         {
           id = 96,
           properties = {
+            ["armorclass"] = 20,
             ["behavior"] = "knight",
             ["hitpoints"] = 100,
             ["kind"] = "enemy"
@@ -210,6 +218,7 @@ return {
         {
           id = 97,
           properties = {
+            ["armorclass"] = 20,
             ["behavior"] = "knight",
             ["hitpoints"] = 100,
             ["kind"] = "enemy"
@@ -218,6 +227,7 @@ return {
         {
           id = 98,
           properties = {
+            ["armorclass"] = 10,
             ["behavior"] = "youngknight",
             ["hitpoints"] = 75,
             ["kind"] = "enemy"
@@ -226,17 +236,25 @@ return {
         {
           id = 99,
           properties = {
+            ["armorclass"] = 0,
             ["behavior"] = "sorceress",
             ["hitpoints"] = 33,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["resistance_fire"] = 5,
+            ["resistance_ice"] = 5,
+            ["resistance_lightning"] = 5
           }
         },
         {
           id = 100,
           properties = {
+            ["armorclass"] = 0,
             ["behavior"] = "witch",
             ["hitpoints"] = 33,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["resistance_fire"] = 10,
+            ["resistance_ice"] = 10,
+            ["resistance_lightning"] = 10
           }
         },
         {
@@ -311,14 +329,19 @@ return {
         {
           id = 108,
           properties = {
+            ["armorclass"] = 0,
             ["behavior"] = "babyghost",
             ["hitpoints"] = 20,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["resistance_fire"] = 5,
+            ["resistance_ice"] = 5,
+            ["resistance_lightning"] = 5
           }
         },
         {
           id = 109,
           properties = {
+            ["armorclass"] = 0,
             ["behavior"] = "golem",
             ["hitpoints"] = 100,
             ["kind"] = "enemy"
@@ -327,6 +350,7 @@ return {
         {
           id = 110,
           properties = {
+            ["armorclass"] = 20,
             ["behavior"] = "crab",
             ["hitpoints"] = 50,
             ["kind"] = "enemy"
@@ -335,17 +359,25 @@ return {
         {
           id = 111,
           properties = {
+            ["armorclass"] = 0,
             ["behavior"] = "darkmage",
             ["hitpoints"] = 50,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["resistance_fire"] = 10,
+            ["resistance_ice"] = 10,
+            ["resistance_lightning"] = 10
           }
         },
         {
           id = 112,
           properties = {
+            ["armorclass"] = 0,
             ["behavior"] = "apprentice",
             ["hitpoints"] = 33,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["resistance_fire"] = 5,
+            ["resistance_ice"] = 5,
+            ["resistance_lightning"] = 5
           }
         },
         {
@@ -409,6 +441,7 @@ return {
         {
           id = 120,
           properties = {
+            ["armorclass"] = 0,
             ["behavior"] = "bat",
             ["hitpoints"] = 20,
             ["kind"] = "enemy"
@@ -417,14 +450,19 @@ return {
         {
           id = 121,
           properties = {
+            ["armorclass"] = 0,
             ["behavior"] = "ghost",
             ["hitpoints"] = 100,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["resistance_fire"] = 5,
+            ["resistance_ice"] = 5,
+            ["resistance_lightning"] = 5
           }
         },
         {
           id = 122,
           properties = {
+            ["armorclass"] = 20,
             ["behavior"] = "spider",
             ["hitpoints"] = 20,
             ["kind"] = "enemy"
@@ -433,6 +471,7 @@ return {
         {
           id = 123,
           properties = {
+            ["armorclass"] = 0,
             ["behavior"] = "rat",
             ["hitpoints"] = 20,
             ["kind"] = "enemy"
@@ -441,6 +480,7 @@ return {
         {
           id = 124,
           properties = {
+            ["armorclass"] = 0,
             ["behavior"] = "grayrat",
             ["hitpoints"] = 50,
             ["kind"] = "enemy"

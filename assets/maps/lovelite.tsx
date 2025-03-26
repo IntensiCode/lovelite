@@ -81,13 +81,18 @@
  </tile>
  <tile id="84">
   <properties>
+   <property name="armorclass" type="int" value="0"/>
    <property name="behavior" value="wizard"/>
    <property name="hitpoints" type="int" value="50"/>
    <property name="kind" value="enemy"/>
+   <property name="resistance_fire" type="int" value="10"/>
+   <property name="resistance_ice" type="int" value="10"/>
+   <property name="resistance_lightning" type="int" value="10"/>
   </properties>
  </tile>
  <tile id="85">
   <properties>
+   <property name="armorclass" type="int" value="5"/>
    <property name="behavior" value="bully"/>
    <property name="hitpoints" type="int" value="75"/>
    <property name="kind" value="enemy"/>
@@ -95,6 +100,7 @@
  </tile>
  <tile id="86">
   <properties>
+   <property name="armorclass" type="int" value="5"/>
    <property name="behavior" value="blacksmith"/>
    <property name="hitpoints" type="int" value="75"/>
    <property name="kind" value="enemy"/>
@@ -109,6 +115,7 @@
  </tile>
  <tile id="88">
   <properties>
+   <property name="armorclass" type="int" value="5"/>
    <property name="behavior" value="weirdo"/>
    <property name="hitpoints" type="int" value="50"/>
    <property name="kind" value="enemy"/>
@@ -140,6 +147,7 @@
  </tile>
  <tile id="96">
   <properties>
+   <property name="armorclass" type="int" value="20"/>
    <property name="behavior" value="knight"/>
    <property name="hitpoints" type="int" value="100"/>
    <property name="kind" value="enemy"/>
@@ -147,6 +155,7 @@
  </tile>
  <tile id="97">
   <properties>
+   <property name="armorclass" type="int" value="20"/>
    <property name="behavior" value="knight"/>
    <property name="hitpoints" type="int" value="100"/>
    <property name="kind" value="enemy"/>
@@ -154,6 +163,7 @@
  </tile>
  <tile id="98">
   <properties>
+   <property name="armorclass" type="int" value="10"/>
    <property name="behavior" value="youngknight"/>
    <property name="hitpoints" type="int" value="75"/>
    <property name="kind" value="enemy"/>
@@ -161,16 +171,24 @@
  </tile>
  <tile id="99">
   <properties>
+   <property name="armorclass" type="int" value="0"/>
    <property name="behavior" value="sorceress"/>
    <property name="hitpoints" type="int" value="33"/>
    <property name="kind" value="enemy"/>
+   <property name="resistance_fire" type="int" value="5"/>
+   <property name="resistance_ice" type="int" value="5"/>
+   <property name="resistance_lightning" type="int" value="5"/>
   </properties>
  </tile>
  <tile id="100">
   <properties>
+   <property name="armorclass" type="int" value="0"/>
    <property name="behavior" value="witch"/>
    <property name="hitpoints" type="int" value="33"/>
    <property name="kind" value="enemy"/>
+   <property name="resistance_fire" type="int" value="10"/>
+   <property name="resistance_ice" type="int" value="10"/>
+   <property name="resistance_lightning" type="int" value="10"/>
   </properties>
  </tile>
  <tile id="101">
@@ -237,13 +255,18 @@
  </tile>
  <tile id="108">
   <properties>
+   <property name="armorclass" type="int" value="0"/>
    <property name="behavior" value="babyghost"/>
    <property name="hitpoints" type="int" value="20"/>
    <property name="kind" value="enemy"/>
+   <property name="resistance_fire" type="int" value="5"/>
+   <property name="resistance_ice" type="int" value="5"/>
+   <property name="resistance_lightning" type="int" value="5"/>
   </properties>
  </tile>
  <tile id="109">
   <properties>
+   <property name="armorclass" type="int" value="0"/>
    <property name="behavior" value="golem"/>
    <property name="hitpoints" type="int" value="100"/>
    <property name="kind" value="enemy"/>
@@ -251,6 +274,7 @@
  </tile>
  <tile id="110">
   <properties>
+   <property name="armorclass" type="int" value="20"/>
    <property name="behavior" value="crab"/>
    <property name="hitpoints" type="int" value="50"/>
    <property name="kind" value="enemy"/>
@@ -258,16 +282,24 @@
  </tile>
  <tile id="111">
   <properties>
+   <property name="armorclass" type="int" value="0"/>
    <property name="behavior" value="darkmage"/>
    <property name="hitpoints" type="int" value="50"/>
    <property name="kind" value="enemy"/>
+   <property name="resistance_fire" type="int" value="10"/>
+   <property name="resistance_ice" type="int" value="10"/>
+   <property name="resistance_lightning" type="int" value="10"/>
   </properties>
  </tile>
  <tile id="112">
   <properties>
+   <property name="armorclass" type="int" value="0"/>
    <property name="behavior" value="apprentice"/>
    <property name="hitpoints" type="int" value="33"/>
    <property name="kind" value="enemy"/>
+   <property name="resistance_fire" type="int" value="5"/>
+   <property name="resistance_ice" type="int" value="5"/>
+   <property name="resistance_lightning" type="int" value="5"/>
   </properties>
  </tile>
  <tile id="113">
@@ -323,6 +355,7 @@
  </tile>
  <tile id="120">
   <properties>
+   <property name="armorclass" type="int" value="0"/>
    <property name="behavior" value="bat"/>
    <property name="hitpoints" type="int" value="20"/>
    <property name="kind" value="enemy"/>
@@ -330,13 +363,18 @@
  </tile>
  <tile id="121">
   <properties>
+   <property name="armorclass" type="int" value="0"/>
    <property name="behavior" value="ghost"/>
    <property name="hitpoints" type="int" value="100"/>
    <property name="kind" value="enemy"/>
+   <property name="resistance_fire" type="int" value="5"/>
+   <property name="resistance_ice" type="int" value="5"/>
+   <property name="resistance_lightning" type="int" value="5"/>
   </properties>
  </tile>
  <tile id="122">
   <properties>
+   <property name="armorclass" type="int" value="20"/>
    <property name="behavior" value="spider"/>
    <property name="hitpoints" type="int" value="20"/>
    <property name="kind" value="enemy"/>
@@ -344,6 +382,7 @@
  </tile>
  <tile id="123">
   <properties>
+   <property name="armorclass" type="int" value="0"/>
    <property name="behavior" value="rat"/>
    <property name="hitpoints" type="int" value="20"/>
    <property name="kind" value="enemy"/>
@@ -351,6 +390,7 @@
  </tile>
  <tile id="124">
   <properties>
+   <property name="armorclass" type="int" value="0"/>
    <property name="behavior" value="grayrat"/>
    <property name="hitpoints" type="int" value="50"/>
    <property name="kind" value="enemy"/>

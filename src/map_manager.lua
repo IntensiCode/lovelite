@@ -10,7 +10,7 @@ local OBJECTS_LAYER_ID = 2
 ---@field tile_center Vector2 The center position of the current tile
 ---@field map_size Vector2 The size of the map in tiles
 ---@field walkable_tiles table<number, boolean> Map of tile IDs to walkable status
----@field enemies table<number, {hitpoints: number}>
+---@field enemies table<number, {hitpoints: number, armorclass: number}>
 ---@field weapons table<number, {name: string, melee: number, speed: number, initial: boolean, tile: table, cooldown: number}>
 ---@field shields table<number, {name: string, armorclass: number, hitpoints: number, max_hitpoints: number}>
 ---@field chest_anim number[] Array of tile IDs for chest animation frames
@@ -125,7 +125,12 @@ function map_manager.process_tiles()
             -- print(string.format("  Has kind: %s", props["kind"]))
             if props["kind"] == "enemy" then
                 map_manager.enemies[gid] = {
-                    hitpoints = props["hitpoints"] or 100
+                    hitpoints = props["hitpoints"] or 100,
+                    armorclass = props["armorclass"] or 0,
+                    behavior = props["behavior"] or "unknown",
+                    resistance_fire = props["resistance_fire"] or 0,
+                    resistance_ice = props["resistance_ice"] or 0,
+                    resistance_lightning = props["resistance_lightning"] or 0
                 }
             elseif props["kind"] == "weapon" then
                 map_manager.weapons[gid] = {

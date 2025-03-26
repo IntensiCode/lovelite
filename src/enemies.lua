@@ -1,5 +1,6 @@
 local Vector2 = require("src.vector2")
 local events = require("src.events")
+local table_utils = require("src.table")
 
 ---@class Enemy
 ---@field pos Vector2
@@ -9,6 +10,7 @@ local events = require("src.events")
 ---@field hitpoints number The enemy's current health
 ---@field max_hitpoints number The enemy's maximum health
 ---@field is_dead boolean Whether the enemy is dead
+
 local enemies = {
     items = {}
 }
@@ -22,17 +24,15 @@ function enemies.load()
         for x = 1, objects_layer.width do
             local tile = _game.map_manager.get_objects_tile(x, y)
             if tile and tile.properties and tile.properties["kind"] == "enemy" then
-                local hitpoints = tile.properties["hitpoints"] or 50
-                -- Create an enemy for this tile
-                table.insert(enemies.items, {
-                    pos = Vector2.new(x, y),
-                    tile = tile, -- Store reference to the tile
-                    name = tile.properties["name"] or "Enemy",
-                    behavior = tile.properties["behavior"] or "unknown",
-                    hitpoints = hitpoints,
-                    max_hitpoints = hitpoints,
-                    is_dead = false
-                })
+                local enemy_data = _game.map_manager.enemies[tile.gid]
+                -- Clone the enemy data and add instance-specific properties
+                local enemy = table_utils.clone(enemy_data)
+                -- Add instance-specific properties
+                enemy.pos = Vector2.new(x, y)
+                enemy.tile = tile
+                enemy.name = tile.properties["name"] or "Enemy"
+                enemy.is_dead = false
+                table.insert(enemies.items, enemy)
             end
         end
     end
@@ -40,8 +40,9 @@ function enemies.load()
     -- Debug print enemies
     print("\nEnemies loaded:")
     for i, enemy in ipairs(enemies.items) do
-        print(string.format("  %d. %s at (%d, %d) with %d HP",
-            i, enemy.behavior, enemy.pos.x, enemy.pos.y, enemy.hitpoints))
+        print(string.format("  %d. %s at (%d, %d) with %d HP, AC %d, and resistances (F:%d I:%d L:%d)",
+            i, enemy.behavior, enemy.pos.x, enemy.pos.y, enemy.hitpoints, enemy.armorclass,
+            enemy.resistance_fire, enemy.resistance_ice, enemy.resistance_lightning))
     end
 end
 
@@ -104,6 +105,44 @@ function enemies.draw()
 
         -- Reset color
         love.graphics.setColor(1, 1, 1, 1)
+    end
+end
+
+---@param pos Vector2 The position to check around
+---@return Enemy[] Array of enemies within one tile distance
+function enemies.find_enemies_close_to(pos)
+    local nearby_enemies = {}
+    local max_distance = 0.5
+
+    -- Translate pos half tile to the left and up
+    pos = pos - Vector2.new(0.5, 0.5)
+
+    for _, enemy in ipairs(enemies.items) do
+        if not enemy.is_dead then
+            local distance = (enemy.pos - pos):length()
+            if distance <= max_distance then
+                table.insert(nearby_enemies, enemy)
+            end
+        end
+    end
+
+    return nearby_enemies
+end
+
+---@param enemy Enemy The enemy that was hit
+---@param projectile table The projectile that hit the enemy
+function enemies.on_hit(enemy, projectile)
+    if projectile.weapon.melee then
+        enemy.hitpoints = enemy.hitpoints - projectile.weapon.melee
+        if enemy.hitpoints <= 0 then
+            enemy.is_dead = true
+        end
+    elseif projectile.weapon.fire then
+        -- TODO: Implement fire damage
+    elseif projectile.weapon.ice then
+        -- TODO: Implement ice damage
+    elseif projectile.weapon.lightning then
+        -- TODO: Implement lightning damage
     end
 end
 
