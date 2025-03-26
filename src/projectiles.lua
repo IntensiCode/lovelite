@@ -53,7 +53,7 @@ function projectiles.handle_enemy_hit(proj, nearby_enemies)
     -- Find the closest enemy
     local closest_enemy = nearby_enemies[1]
     local min_distance = (closest_enemy.pos - proj.pos):length()
-    
+
     for j = 2, #nearby_enemies do
         local distance = (nearby_enemies[j].pos - proj.pos):length()
         if distance < min_distance then
@@ -94,7 +94,7 @@ function projectiles.update(dt)
             if #nearby_enemies > 0 then
                 projectiles.handle_enemy_hit(proj, nearby_enemies)
                 table.remove(projectiles.active, i)
-            -- Check if projectile hit a non-walkable tile with a smaller buffer
+                -- Check if projectile hit a non-walkable tile with a smaller buffer
             elseif not _game.map_manager.is_walkable(proj.pos.x, proj.pos.y, Vector2.new(0.25, 0.1)) then
                 projectiles.spawn_hit_particles(proj)
                 table.remove(projectiles.active, i)
@@ -125,11 +125,11 @@ function projectiles.draw()
                 proj.weapon.tile.quad,
                 screen_x,
                 screen_y,
-                proj.rotation,              -- Current rotation
-                1, 1,                       -- Scale
+                proj.rotation,                  -- Current rotation
+                1, 1,                           -- Scale
                 tile_width / 2, tile_height / 2 -- Center origin
             )
-        else 
+        else
             -- Draw a pulsing circle, with white border, pulsing bigger and smaller
             local pulse_radius = 3 + math.sin(proj.pulse_time * 2) * 2
             -- Look at the properties to determine the color

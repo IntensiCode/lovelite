@@ -52,42 +52,27 @@ function DustParticle:draw()
     love.graphics.circle("fill", self.pos.x, self.pos.y, self.size)
 end
 
----Spawn dust particles at a position
----@param pos Vector2 The position to spawn particles at (in tile space)
----@param direction Vector2 The direction the particles should move in
----@return DustParticle[] Array of created dust particles
+---Spawn a single dust particle at a position
+---@param pos Vector2 The position to spawn particle at (in screen space)
+---@param direction? Vector2 The direction the particle should move in
+---@return DustParticle The created dust particle
 function DustParticle.spawn(pos, direction)
-    -- Convert tile space position to screen space
-    local screen_pos = Vector2.new(
-        (pos.x - 1) * _game.map_manager.map.tilewidth,
-        (pos.y - 1) * _game.map_manager.map.tileheight
+    -- Add some randomness to position
+    local offset = Vector2.new(
+        (math.random() - 0.5) * 4,  -- ±2 pixels
+        (math.random() - 0.5) * 4
     )
     
-    -- Create multiple particles in a small area
-    local count = direction and 4 or 12
-    local particles = {}
-    for i = 1, count do 
-        -- Add some randomness to position
-        local offset = Vector2.new(
-            (math.random() - 0.5) * 4,  -- ±2 pixels
-            (math.random() - 0.5) * 4
-        )
-        
-        -- Calculate velocity based on direction
-        local velocity = DustParticle.calculate_velocity(direction)
+    -- Calculate velocity based on direction
+    local velocity = DustParticle.calculate_velocity(direction)
 
-        -- Create dust particle
-        local particle = DustParticle.new(
-            screen_pos + offset,
-            velocity * 60,  -- Scale up for dt multiplication
-            0.5 * (0.8 + math.random() * 0.4),  -- Life with variation
-            2  -- Size
-        )
-        
-        table.insert(particles, particle)
-    end
-    
-    return particles
+    -- Create dust particle
+    return DustParticle.new(
+        pos + offset,
+        velocity * 60,  -- Scale up for dt multiplication
+        0.5 * (0.8 + math.random() * 0.4),  -- Life with variation
+        2  -- Size
+    )
 end
 
 ---Calculate velocity for a dust particle

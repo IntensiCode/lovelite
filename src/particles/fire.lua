@@ -11,40 +11,27 @@ end
 
 local FireParticle = {
     spawn = function(pos)
-        -- Convert tile space position to screen space
-        local screen_pos = Vector2.new(
-            (pos.x - 1) * _game.map_manager.map.tilewidth,
-            (pos.y - 1) * _game.map_manager.map.tileheight
+        -- Add some randomness to position
+        local offset = Vector2.new(
+            (math.random() - 0.5) * 4, -- ±2 pixels
+            (math.random() - 0.5) * 4
         )
 
-        local particles = {}
-        for i = 1, constants.magic_count do
-            -- Add some randomness to position
-            local offset = Vector2.new(
-                (math.random() - 0.5) * 4, -- ±2 pixels
-                (math.random() - 0.5) * 4
-            )
+        -- Create velocity with upward movement and spread
+        local velocity = Vector2.new(
+            (math.random() - 0.5) * constants.magic_spread * constants.magic_speed,
+            -constants.magic_speed * (0.1 + math.random() * 0.4)
+        )
 
-            -- Create velocity with upward movement and spread
-            local velocity = Vector2.new(
-                (math.random() - 0.5) * constants.magic_spread * constants.magic_speed,
-                -constants.magic_speed * (0.1 + math.random() * 0.4)
-            )
-
-            -- Create particle with color hook and animation data
-            local particle = animation.new(
-                screen_pos + offset,
-                velocity * 60,
-                constants.magic_life * (0.8 + math.random() * 0.4),
-                "fire",
-                get_fire_color,
-                constants.fire_animation
-            )
-
-            table.insert(particles, particle)
-        end
-
-        return particles
+        -- Create particle with color hook and animation data
+        return animation.new(
+            pos + offset,
+            velocity * 60,
+            constants.magic_life * (0.8 + math.random() * 0.4),
+            "fire",
+            get_fire_color,
+            constants.fire_animation
+        )
     end
 }
 

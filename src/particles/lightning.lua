@@ -151,42 +151,29 @@ function LightningParticle.get_color(t)
     end
 end
 
----@param pos Vector2 The position to spawn particles at (in tile space)
----@return table Array of lightning particles
+---@param pos Vector2 The position to spawn particle at (in screen space)
+---@return LightningParticle The created lightning particle
 function LightningParticle.spawn(pos)
-    -- Convert tile space position to screen space
-    local screen_pos = Vector2.new(
-        (pos.x - 1) * _game.map_manager.map.tilewidth,
-        (pos.y - 1) * _game.map_manager.map.tileheight
+    -- Add some randomness to position
+    local offset = Vector2.new(
+        (math.random() - 0.5) * 4,  -- ±2 pixels
+        (math.random() - 0.5) * 4
     )
     
-    local particles = {}
-    for i = 1, constants.magic_count do
-        -- Add some randomness to position
-        local offset = Vector2.new(
-            (math.random() - 0.5) * 4,  -- ±2 pixels
-            (math.random() - 0.5) * 4
-        )
-        
-        -- Lightning moves horizontally with slight random direction
-        local direction = math.random() < 0.5 and -1 or 1  -- Random left or right
-        local velocity = Vector2.new(
-            direction * constants.lightning_drift_speed * (0.8 + math.random() * 0.4),
-            0  -- No vertical movement
-        )
-        
-        local particle = LightningParticle.new(
-            screen_pos + offset,
-            velocity * 60,
-            constants.magic_life * (0.8 + math.random() * 0.4),
-            constants.magic_size * (0.8 + math.random() * 0.4),
-            math.random() * constants.lightning_delay_max
-        )
-        
-        table.insert(particles, particle)
-    end
+    -- Lightning moves horizontally with slight random direction
+    local direction = math.random() < 0.5 and -1 or 1  -- Random left or right
+    local velocity = Vector2.new(
+        direction * constants.lightning_drift_speed * (0.8 + math.random() * 0.4),
+        0  -- No vertical movement
+    )
     
-    return particles
+    return LightningParticle.new(
+        pos + offset,
+        velocity * 60,
+        constants.magic_life * (0.8 + math.random() * 0.4),
+        constants.magic_size * (0.8 + math.random() * 0.4),
+        math.random() * constants.lightning_delay_max
+    )
 end
 
 return LightningParticle 

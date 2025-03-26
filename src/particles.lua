@@ -1,9 +1,10 @@
-local animation = require("src.particles.animation")
 local LightningParticle = require("src.particles.lightning")
+local Vector2 = require("src.vector2")
 local DustParticle = require("src.particles.dust")
 local FireParticle = require("src.particles.fire")
 local IceParticle = require("src.particles.ice")
 local events = require("src.events")
+local constants = require("src.particles.constants")
 
 ---@class Particle
 ---@field pos Vector2 The position of the particle
@@ -14,27 +15,35 @@ local events = require("src.events")
 ---@field delay number Delay before particle becomes visible (for lightning)
 
 local particles = {
-    active = {}  -- Array of active particles
+    active = {} -- Array of active particles
 }
 
----@param pos Vector2 The position to spawn particles at (in tile space)
----@param kind string The kind of particle effect ("fire", "ice", "lightning", "dust")
----@param direction? Vector2 Optional direction for dust particles
-function particles.spawn(pos, kind, direction)
-    local spawned_particles = {}
+---@param data table The particle spawn data
+---@param data.pos Vector2 The position to spawn particles at (in tile space)
+---@param data.kind string The kind of particle effect ("fire", "ice", "lightning", "dust")
+---@param data.direction? Vector2 Optional direction for dust particles
+---@param data.count? number Optional count of particles to spawn (defaults to magic_count or dust_particle_count)
+function particles.spawn(data)
+    -- Convert tile space position to screen space
+    local screen_pos = Vector2.new(
+        (data.pos.x - 1) * _game.map_manager.map.tilewidth,
+        (data.pos.y - 1) * _game.map_manager.map.tileheight
+    )
 
-    if kind == "fire" then
-        spawned_particles = FireParticle.spawn(pos)
-    elseif kind == "ice" then
-        spawned_particles = IceParticle.spawn(pos)
-    elseif kind == "lightning" then
-        spawned_particles = LightningParticle.spawn(pos)
-    elseif kind == "dust" then
-        spawned_particles = DustParticle.spawn(pos, direction)
-    end
-
-    -- Add all spawned particles to active particles
-    for _, particle in ipairs(spawned_particles) do
+    -- Use provided count or default based on particle type
+    local count = data.count or (data.kind == "dust" and constants.dust_particle_count or constants.magic_count)
+    for i = 1, count do
+        local particle
+        if data.kind == "fire" then
+            particle = FireParticle.spawn(screen_pos)
+        elseif data.kind == "ice" then
+            particle = IceParticle.spawn(screen_pos)
+        elseif data.kind == "lightning" then
+            particle = LightningParticle.spawn(screen_pos)
+        elseif data.kind == "dust" then
+            particle = DustParticle.spawn(screen_pos, data.direction)
+        end
+        assert(particle, "Failed to spawn particle")
         table.insert(particles.active, particle)
     end
 end
@@ -81,7 +90,7 @@ _game.particles = particles
 
 -- Register for particle spawn events
 events.register("particles.spawn", function(data)
-    particles.spawn(data.pos, data.kind, data.direction)
+    particles.spawn(data)
 end)
 
 return particles
