@@ -63,25 +63,19 @@ function DustParticle.spawn(pos, direction)
         (pos.y - 1) * _game.map_manager.map.tileheight
     )
     
-    local particles = {}
     -- Create multiple particles in a small area
-    for i = 1, 4 do  -- 4 dust particles
+    local count = direction and 4 or 12
+    local particles = {}
+    for i = 1, count do 
         -- Add some randomness to position
         local offset = Vector2.new(
             (math.random() - 0.5) * 4,  -- ±2 pixels
             (math.random() - 0.5) * 4
         )
         
-        -- Use direction as base velocity with random spread
-        local spread = math.pi / 4  -- 45 degree spread
-        local angle = math.atan2(direction.y, direction.x)
-        local particle_angle = angle + (math.random() - 0.5) * spread
-        local speed = direction:length() * (0.5 + math.random() * 0.5)  -- 50-100% of base speed
-        local velocity = Vector2.new(
-            math.cos(particle_angle) * speed,
-            math.sin(particle_angle) * speed
-        )
-        
+        -- Calculate velocity based on direction
+        local velocity = DustParticle.calculate_velocity(direction)
+
         -- Create dust particle
         local particle = DustParticle.new(
             screen_pos + offset,
@@ -94,6 +88,31 @@ function DustParticle.spawn(pos, direction)
     end
     
     return particles
+end
+
+---Calculate velocity for a dust particle
+---@param direction Vector2|nil The direction the particle should move in, or nil for random direction
+---@return Vector2 The calculated velocity vector
+function DustParticle.calculate_velocity(direction)
+    if direction then
+        -- Use direction as base velocity with random spread
+        local spread = math.pi / 4  -- 45 degree spread
+        local angle = math.atan2(direction.y, direction.x)
+        local particle_angle = angle + (math.random() - 0.5) * spread
+        local speed = direction:length() * (0.5 + math.random() * 0.5)  -- 50-100% of base speed
+        return Vector2.new(
+            math.cos(particle_angle) * speed,
+            math.sin(particle_angle) * speed
+        )
+    else
+        -- Random direction for circular dust cloud
+        local angle = math.random() * math.pi * 2  -- Random angle between 0 and 2π
+        local speed = (0.1 + math.random() * 0.4)  -- Random speed between 1 and 2
+        return Vector2.new(
+            math.cos(angle) * speed,
+            math.sin(angle) * speed
+        )
+    end
 end
 
 return DustParticle 

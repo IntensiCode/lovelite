@@ -65,8 +65,7 @@ function enemies.update(dt)
             -- Spawn dust particles
             events.send("particles.spawn", {
                 pos = enemy.pos + Vector2.new(0.5, 0.5),
-                kind = "dust",
-                direction = Vector2.new(0, -0.5) -- Upward direction
+                kind = "dust"
             })
 
             -- Remove the enemy

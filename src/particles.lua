@@ -30,7 +30,6 @@ function particles.spawn(pos, kind, direction)
     elseif kind == "lightning" then
         spawned_particles = LightningParticle.spawn(pos)
     elseif kind == "dust" then
-        assert(direction, "Direction is required for dust particles")
         spawned_particles = DustParticle.spawn(pos, direction)
     end
 
