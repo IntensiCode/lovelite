@@ -23,16 +23,16 @@ local constants = require("src.particles.constants")
 ---@field flip_x boolean Whether to flip the x-axis for lightning strikes
 
 local particles = {
-    active = {},  -- Array of active particles
+    active = {},                -- Array of active particles
     -- Magic settings
-    magic_count = 6,  -- Number of particles per magic effect
-    magic_speed = 1,  -- Base upward speed for magic particles
-    magic_size = 3,   -- Size of magic particles in pixels
-    magic_life = 0.8,  -- Life in seconds for magic particles
-    magic_spread = 0.3,  -- Horizontal spread for magic particles
+    magic_count = 6,            -- Number of particles per magic effect
+    magic_speed = 1,            -- Base upward speed for magic particles
+    magic_size = 3,             -- Size of magic particles in pixels
+    magic_life = 0.8,           -- Life in seconds for magic particles
+    magic_spread = 0.3,         -- Horizontal spread for magic particles
     -- Lightning specific settings
     lightning_delay_max = 0.1,  -- Maximum random delay for lightning strikes
-    lightning_drift_speed = 0.1  -- How fast lightning particles drift horizontally
+    lightning_drift_speed = 0.1 -- How fast lightning particles drift horizontally
 }
 
 ---@param pos Vector2 The position to spawn particles at (in tile space)
@@ -40,7 +40,7 @@ local particles = {
 ---@param direction? Vector2 Optional direction for dust particles
 function particles.spawn(pos, kind, direction)
     local spawned_particles = {}
-    
+
     if kind == "fire" then
         spawned_particles = FireParticle.spawn(pos)
     elseif kind == "ice" then
@@ -51,7 +51,7 @@ function particles.spawn(pos, kind, direction)
         assert(direction, "Direction is required for dust particles")
         spawned_particles = DustParticle.spawn(pos, direction)
     end
-    
+
     -- Add all spawned particles to active particles
     for _, particle in ipairs(spawned_particles) do
         table.insert(particles.active, particle)
@@ -62,29 +62,18 @@ function particles.update(dt)
     local i = 1
     while i <= #particles.active do
         local particle = particles.active[i]
-        
+
         -- Update delay
         if particle.delay and particle.delay > 0 then
             particle.delay = particle.delay - dt
         end
-        
+
         -- Update particle
-        if particle.update then
-            -- Use particle's own update method (for AnimatedParticle, LightningParticle, or DustParticle)
-            if particle:update(dt) then
-                table.remove(particles.active, i)
-                goto continue
-            end
-        else
-            -- Basic particle update
-            particle.pos = particle.pos + particle.velocity -- * dt
-            particle.life = particle.life - dt
-            if particle.life <= 0 then
-                table.remove(particles.active, i)
-                goto continue
-            end
+        if particle:update(dt) then
+            table.remove(particles.active, i)
+            goto continue
         end
-        
+
         -- Update color based on particle kind
         local t = particle.life / particle.max_life
         if particle.kind == "ice" then
@@ -94,7 +83,7 @@ function particles.update(dt)
         elseif particle.kind == "lightning" then
             particle.color = LightningParticle.get_color(t)
         end
-        
+
         i = i + 1
         ::continue::
     end
@@ -107,13 +96,7 @@ function particles.draw()
         end
 
         love.graphics.setColor(unpack(particle.color))
-        if particle.draw then
-            -- Use particle's own draw method (for AnimatedParticle, LightningParticle, or DustParticle)
-            particle:draw()
-        else
-            local size = particle.size or 3
-            love.graphics.circle("fill", particle.pos.x, particle.pos.y, size)
-        end
+        particle:draw()
     end
     love.graphics.setColor(1, 1, 1, 1)
 end
@@ -127,4 +110,4 @@ events.register("particles.spawn", function(data)
     particles.spawn(data.pos, data.kind, data.direction)
 end)
 
-return particles 
+return particles
