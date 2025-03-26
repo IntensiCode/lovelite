@@ -105,16 +105,32 @@ function AnimatedParticle:draw()
                     local yellow = math.max(0, 1 - (y / #frame))
                     love.graphics.setColor(1, yellow, 0, self.color[4])
                 elseif self.kind == "ice" then
-                    -- Ice gradient: white-blue-white cycle
+                    -- Ice gradient: checkerboard pattern between turkish blue and whitish blue
                     local progress = (self.life / self.max_life + self.frame_timer / anim.frame_duration) * 2
                     local blue_intensity = math.abs(math.sin(progress * math.pi))
-                    -- Blend between white (1,1,1) and light blue (0.7,0.8,1)
-                    love.graphics.setColor(
-                        0.7 + (1 - blue_intensity) * 0.3, -- red
-                        0.8 + (1 - blue_intensity) * 0.2, -- green
-                        1,                                -- blue
-                        self.color[4]                     -- alpha
-                    )
+                    
+                    -- Get screen position for checkerboard pattern
+                    local screen_x = math.floor(self.pos.x)
+                    local screen_y = math.floor(self.pos.y)
+                    local is_checker = (screen_x + screen_y) % 2 == 0
+                    
+                    if is_checker then
+                        -- Turkish blue (0.2, 0.6, 0.8)
+                        love.graphics.setColor(
+                            0.2 + (1 - blue_intensity) * 0.1,  -- red
+                            0.6 + (1 - blue_intensity) * 0.2,  -- green
+                            0.8 + (1 - blue_intensity) * 0.2,  -- blue
+                            1                                   -- alpha
+                        )
+                    else
+                        -- Whitish blue (0.7, 0.8, 1)
+                        love.graphics.setColor(
+                            0.7 + (1 - blue_intensity) * 0.3,  -- red
+                            0.8 + (1 - blue_intensity) * 0.2,  -- green
+                            1,                                 -- blue
+                            1                                  -- alpha
+                        )
+                    end
                 end
 
                 love.graphics.rectangle(

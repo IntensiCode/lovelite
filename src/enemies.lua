@@ -11,6 +11,7 @@ local m = require("src.math")
 ---@field hitpoints number The enemy's current health
 ---@field max_hitpoints number The enemy's maximum health
 ---@field is_dead boolean Whether the enemy is dead
+---@field stun_time number Stun time in seconds
 
 local enemies = {
     items = {}
@@ -52,14 +53,6 @@ function enemies.update(dt)
     for i = #enemies.items, 1, -1 do
         local enemy = enemies.items[i]
 
-        -- if enemy.stun_time and enemy.stun_time > 0 then
-        --     enemy.stun_time = enemy.stun_time - dt
-        --     if enemy.stun_time <= 0 then
-        --         enemy.stun_time = nil
-        --     end
-        --     goto continue
-        -- end
-
         -- Check if enemy is dead
         if enemy.is_dead then
             -- Spawn dust particles
@@ -74,6 +67,23 @@ function enemies.update(dt)
             goto continue
         end
 
+        -- Handle stun time
+        if enemy.stun_time and enemy.stun_time > 0 then
+            enemy.stun_time = enemy.stun_time - dt
+            if enemy.stun_time <= 0 then
+                enemy.stun_time = nil
+            end
+            -- Spawn ice particles to indicate stun, randomly
+            if math.random() < 0.025 then
+                events.send("particles.spawn", {
+                    pos = enemy.pos + Vector2.new(0.5, 0.5),
+                    kind = "ice",
+                    count = 1
+                })
+            end
+            goto continue
+        end
+
         -- TODO Call enemy behavior
 
         ::continue::
@@ -83,14 +93,17 @@ end
 function enemies.draw()
     for _, enemy in ipairs(enemies.items) do
         -- Convert tile position to screen position
-        local screen_x = ((enemy.pos.x - 1) * _game.map_manager.map.tilewidth)
-        local screen_y = ((enemy.pos.y - 1) * _game.map_manager.map.tileheight)
+        local tile_size = _game.map_manager.map.tilewidth
+        local screen_x = ((enemy.pos.x - 1) * tile_size)
+        local screen_y = ((enemy.pos.y - 1) * tile_size)
 
-        -- If enemy is stunned, draw a bluish tint
+        -- Set color to blue tint if stunned, white otherwise
         if enemy.stun_time and enemy.stun_time > 0 then
-            -- Set tint alpha from 1 to 0 based on stun_time
-            local tint_alpha = 1 - (enemy.stun_time / 1)
-            love.graphics.setColor(0.5, 0.5, 1, tint_alpha)
+            love.graphics.setBlendMode("alpha", "premultiplied")
+            love.graphics.setColor(0.6, 0.6, 1.0, 1) -- Blueish tint
+        else
+            love.graphics.setBlendMode("alpha")
+            love.graphics.setColor(1, 1, 1, 1) -- Normal color
         end
 
         -- Draw enemy centered
@@ -103,8 +116,8 @@ function enemies.draw()
             1, 1
         )
 
-        -- Reset color
-        love.graphics.setColor(1, 1, 1, 1)
+        -- Reset blend mode
+        love.graphics.setBlendMode("alpha")
     end
 end
 
@@ -112,7 +125,7 @@ end
 ---@return Enemy[] Array of enemies within one tile distance
 function enemies.find_enemies_close_to(pos)
     local nearby_enemies = {}
-    local max_distance = 0.5
+    local max_distance = 0.8
 
     -- Translate pos half tile to the left and up
     pos = pos - Vector2.new(0.5, 0.5)
@@ -171,6 +184,9 @@ function enemies.on_hit(enemy, projectile)
         if enemy.hitpoints <= 0 then
             enemy.is_dead = true
         end
+
+        -- Add stun time based on damage
+        enemy.stun_time = (enemy.stun_time or 0) + (actual_damage / 10)
     elseif projectile.weapon.lightning then
         -- Get lightning resistance (default to 0 if nil) and clamp between 0 and 100
         local lightning_resistance = enemy.resistance_lightning or 0
