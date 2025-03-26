@@ -1,1 +1,9 @@
- 
+# Path Rules
+
+## Library Paths
+- STI library path must be `src/libraries/sti.init`
+- This is the correct path that was previously fixed and should not be changed to `libs.sti` or any other variation
+
+## Map Paths
+- Map file path must be `assets/maps/level1.lua`
+- This is the correct path that was previously fixed and should not be changed to `test_map.lua` or any other variation 
