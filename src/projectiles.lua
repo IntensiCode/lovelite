@@ -1,4 +1,5 @@
 local Vector2 = require("src.vector2")
+local events = require("src.events")
 
 ---@class Projectile
 ---@field pos Vector2
@@ -122,5 +123,10 @@ function projectiles.draw()
         end
     end
 end
+
+-- Register for projectile spawn events (moved to end of file)
+events.register("projectile.spawn", function(data)
+    projectiles.spawn(data.pos, data.direction, data.weapon)
+end)
 
 return projectiles 

@@ -1,4 +1,5 @@
 local Vector2 = require("src.vector2")
+local events = require("src.events")
 
 ---@class Player
 ---@field pos Vector2
@@ -108,13 +109,13 @@ function player.handle_shooting()
         return
     end
 
-    -- Set cooldown and spawn projectile
+    -- Set cooldown and spawn projectile via event
     player.cooldown = player.weapon.cooldown
-    _game.projectiles.spawn(
-        player.pos,
-        player.last_direction,
-        player.weapon
-    )
+    events.send("projectile.spawn", {
+        pos = player.pos,
+        direction = player.last_direction,
+        weapon = player.weapon
+    })
 end
 
 ---@param dt number Delta time in seconds
