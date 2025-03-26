@@ -1,5 +1,6 @@
 local Vector2 = require("src.vector2")
 local animation = require("src.particles.animation")
+local LightningParticle = require("src.particles.lightning")
 
 ---@class Particle
 ---@field pos Vector2
@@ -62,25 +63,6 @@ local function get_ice_color(t)
     end
 end
 
----Get the color for a lightning particle based on its lifetime
----@param t number Normalized lifetime (0 to 1)
----@return table color RGBA color array
-local function get_lightning_color(t)
-    if t > 0.75 then
-        -- White (1,1,1)
-        return {1, 1, 1, 1}
-    elseif t > 0.5 then
-        -- Yellow (1,1,0)
-        return {1, 1, 0, 1}
-    elseif t > 0.25 then
-        -- White again (1,1,1)
-        return {1, 1, 1, 1}
-    else
-        -- Black to transparent (0,0,0) -> (0,0,0,0)
-        return {0, 0, 0, t * 4}
-    end
-end
-
 ---Get the color for a fire particle based on its lifetime
 ---@param t number Normalized lifetime (0 to 1)
 ---@return table color RGBA color array
@@ -97,30 +79,6 @@ local function get_fire_color(t)
         -- Red to transparent (1,0,0) -> (1,0,0,0)
         return {1, 0, 0, t * 5}  -- Fade out in last 20%
     end
-end
-
----Draw a stylized lightning strike
----@param x number Center x position
----@param y number Center y position
----@param size number Base size of the lightning
----@param jitter1 Vector2 Offset for first zag point
----@param jitter2 Vector2 Offset for middle point
----@param jitter3 Vector2 Offset for second zag point
----@param scale_y number Vertical scale factor (0 to 1)
----@param flip_x boolean Whether to flip the x-axis pattern
-local function draw_lightning_strike(x, y, size, jitter1, jitter2, jitter3, scale_y, flip_x)
-    -- Draw a vertical zigzag pattern with jittered points
-    -- Scale the zigzag width progressively larger towards the bottom
-    -- Apply vertical scaling to make it grow
-    love.graphics.setLineWidth(1)
-    local x_mult = flip_x and -1 or 1  -- Multiplier for x coordinates
-    love.graphics.line(
-        x, y,     -- Start point (at center)
-        x + x_mult * (-size/6) + jitter1.x, y + (-size/4 + jitter1.y) * scale_y,  -- First zag (small)
-        x + jitter2.x, y + jitter2.y * scale_y,         -- Middle point
-        x + x_mult * (size/3) + jitter3.x, y + (size/2 + jitter3.y) * scale_y,   -- Second zag (larger)
-        x, y + size * scale_y       -- End point (scaled by growth)
-    )
 end
 
 ---@param pos Vector2 The position to spawn particles at (in tile space)
@@ -206,8 +164,16 @@ function particles.spawn_magic(pos, kind)
                 particles.magic_life * (0.8 + math.random() * 0.4),
                 kind
             )
+        elseif kind == "lightning" then
+            particle = LightningParticle.new(
+                screen_pos + offset,
+                velocity * 60,
+                particles.magic_life * (0.8 + math.random() * 0.4),
+                particles.magic_size * (0.8 + math.random() * 0.4),
+                math.random() * particles.lightning_delay_max
+            )
         else
-            -- Create lightning or basic particle
+            -- Create basic particle
             particle = {
                 pos = screen_pos + offset,
                 velocity = velocity,
@@ -215,13 +181,7 @@ function particles.spawn_magic(pos, kind)
                 size = particles.magic_size * (0.8 + math.random() * 0.4),
                 life = particles.magic_life * (0.8 + math.random() * 0.4),
                 max_life = particles.magic_life,
-                kind = kind,
-                jitter_time = math.random() * math.pi * 2,
-                jitter1 = Vector2.new(0, 0),
-                jitter2 = Vector2.new(0, 0),
-                jitter3 = Vector2.new(0, 0),
-                delay = kind == "lightning" and math.random() * particles.lightning_delay_max or 0,
-                flip_x = math.random() < 0.5
+                kind = kind
             }
         end
         
@@ -241,7 +201,7 @@ function particles.update(dt)
         
         -- Update particle
         if particle.update then
-            -- Use particle's own update method (for AnimatedParticle)
+            -- Use particle's own update method (for AnimatedParticle or LightningParticle)
             if particle:update(dt) then
                 table.remove(particles.active, i)
                 goto continue
@@ -256,40 +216,18 @@ function particles.update(dt)
             end
         end
         
-        -- Update jitter for lightning particles
-        if particle.kind == "lightning" and particle.delay <= 0 then
-            particle.jitter_time = particle.jitter_time + dt * 10  -- Speed of jitter movement
-            local jitter_amount = particle.size * 0.5  -- Scale jitter with particle size
-            
-            -- Update each jitter point with smooth random movement
-            particle.jitter1 = Vector2.new(
-                math.sin(particle.jitter_time * 0.7) * jitter_amount,
-                math.cos(particle.jitter_time * 0.3) * jitter_amount
-            )
-            particle.jitter2 = Vector2.new(
-                math.sin(particle.jitter_time * 0.1) * jitter_amount,
-                math.cos(particle.jitter_time * 0.9) * jitter_amount
-            )
-            particle.jitter3 = Vector2.new(
-                math.sin(particle.jitter_time * 0.5) * jitter_amount,
-                math.cos(particle.jitter_time * 0.5) * jitter_amount
-            )
-        end
-        
         -- Update color based on particle kind
         local t = particle.life / particle.max_life
         if particle.kind == "dust" then
             -- Dust: fade from white to gray while becoming transparent
             local gray = 0.5 + 0.5 * t  -- Fade from 1 to 0.5
             particle.color = {gray, gray, gray, t}
-        else  -- magic effects
-            if particle.kind == "ice" then
-                particle.color = get_ice_color(t)
-            elseif particle.kind == "lightning" then
-                particle.color = get_lightning_color(t)
-            else  -- "fire" (default)
-                particle.color = get_fire_color(t)
-            end
+        elseif particle.kind == "ice" then
+            particle.color = get_ice_color(t)
+        elseif particle.kind == "fire" then
+            particle.color = get_fire_color(t)
+        elseif particle.kind == "lightning" then
+            particle.color = LightningParticle.get_color(t)
         end
         
         i = i + 1
@@ -304,21 +242,8 @@ function particles.draw()
         end
 
         love.graphics.setColor(unpack(particle.color))
-        if particle.kind == "lightning" then
-            -- Calculate growth based on lifetime
-            local growth = math.min(1, (1 - particle.life / particle.max_life) * 4)
-            draw_lightning_strike(
-                particle.pos.x, 
-                particle.pos.y, 
-                particle.size * 3,
-                particle.jitter1,
-                particle.jitter2,
-                particle.jitter3,
-                growth,
-                particle.flip_x
-            )
-        elseif particle.draw then
-            -- Use particle's own draw method (for AnimatedParticle)
+        if particle.draw then
+            -- Use particle's own draw method (for AnimatedParticle or LightningParticle)
             particle:draw()
         else
             local size = particle.size or 3
