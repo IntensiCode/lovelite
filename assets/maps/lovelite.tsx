@@ -88,14 +88,16 @@
    <property name="resistance_fire" type="int" value="10"/>
    <property name="resistance_ice" type="int" value="10"/>
    <property name="resistance_lightning" type="int" value="10"/>
+   <property name="speed" type="int" value="3"/>
   </properties>
  </tile>
  <tile id="85">
   <properties>
-   <property name="armorclass" type="int" value="5"/>
+   <property name="armorclass" type="int" value="6"/>
    <property name="behavior" value="bully"/>
    <property name="hitpoints" type="int" value="75"/>
    <property name="kind" value="enemy"/>
+   <property name="speed" type="int" value="5"/>
   </properties>
  </tile>
  <tile id="86">
@@ -104,6 +106,7 @@
    <property name="behavior" value="blacksmith"/>
    <property name="hitpoints" type="int" value="75"/>
    <property name="kind" value="enemy"/>
+   <property name="speed" type="int" value="4"/>
   </properties>
  </tile>
  <tile id="87">
@@ -111,14 +114,16 @@
    <property name="armorclass" type="int" value="20"/>
    <property name="hitpoints" type="int" value="100"/>
    <property name="kind" value="player"/>
+   <property name="speed" type="int" value="5"/>
   </properties>
  </tile>
  <tile id="88">
   <properties>
-   <property name="armorclass" type="int" value="5"/>
+   <property name="armorclass" type="int" value="6"/>
    <property name="behavior" value="weirdo"/>
    <property name="hitpoints" type="int" value="50"/>
    <property name="kind" value="enemy"/>
+   <property name="speed" type="int" value="5"/>
   </properties>
  </tile>
  <tile id="89">
@@ -151,6 +156,7 @@
    <property name="behavior" value="knight"/>
    <property name="hitpoints" type="int" value="100"/>
    <property name="kind" value="enemy"/>
+   <property name="speed" type="int" value="5"/>
   </properties>
  </tile>
  <tile id="97">
@@ -159,6 +165,7 @@
    <property name="behavior" value="knight"/>
    <property name="hitpoints" type="int" value="100"/>
    <property name="kind" value="enemy"/>
+   <property name="speed" type="int" value="5"/>
   </properties>
  </tile>
  <tile id="98">
@@ -167,6 +174,7 @@
    <property name="behavior" value="youngknight"/>
    <property name="hitpoints" type="int" value="75"/>
    <property name="kind" value="enemy"/>
+   <property name="speed" type="int" value="5"/>
   </properties>
  </tile>
  <tile id="99">
@@ -178,6 +186,7 @@
    <property name="resistance_fire" type="int" value="5"/>
    <property name="resistance_ice" type="int" value="5"/>
    <property name="resistance_lightning" type="int" value="5"/>
+   <property name="speed" type="int" value="5"/>
   </properties>
  </tile>
  <tile id="100">
@@ -189,6 +198,7 @@
    <property name="resistance_fire" type="int" value="10"/>
    <property name="resistance_ice" type="int" value="10"/>
    <property name="resistance_lightning" type="int" value="10"/>
+   <property name="speed" type="int" value="5"/>
   </properties>
  </tile>
  <tile id="101">
@@ -262,6 +272,7 @@
    <property name="resistance_fire" type="int" value="5"/>
    <property name="resistance_ice" type="int" value="5"/>
    <property name="resistance_lightning" type="int" value="5"/>
+   <property name="speed" type="int" value="1"/>
   </properties>
  </tile>
  <tile id="109">
@@ -270,6 +281,7 @@
    <property name="behavior" value="golem"/>
    <property name="hitpoints" type="int" value="100"/>
    <property name="kind" value="enemy"/>
+   <property name="speed" type="int" value="1"/>
   </properties>
  </tile>
  <tile id="110">
@@ -278,6 +290,7 @@
    <property name="behavior" value="crab"/>
    <property name="hitpoints" type="int" value="50"/>
    <property name="kind" value="enemy"/>
+   <property name="speed" type="int" value="3"/>
   </properties>
  </tile>
  <tile id="111">
@@ -289,6 +302,7 @@
    <property name="resistance_fire" type="int" value="10"/>
    <property name="resistance_ice" type="int" value="10"/>
    <property name="resistance_lightning" type="int" value="10"/>
+   <property name="speed" type="int" value="3"/>
   </properties>
  </tile>
  <tile id="112">
@@ -300,6 +314,7 @@
    <property name="resistance_fire" type="int" value="5"/>
    <property name="resistance_ice" type="int" value="5"/>
    <property name="resistance_lightning" type="int" value="5"/>
+   <property name="speed" type="int" value="5"/>
   </properties>
  </tile>
  <tile id="113">
@@ -359,6 +374,7 @@
    <property name="behavior" value="bat"/>
    <property name="hitpoints" type="int" value="20"/>
    <property name="kind" value="enemy"/>
+   <property name="speed" type="int" value="6"/>
   </properties>
  </tile>
  <tile id="121">
@@ -370,6 +386,7 @@
    <property name="resistance_fire" type="int" value="5"/>
    <property name="resistance_ice" type="int" value="5"/>
    <property name="resistance_lightning" type="int" value="5"/>
+   <property name="speed" type="int" value="1"/>
   </properties>
  </tile>
  <tile id="122">
@@ -378,6 +395,7 @@
    <property name="behavior" value="spider"/>
    <property name="hitpoints" type="int" value="20"/>
    <property name="kind" value="enemy"/>
+   <property name="speed" type="int" value="2"/>
   </properties>
  </tile>
  <tile id="123">
@@ -386,6 +404,7 @@
    <property name="behavior" value="rat"/>
    <property name="hitpoints" type="int" value="20"/>
    <property name="kind" value="enemy"/>
+   <property name="speed" type="int" value="6"/>
   </properties>
  </tile>
  <tile id="124">
@@ -394,6 +413,7 @@
    <property name="behavior" value="grayrat"/>
    <property name="hitpoints" type="int" value="50"/>
    <property name="kind" value="enemy"/>
+   <property name="speed" type="int" value="6"/>
   </properties>
  </tile>
  <tile id="125">

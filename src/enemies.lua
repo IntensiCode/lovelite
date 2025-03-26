@@ -2,6 +2,7 @@ local Vector2 = require("src.base.vector2")
 local events = require("src.base.events")
 local table_utils = require("src.base.table")
 local m = require("src.base.math")
+local bully = require("src.enemy.bully")
 
 ---@class Enemy
 ---@field pos Vector2
@@ -84,7 +85,10 @@ function enemies.update(dt)
             goto continue
         end
 
-        -- TODO Call enemy behavior
+        -- Call enemy behavior based on type
+        if enemy.behavior == "bully" then
+            bully.update(enemy, dt)
+        end
 
         ::continue::
     end

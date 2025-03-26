@@ -126,6 +126,75 @@ function pathfinder.calculate_dijkstra_distances(start_x, start_y, width, height
     pathfinder.dijkstra_distances = distances
 end
 
+---Find a path between two points using the pre-calculated Dijkstra distances
+---@param start_x number Starting X coordinate
+---@param start_y number Starting Y coordinate
+---@param end_x number Ending X coordinate
+---@param end_y number Ending Y coordinate
+---@return table|nil path The path as a list of {x, y} coordinates, or nil if no path found
+function pathfinder.find_path(start_x, start_y, end_x, end_y)
+    assert(pathfinder.dijkstra_distances, "Dijkstra distances not calculated")
+
+    local width = #pathfinder.grid[1]
+    local path = {}
+    local current_x, current_y = start_x, start_y
+
+    -- Check if start point is reachable
+    local start_index = (start_y - 1) * width + start_x
+    if pathfinder.dijkstra_distances[start_index] == math.huge then
+        return nil
+    end
+
+    -- Add start point to path
+    table.insert(path, { x = current_x, y = current_y })
+
+    -- Follow decreasing distances until we reach the end
+    while current_x ~= end_x or current_y ~= end_y do
+        local current_index = (current_y - 1) * width + current_x
+        local current_dist = pathfinder.dijkstra_distances[current_index]
+        local best_dist = current_dist
+        local best_x, best_y = nil, nil
+
+        -- Check all four directions
+        local directions = {
+            { dx = 0,  dy = -1 }, -- up
+            { dx = 1,  dy = 0 },  -- right
+            { dx = 0,  dy = 1 },  -- down
+            { dx = -1, dy = 0 }   -- left
+        }
+
+        for _, dir in ipairs(directions) do
+            local next_x = current_x + dir.dx
+            local next_y = current_y + dir.dy
+
+            -- Check if neighbor is within bounds and walkable
+            if next_x >= 1 and next_x <= width and next_y >= 1 and next_y <= #pathfinder.grid then
+                if pathfinder.grid[next_y][next_x].walkable == 0 then
+                    local next_index = (next_y - 1) * width + next_x
+                    local next_dist = pathfinder.dijkstra_distances[next_index]
+
+                    -- If this neighbor is closer to the end point, remember it
+                    if next_dist < best_dist then
+                        best_dist = next_dist
+                        best_x, best_y = next_x, next_y
+                    end
+                end
+            end
+        end
+
+        -- If we couldn't find a better neighbor, we're stuck
+        if not best_x then
+            return nil
+        end
+
+        -- Move to the best neighbor
+        current_x, current_y = best_x, best_y
+        table.insert(path, { x = current_x, y = current_y })
+    end
+
+    return path
+end
+
 ---Find a path from a given point back to the Dijkstra start point
 ---@param end_x number Ending X coordinate
 ---@param end_y number Ending Y coordinate

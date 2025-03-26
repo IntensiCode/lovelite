@@ -140,16 +140,18 @@ return {
             ["kind"] = "enemy",
             ["resistance_fire"] = 10,
             ["resistance_ice"] = 10,
-            ["resistance_lightning"] = 10
+            ["resistance_lightning"] = 10,
+            ["speed"] = 3
           }
         },
         {
           id = 85,
           properties = {
-            ["armorclass"] = 5,
+            ["armorclass"] = 6,
             ["behavior"] = "bully",
             ["hitpoints"] = 75,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["speed"] = 5
           }
         },
         {
@@ -158,7 +160,8 @@ return {
             ["armorclass"] = 5,
             ["behavior"] = "blacksmith",
             ["hitpoints"] = 75,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["speed"] = 4
           }
         },
         {
@@ -166,16 +169,18 @@ return {
           properties = {
             ["armorclass"] = 20,
             ["hitpoints"] = 100,
-            ["kind"] = "player"
+            ["kind"] = "player",
+            ["speed"] = 5
           }
         },
         {
           id = 88,
           properties = {
-            ["armorclass"] = 5,
+            ["armorclass"] = 6,
             ["behavior"] = "weirdo",
             ["hitpoints"] = 50,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["speed"] = 5
           }
         },
         {
@@ -212,7 +217,8 @@ return {
             ["armorclass"] = 20,
             ["behavior"] = "knight",
             ["hitpoints"] = 100,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["speed"] = 5
           }
         },
         {
@@ -221,7 +227,8 @@ return {
             ["armorclass"] = 20,
             ["behavior"] = "knight",
             ["hitpoints"] = 100,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["speed"] = 5
           }
         },
         {
@@ -230,7 +237,8 @@ return {
             ["armorclass"] = 10,
             ["behavior"] = "youngknight",
             ["hitpoints"] = 75,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["speed"] = 5
           }
         },
         {
@@ -242,7 +250,8 @@ return {
             ["kind"] = "enemy",
             ["resistance_fire"] = 5,
             ["resistance_ice"] = 5,
-            ["resistance_lightning"] = 5
+            ["resistance_lightning"] = 5,
+            ["speed"] = 5
           }
         },
         {
@@ -254,7 +263,8 @@ return {
             ["kind"] = "enemy",
             ["resistance_fire"] = 10,
             ["resistance_ice"] = 10,
-            ["resistance_lightning"] = 10
+            ["resistance_lightning"] = 10,
+            ["speed"] = 5
           }
         },
         {
@@ -335,7 +345,8 @@ return {
             ["kind"] = "enemy",
             ["resistance_fire"] = 5,
             ["resistance_ice"] = 5,
-            ["resistance_lightning"] = 5
+            ["resistance_lightning"] = 5,
+            ["speed"] = 1
           }
         },
         {
@@ -344,7 +355,8 @@ return {
             ["armorclass"] = 0,
             ["behavior"] = "golem",
             ["hitpoints"] = 100,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["speed"] = 1
           }
         },
         {
@@ -353,7 +365,8 @@ return {
             ["armorclass"] = 20,
             ["behavior"] = "crab",
             ["hitpoints"] = 50,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["speed"] = 3
           }
         },
         {
@@ -365,7 +378,8 @@ return {
             ["kind"] = "enemy",
             ["resistance_fire"] = 10,
             ["resistance_ice"] = 10,
-            ["resistance_lightning"] = 10
+            ["resistance_lightning"] = 10,
+            ["speed"] = 3
           }
         },
         {
@@ -377,7 +391,8 @@ return {
             ["kind"] = "enemy",
             ["resistance_fire"] = 5,
             ["resistance_ice"] = 5,
-            ["resistance_lightning"] = 5
+            ["resistance_lightning"] = 5,
+            ["speed"] = 5
           }
         },
         {
@@ -444,7 +459,8 @@ return {
             ["armorclass"] = 0,
             ["behavior"] = "bat",
             ["hitpoints"] = 20,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["speed"] = 6
           }
         },
         {
@@ -456,7 +472,8 @@ return {
             ["kind"] = "enemy",
             ["resistance_fire"] = 5,
             ["resistance_ice"] = 5,
-            ["resistance_lightning"] = 5
+            ["resistance_lightning"] = 5,
+            ["speed"] = 1
           }
         },
         {
@@ -465,7 +482,8 @@ return {
             ["armorclass"] = 20,
             ["behavior"] = "spider",
             ["hitpoints"] = 20,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["speed"] = 2
           }
         },
         {
@@ -474,7 +492,8 @@ return {
             ["armorclass"] = 0,
             ["behavior"] = "rat",
             ["hitpoints"] = 20,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["speed"] = 6
           }
         },
         {
@@ -483,7 +502,8 @@ return {
             ["armorclass"] = 0,
             ["behavior"] = "grayrat",
             ["hitpoints"] = 50,
-            ["kind"] = "enemy"
+            ["kind"] = "enemy",
+            ["speed"] = 6
           }
         },
         {
