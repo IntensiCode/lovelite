@@ -16,13 +16,13 @@ local player = {
     pos = Vector2.new(0, 0),
     tile_id = nil,
     tile = nil,
-    speed = 5,  -- tiles per second
+    speed = 5, -- tiles per second
     weapon = nil,
     shield = nil,
     tile_size = nil,
-    last_direction = Vector2.new(1, 0),  -- Default facing right
-    cooldown = 0,  -- Initialize cooldown to 0
-    armor_class = 0  -- Base armor class
+    last_direction = Vector2.new(1, 0), -- Default facing right
+    cooldown = 0,                       -- Initialize cooldown to 0
+    armor_class = 0                     -- Base armor class
 }
 
 function player.load()
@@ -30,14 +30,14 @@ function player.load()
     print("Player setup:", setup)
     print("Player position:", setup.pos)
     print("Player tile:", setup.tile)
-    
+
     player.pos = setup.pos
     player.tile = setup.tile
     player.tile_id = setup.tile.id
-    
+
     -- Get tile size from tileset
     player.tile_size = _game.map_manager.map.tilewidth
-    
+
     -- Assign initial weapon
     player.weapon = nil
     for gid, weapon in pairs(_game.map_manager.weapons) do
@@ -46,7 +46,7 @@ function player.load()
             break
         end
     end
-    
+
     -- Add player to global game variable
     _game.player = player
 end
@@ -57,7 +57,7 @@ end
 function player.handle_movement(movement, original_movement, dt)
     -- Calculate new position
     local new_pos = player.pos + movement * (player.speed * dt)
-    
+
     -- Try full movement first
     if _game.map_manager.is_walkable(new_pos.x, new_pos.y) then
         player.pos = new_pos
@@ -65,13 +65,13 @@ function player.handle_movement(movement, original_movement, dt)
         -- If full movement blocked, try sliding along walls using original (non-normalized) movement
         local slide_x = Vector2.new(player.pos.x + original_movement.x * (player.speed * dt), player.pos.y)
         local slide_y = Vector2.new(player.pos.x, player.pos.y + original_movement.y * (player.speed * dt))
-        
+
         -- Try horizontal movement
         if original_movement.x ~= 0 and _game.map_manager.is_walkable(slide_x.x, slide_x.y) then
             player.pos = slide_x
             return
         end
-        
+
         -- Try vertical movement
         if original_movement.y ~= 0 and _game.map_manager.is_walkable(slide_y.x, slide_y.y) then
             player.pos = slide_y
@@ -122,46 +122,52 @@ function player.handle_shooting()
     })
 end
 
----@param dt number Delta time in seconds
+---Handle collection of items (weapons, shields, etc.)
+function player.handle_collection()
+    local collected = _game.collectibles.check_collection(player.pos)
+    if not collected then
+        return
+    elseif collected.weapon then
+        -- Store reference to the collected weapon
+        player.weapon = collected.weapon
+        -- Reset cooldown when switching weapons
+        player.cooldown = 0
+    elseif collected.shield then
+        -- Store reference to the collected shield
+        player.shield = collected.shield
+    end
+end
+
 function player.update(dt)
     -- Get movement input
     local movement = player.get_movement_input()
-    
+
     -- Update last direction if moving
     if movement.x ~= 0 or movement.y ~= 0 then
         player.last_direction = movement:normalized()
     end
-    
+
     -- Store original movement for wall sliding
     local original_movement = Vector2.new(movement.x, movement.y)
-    
+
     -- Normalize diagonal movement for the initial movement attempt
     if movement.x ~= 0 and movement.y ~= 0 then
         movement = movement * 0.7071 -- 1/sqrt(2), maintains consistent speed diagonally
     end
-    
+
     -- Handle movement
     player.handle_movement(movement, original_movement, dt)
-    
+
     -- Update cooldown
-    player.cooldown = math.max(0, player.cooldown - dt)
-    
+    if player.cooldown > 0 then
+        player.cooldown = player.cooldown - dt
+    end
+
     -- Handle shooting
     player.handle_shooting()
 
     -- Check for collectibles
-    local collected = _game.collectibles.check_collection(player.pos)
-    if collected then
-        if collected.weapon then
-            -- Store reference to the collected weapon
-            player.weapon = collected.weapon
-            -- Reset cooldown when switching weapons
-            player.cooldown = 0
-        elseif collected.shield then
-            -- Store reference to the collected shield
-            player.shield = collected.shield
-        end
-    end
+    player.handle_collection()
 end
 
 function player.draw()
@@ -180,11 +186,11 @@ function player.draw()
             player.tile.quad,
             screen_x,
             screen_y,
-            0,  -- rotation
-            1,  -- scale x
-            1,  -- scale y
-            tile_width/2,  -- origin x (center of sprite)
-            tile_height/2  -- origin y (center of sprite)
+            0,            -- rotation
+            1,            -- scale x
+            1,            -- scale y
+            tile_width / 2, -- origin x (center of sprite)
+            tile_height / 2 -- origin y (center of sprite)
         )
     end
 
@@ -195,7 +201,7 @@ function player.draw()
             _game.map_manager.map.tilesets[1].image,
             player.shield.tile.quad,
             screen_x - tile_width,
-            screen_y - tile_height/3
+            screen_y - tile_height / 3
         )
     end
 
@@ -205,9 +211,9 @@ function player.draw()
         love.graphics.draw(
             _game.map_manager.map.tilesets[1].image,
             player.weapon.tile.quad,
-            screen_x + tile_width/2,
-            screen_y - tile_height*2/3,
-            math.rad(45)  -- 45 degree rotation
+            screen_x + tile_width / 2,
+            screen_y - tile_height * 2 / 3,
+            math.rad(45) -- 45 degree rotation
         )
     end
 end
@@ -215,31 +221,31 @@ end
 function player.draw_ui()
     -- Draw active weapon in UI
     if player.weapon then
-        local padding = 8  -- Virtual pixels padding
+        local padding = 8 -- Virtual pixels padding
         local _, _, tile_width, tile_height = player.weapon.tile.quad:getViewport()
-        
+
         -- Draw at bottom left with padding
         love.graphics.draw(
             _game.map_manager.map.tilesets[1].image,
             player.weapon.tile.quad,
-            padding,  -- x position
-            _game.camera.height - padding - tile_height  -- y position
+            padding,                                    -- x position
+            _game.camera.height - padding - tile_height -- y position
         )
     end
 
     -- Draw active shield in UI
     if player.shield then
-        local padding = 8  -- Virtual pixels padding
+        local padding = 8 -- Virtual pixels padding
         local _, _, tile_width, tile_height = player.shield.tile.quad:getViewport()
-        
+
         -- Draw at bottom left with padding, next to weapon
         love.graphics.draw(
             _game.map_manager.map.tilesets[1].image,
             player.shield.tile.quad,
-            padding + tile_width + 8,  -- x position (after weapon)
-            _game.camera.height - padding - tile_height  -- y position
+            padding + tile_width + 8,                   -- x position (after weapon)
+            _game.camera.height - padding - tile_height -- y position
         )
     end
 end
 
-return player 
+return player
