@@ -168,6 +168,23 @@ function player.update(dt)
 
     -- Check for collectibles
     player.handle_collection()
+
+    -- Get current tile position (floored)
+    local current_tile = Vector2.new(
+        math.floor(player.pos.x),
+        math.floor(player.pos.y)
+    )
+
+    -- Initialize last_tile if not set
+    player.last_tile = player.last_tile or Vector2.new(-1, -1)
+
+    -- Check if tile position changed
+    if current_tile.x ~= player.last_tile.x or current_tile.y ~= player.last_tile.y then
+        -- Update pathfinding data
+        player.update_pathfinder(current_tile)
+        -- Store new position
+        player.last_tile = current_tile
+    end
 end
 
 function player.draw()
@@ -186,9 +203,9 @@ function player.draw()
             player.tile.quad,
             screen_x,
             screen_y,
-            0,            -- rotation
-            1,            -- scale x
-            1,            -- scale y
+            0,              -- rotation
+            1,              -- scale x
+            1,              -- scale y
             tile_width / 2, -- origin x (center of sprite)
             tile_height / 2 -- origin y (center of sprite)
         )
@@ -246,6 +263,22 @@ function player.draw_ui()
             _game.camera.height - padding - tile_height -- y position
         )
     end
+end
+
+function player.update_pathfinder(current_tile)
+    if not current_tile then return end
+
+    -- Get map dimensions from map_manager
+    local map_width = _game.map_manager.map.width
+    local map_height = _game.map_manager.map.height
+
+    -- Calculate Dijkstra distances from current tile position
+    _game.pathfinder.calculate_dijkstra_distances(
+        current_tile.x,
+        current_tile.y,
+        map_width,
+        map_height
+    )
 end
 
 return player

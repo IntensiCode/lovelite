@@ -64,12 +64,22 @@ local constants = {
         return closest_stop[2]
     end,
 
+    -- Pathfinder rainbow colors (red, orange, yellow, green, blue, purple but reversed)
+    pathfinder_colors = {
+        { 0.0, { 0.5, 0, 1, 1 } }, -- Purple
+        { 0.2, { 0, 0, 1, 1 } },   -- Blue
+        { 0.4, { 0, 1, 0, 1 } },   -- Green
+        { 0.6, { 1, 1, 0, 1 } },   -- Yellow
+        { 0.8, { 1, 0.5, 0, 1 } }, -- Orange
+        { 1.0, { 1, 0, 0, 1 } },   -- Red
+    },
+
     -- Fire particle color stops (ordered from t=1 to t=0)
     fire_colors = {
         { 1.0, { 1, 1, 1, 1 } }, -- White
         { 0.6, { 1, 1, 1, 1 } }, -- White
         { 0.2, { 1, 0, 0, 1 } }, -- Red
-        { 0.0, { 1, 0, 0, 0 } } -- Transparent red
+        { 0.0, { 1, 0, 0, 0 } }  -- Transparent red
     },
 
     -- Ice particle color stops (ordered from t=1 to t=0)
@@ -77,7 +87,7 @@ local constants = {
         { 1.0, { 0, 0, 0.8, 1 } }, -- Dark blue
         { 0.6, { 0, 0, 0.8, 1 } }, -- Dark blue
         { 0.2, { 0, 0.6, 1, 1 } }, -- Turkish blue
-        { 0.0, { 0, 0.6, 1, 0 } } -- Transparent turkish blue
+        { 0.0, { 0, 0.6, 1, 0 } }  -- Transparent turkish blue
     },
 
     -- Fire particle animation

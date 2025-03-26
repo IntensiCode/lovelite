@@ -53,6 +53,9 @@ function _game.draw()
     love.graphics.translate(translation.x, translation.y)
 
     _game.map_manager.map:draw(translation.x, translation.y)
+    if _game.debug.enabled then
+        _game.pathfinder.draw()
+    end
 
     _game.collectibles.draw()
     _game.player.draw()
