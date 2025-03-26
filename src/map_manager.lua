@@ -16,8 +16,8 @@ local OBJECTS_LAYER_ID = 2
 ---@field shields table<number, {amount: number}>
 ---@field chest_anim number[] Array of tile IDs for chest animation frames
 local map_manager = {
-    map = nil,
-    player_tile_id = nil,
+    -- map = nil,
+    -- player_tile_id = nil,
     tile_center = Vector2.new(0, 0),
     map_size = Vector2.new(0, 0),
     walkable_tiles = {},
