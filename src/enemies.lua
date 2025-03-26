@@ -1,6 +1,7 @@
 local Vector2 = require("src.vector2")
 local events = require("src.events")
 local table_utils = require("src.table")
+local m = require("src.math")
 
 ---@class Enemy
 ---@field pos Vector2
@@ -133,16 +134,57 @@ end
 ---@param projectile table The projectile that hit the enemy
 function enemies.on_hit(enemy, projectile)
     if projectile.weapon.melee then
-        enemy.hitpoints = enemy.hitpoints - projectile.weapon.melee
+        -- Get armor class (default to 0 if nil) and clamp between 0 and 100
+        local armor_class = enemy.armorclass or 0
+        armor_class = m.clamp(armor_class, 0, 100)
+
+        -- Calculate damage reduction based on armor class percentage
+        local damage_reduction = projectile.weapon.melee * (armor_class / 100)
+        local actual_damage = projectile.weapon.melee - damage_reduction
+
+        enemy.hitpoints = enemy.hitpoints - actual_damage
         if enemy.hitpoints <= 0 then
             enemy.is_dead = true
         end
     elseif projectile.weapon.fire then
-        -- TODO: Implement fire damage
+        -- Get fire resistance (default to 0 if nil) and clamp between 0 and 100
+        local fire_resistance = enemy.resistance_fire or 0
+        fire_resistance = m.clamp(fire_resistance, 0, 100)
+
+        -- Calculate damage reduction based on fire resistance percentage
+        local damage_reduction = projectile.weapon.fire * (fire_resistance / 100)
+        local actual_damage = projectile.weapon.fire - damage_reduction
+
+        enemy.hitpoints = enemy.hitpoints - actual_damage
+        if enemy.hitpoints <= 0 then
+            enemy.is_dead = true
+        end
     elseif projectile.weapon.ice then
-        -- TODO: Implement ice damage
+        -- Get ice resistance (default to 0 if nil) and clamp between 0 and 100
+        local ice_resistance = enemy.resistance_ice or 0
+        ice_resistance = m.clamp(ice_resistance, 0, 100)
+
+        -- Calculate damage reduction based on ice resistance percentage
+        local damage_reduction = projectile.weapon.ice * (ice_resistance / 100)
+        local actual_damage = projectile.weapon.ice - damage_reduction
+
+        enemy.hitpoints = enemy.hitpoints - actual_damage
+        if enemy.hitpoints <= 0 then
+            enemy.is_dead = true
+        end
     elseif projectile.weapon.lightning then
-        -- TODO: Implement lightning damage
+        -- Get lightning resistance (default to 0 if nil) and clamp between 0 and 100
+        local lightning_resistance = enemy.resistance_lightning or 0
+        lightning_resistance = m.clamp(lightning_resistance, 0, 100)
+
+        -- Calculate damage reduction based on lightning resistance percentage
+        local damage_reduction = projectile.weapon.lightning * (lightning_resistance / 100)
+        local actual_damage = projectile.weapon.lightning - damage_reduction
+
+        enemy.hitpoints = enemy.hitpoints - actual_damage
+        if enemy.hitpoints <= 0 then
+            enemy.is_dead = true
+        end
     end
 end
 
