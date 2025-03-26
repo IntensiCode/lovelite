@@ -150,6 +150,8 @@ function player.update(dt)
     if collected then
         -- Store reference to the collected weapon
         player.weapon = collected.weapon
+        -- Reset cooldown when switching weapons
+        player.cooldown = 0
     end
 end
 
