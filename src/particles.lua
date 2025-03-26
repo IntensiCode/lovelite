@@ -1,38 +1,20 @@
-local Vector2 = require("src.vector2")
 local animation = require("src.particles.animation")
 local LightningParticle = require("src.particles.lightning")
 local DustParticle = require("src.particles.dust")
 local FireParticle = require("src.particles.fire")
 local IceParticle = require("src.particles.ice")
 local events = require("src.events")
-local constants = require("src.particles.constants")
 
 ---@class Particle
----@field pos Vector2
----@field velocity Vector2
----@field color table
----@field size number
----@field life number
----@field max_life number
----@field kind string
----@field jitter1 Vector2 Random offset for first zag point
----@field jitter2 Vector2 Random offset for middle point
----@field jitter3 Vector2 Random offset for second zag point
----@field jitter_time number Time counter for jitter movement
+---@field pos Vector2 The position of the particle
+---@field color table The color of the particle
+---@field life number The remaining lifetime of the particle
+---@field max_life number The maximum lifetime of the particle
+---@field kind string The kind of particle effect ("fire", "ice", "lightning", "dust")
 ---@field delay number Delay before particle becomes visible (for lightning)
----@field flip_x boolean Whether to flip the x-axis for lightning strikes
 
 local particles = {
-    active = {},                -- Array of active particles
-    -- Magic settings
-    magic_count = 6,            -- Number of particles per magic effect
-    magic_speed = 1,            -- Base upward speed for magic particles
-    magic_size = 3,             -- Size of magic particles in pixels
-    magic_life = 0.8,           -- Life in seconds for magic particles
-    magic_spread = 0.3,         -- Horizontal spread for magic particles
-    -- Lightning specific settings
-    lightning_delay_max = 0.1,  -- Maximum random delay for lightning strikes
-    lightning_drift_speed = 0.1 -- How fast lightning particles drift horizontally
+    active = {}  -- Array of active particles
 }
 
 ---@param pos Vector2 The position to spawn particles at (in tile space)
