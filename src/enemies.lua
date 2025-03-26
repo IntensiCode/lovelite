@@ -40,9 +40,9 @@ function enemies.load()
     -- Debug print enemies
     print("\nEnemies loaded:")
     for i, enemy in ipairs(enemies.items) do
-        print(string.format("  %d. %s at (%d, %d) with %d HP, AC %d, and resistances (F:%d I:%d L:%d)",
-            i, enemy.behavior, enemy.pos.x, enemy.pos.y, enemy.hitpoints, enemy.armorclass,
-            enemy.resistance_fire, enemy.resistance_ice, enemy.resistance_lightning))
+        print(string.format("  %d. %s at (%d, %d) with %d HP, AC %d, and resistances (F:%s I:%s L:%s)",
+            i, enemy.behavior or "Unknown", enemy.pos.x, enemy.pos.y, enemy.hitpoints or 0, enemy.armorclass or 0,
+            enemy.resistance_fire or "N/A", enemy.resistance_ice or "N/A", enemy.resistance_lightning or "N/A"))
     end
 end
 

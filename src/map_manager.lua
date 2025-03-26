@@ -1,5 +1,6 @@
 local STI = require("src/libraries/sti.init")
 local Vector2 = require("src.vector2")
+local table_utils = require("src.table")
 
 -- Constants
 local OBJECTS_LAYER_ID = 2
@@ -124,34 +125,16 @@ function map_manager.process_tiles()
         if props["kind"] then
             -- print(string.format("  Has kind: %s", props["kind"]))
             if props["kind"] == "enemy" then
-                map_manager.enemies[gid] = {
-                    hitpoints = props["hitpoints"] or 100,
-                    armorclass = props["armorclass"] or 0,
-                    behavior = props["behavior"] or "unknown",
-                    resistance_fire = props["resistance_fire"] or 0,
-                    resistance_ice = props["resistance_ice"] or 0,
-                    resistance_lightning = props["resistance_lightning"] or 0
-                }
+                map_manager.enemies[gid] = table_utils.clone(props)
+                map_manager.enemies[gid].max_hitpoints = map_manager.enemies[gid].hitpoints
+                map_manager.enemies[gid].tile = tile
             elseif props["kind"] == "weapon" then
-                map_manager.weapons[gid] = {
-                    melee = props.melee,
-                    fire = props.fire,
-                    ice = props.ice,
-                    name = props.name,
-                    lightning = props.lightning,
-                    speed = props.speed,
-                    initial = props.initial or false,
-                    cooldown = props.cooldown or 0, -- Default to 0 if not specified
-                    tile = tile                     -- Store tile data for rendering
-                }
+                map_manager.weapons[gid] = table_utils.clone(props)
+                map_manager.weapons[gid].tile = tile
             elseif props["kind"] == "shield" then
-                map_manager.shields[gid] = {
-                    tile = tile,
-                    name = props.name,
-                    armorclass = props.armorclass or 0,
-                    hitpoints = props.hitpoints or 0,
-                    max_hitpoints = props.hitpoints or 0  -- Store initial hitpoints as max
-                }
+                map_manager.shields[gid] = table_utils.clone(props)
+                map_manager.shields[gid].max_hitpoints = map_manager.shields[gid].hitpoints
+                map_manager.shields[gid].tile = tile
             elseif props["kind"] == "chest" then
                 -- Store chest animation frames in order
                 local anim_frame = props["anim"] or 0
