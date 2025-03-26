@@ -11,6 +11,7 @@ local events = require("src.events")
 ---@field tile_size number
 ---@field last_direction Vector2
 ---@field cooldown number
+---@field armor_class number
 local player = {
     pos = Vector2.new(0, 0),
     tile_id = nil,
@@ -20,7 +21,8 @@ local player = {
     shield = nil,
     tile_size = nil,
     last_direction = Vector2.new(1, 0),  -- Default facing right
-    cooldown = 0  -- Initialize cooldown to 0
+    cooldown = 0,  -- Initialize cooldown to 0
+    armor_class = 0  -- Base armor class
 }
 
 function player.load()

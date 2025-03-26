@@ -158,6 +158,7 @@ return {
         {
           id = 87,
           properties = {
+            ["armorclass"] = 20,
             ["hitpoints"] = 100,
             ["kind"] = "player"
           }

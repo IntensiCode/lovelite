@@ -13,7 +13,7 @@ local OBJECTS_LAYER_ID = 2
 ---@field walkable_tiles table<number, boolean>
 ---@field enemies table<number, {hitpoints: number}>
 ---@field weapons table<number, {name: string, melee: number, speed: number, initial: boolean, tile: table, cooldown: number}>
----@field shields table<number, {name: string, amount: number, tile: table}>
+---@field shields table<number, {name: string, armorclass: number, hitpoints: number, max_hitpoints: number}>
 ---@field chest_anim number[] Array of tile IDs for chest animation frames
 local map_manager = {
     -- map = nil,
@@ -143,7 +143,9 @@ function map_manager.process_tiles()
                 map_manager.shields[gid] = {
                     tile = tile,
                     name = props.name,
-                    amount = props["amount"] or 0
+                    armorclass = props.armorclass or 0,
+                    hitpoints = props.hitpoints or 0,
+                    max_hitpoints = props.hitpoints or 0  -- Store initial hitpoints as max
                 }
             elseif props["kind"] == "chest" then
                 -- Store chest animation frames in order

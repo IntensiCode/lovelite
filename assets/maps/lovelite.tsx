@@ -102,6 +102,7 @@
  </tile>
  <tile id="87">
   <properties>
+   <property name="armorclass" type="int" value="20"/>
    <property name="hitpoints" type="int" value="100"/>
    <property name="kind" value="player"/>
   </properties>
