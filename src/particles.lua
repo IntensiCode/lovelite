@@ -59,16 +59,6 @@ function particles.update(dt)
             goto continue
         end
 
-        -- Update color based on particle kind
-        local t = particle.life / particle.max_life
-        if particle.kind == "ice" then
-            particle.color = animation.get_ice_color(t)
-        elseif particle.kind == "fire" then
-            particle.color = animation.get_fire_color(t)
-        elseif particle.kind == "lightning" then
-            particle.color = LightningParticle.get_color(t)
-        end
-
         i = i + 1
         ::continue::
     end

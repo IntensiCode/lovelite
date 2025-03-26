@@ -77,6 +77,10 @@ function LightningParticle:update(dt)
         math.sin(self.jitter_time * 0.5) * jitter_amount,
         math.cos(self.jitter_time * 0.5) * jitter_amount
     )
+
+    -- Update color based on lifetime
+    local t = self.life / self.max_life
+    self.color = LightningParticle.get_color(t)
 end
 
 ---Draw a stylized lightning strike

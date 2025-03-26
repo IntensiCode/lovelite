@@ -5,6 +5,24 @@ local constants = require("src.particles.constants")
 local FireParticle = {}
 FireParticle.__index = FireParticle
 
+---Get the color for a fire particle based on its lifetime
+---@param t number Normalized lifetime (0 to 1)
+---@return table color RGBA color array
+local function get_fire_color(t)
+    if t > 0.6 then
+        -- White to yellow (1,1,1) -> (1,1,0)
+        local yellow = (t - 0.6) / 0.4  -- 0 to 1
+        return {1, 1, yellow, 1}
+    elseif t > 0.2 then
+        -- Yellow to red (1,1,0) -> (1,0,0)
+        local red = (t - 0.2) / 0.4  -- 0 to 1
+        return {1, red, 0, 1}
+    else
+        -- Red to transparent (1,0,0) -> (1,0,0,0)
+        return {1, 0, 0, t * 5}  -- Fade out in last 20%
+    end
+end
+
 ---@param pos Vector2 The position to spawn particles at (in tile space)
 ---@return table Array of fire particles
 function FireParticle.spawn(pos)
@@ -28,12 +46,13 @@ function FireParticle.spawn(pos)
             -constants.magic_speed * (0.1 + math.random() * 0.4)
         )
         
-        -- Create particle
+        -- Create particle with color hook
         local particle = animation.new(
             screen_pos + offset,
             velocity * 60,
             constants.magic_life * (0.8 + math.random() * 0.4),
-            "fire"
+            "fire",
+            get_fire_color
         )
         
         table.insert(particles, particle)

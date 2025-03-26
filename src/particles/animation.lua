@@ -18,6 +18,7 @@ local Vector2 = require("src.vector2")
 ---@field animation Animation
 ---@field rotation number
 ---@field rotation_speed number
+---@field color_hook function Function to update particle color based on lifetime
 
 -- Animation data
 local animations = {
@@ -99,8 +100,9 @@ AnimatedParticle.__index = AnimatedParticle
 ---@param velocity Vector2 Initial velocity
 ---@param life number Lifetime in seconds
 ---@param kind string Type of particle ("fire" or "ice")
+---@param color_hook function Function to update particle color based on lifetime
 ---@return AnimatedParticle
-function AnimatedParticle.new(pos, velocity, life, kind)
+function AnimatedParticle.new(pos, velocity, life, kind, color_hook)
     local particle = {
         pos = pos,
         velocity = velocity,
@@ -111,7 +113,8 @@ function AnimatedParticle.new(pos, velocity, life, kind)
         current_frame = 1,
         frame_timer = 0,
         rotation = kind == "ice" and math.random() * math.pi * 2 or 0,
-        rotation_speed = kind == "ice" and (math.random() - 0.5) * 2 or 0
+        rotation_speed = kind == "ice" and (math.random() - 0.5) * 2 or 0,
+        color_hook = color_hook
     }
     setmetatable(particle, AnimatedParticle)
     return particle
@@ -141,6 +144,10 @@ function AnimatedParticle:update(dt)
     if self.rotation_speed ~= 0 then
         self.rotation = self.rotation + self.rotation_speed * dt
     end
+
+    -- Update color using the hook
+    local t = self.life / self.max_life
+    self.color = self.color_hook(t)
 end
 
 ---Draw the animated particle
@@ -194,54 +201,6 @@ function AnimatedParticle:draw()
     love.graphics.pop()
 end
 
----Get the color for an ice particle based on its lifetime
----@param t number Normalized lifetime (0 to 1)
----@return table color RGBA color array
-local function get_ice_color(t)
-    if t > 0.6 then
-        -- Dark blue to blue (0,0,0.8) -> (0,0.3,1)
-        local blend = (t - 0.6) / 0.4
-        return {
-            0,                   -- stays 0
-            0.3 * blend,        -- 0 -> 0.3
-            0.8 + 0.2 * blend,  -- 0.8 -> 1
-            1
-        }
-    elseif t > 0.2 then
-        -- Blue to turkish blue (0,0.3,1) -> (0,0.6,1)
-        local blend = (t - 0.2) / 0.4
-        return {
-            0,                   -- stays 0
-            0.3 + 0.3 * blend,  -- 0.3 -> 0.6
-            1,                   -- stays 1
-            1
-        }
-    else
-        -- Fade out turkish blue
-        return {0, 0.6, 1, t * 5}
-    end
-end
-
----Get the color for a fire particle based on its lifetime
----@param t number Normalized lifetime (0 to 1)
----@return table color RGBA color array
-local function get_fire_color(t)
-    if t > 0.6 then
-        -- White to yellow (1,1,1) -> (1,1,0)
-        local yellow = (t - 0.6) / 0.4  -- 0 to 1
-        return {1, 1, yellow, 1}
-    elseif t > 0.2 then
-        -- Yellow to red (1,1,0) -> (1,0,0)
-        local red = (t - 0.2) / 0.4  -- 0 to 1
-        return {1, red, 0, 1}
-    else
-        -- Red to transparent (1,0,0) -> (1,0,0,0)
-        return {1, 0, 0, t * 5}  -- Fade out in last 20%
-    end
-end
-
 return {
-    new = AnimatedParticle.new,
-    get_ice_color = get_ice_color,
-    get_fire_color = get_fire_color
+    new = AnimatedParticle.new
 } 

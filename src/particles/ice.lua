@@ -5,6 +5,34 @@ local constants = require("src.particles.constants")
 local IceParticle = {}
 IceParticle.__index = IceParticle
 
+---Get the color for an ice particle based on its lifetime
+---@param t number Normalized lifetime (0 to 1)
+---@return table color RGBA color array
+local function get_ice_color(t)
+    if t > 0.6 then
+        -- Dark blue to blue (0,0,0.8) -> (0,0.3,1)
+        local blend = (t - 0.6) / 0.4
+        return {
+            0,                   -- stays 0
+            0.3 * blend,        -- 0 -> 0.3
+            0.8 + 0.2 * blend,  -- 0.8 -> 1
+            1
+        }
+    elseif t > 0.2 then
+        -- Blue to turkish blue (0,0.3,1) -> (0,0.6,1)
+        local blend = (t - 0.2) / 0.4
+        return {
+            0,                   -- stays 0
+            0.3 + 0.3 * blend,  -- 0.3 -> 0.6
+            1,                   -- stays 1
+            1
+        }
+    else
+        -- Fade out turkish blue
+        return {0, 0.6, 1, t * 5}
+    end
+end
+
 ---@param pos Vector2 The position to spawn particles at (in tile space)
 ---@return table Array of ice particles
 function IceParticle.spawn(pos)
@@ -28,12 +56,13 @@ function IceParticle.spawn(pos)
             -constants.magic_speed * (0.1 + math.random() * 0.4)
         )
         
-        -- Create particle
+        -- Create particle with color hook
         local particle = animation.new(
             screen_pos + offset,
             velocity * 60,
             constants.magic_life * (0.8 + math.random() * 0.4),
-            "ice"
+            "ice",
+            get_ice_color
         )
         
         table.insert(particles, particle)
