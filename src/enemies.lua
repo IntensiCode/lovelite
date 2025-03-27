@@ -152,6 +152,11 @@ end
 ---@param enemy Enemy The enemy that was hit
 ---@param projectile table The projectile that hit the enemy
 function enemies.on_hit(enemy, projectile)
+    -- Set backoff state when hit by any projectile
+    if enemy.behavior == "bully" then
+        enemy.backoff = 0.5
+    end
+
     if projectile.weapon.melee then
         -- Get armor class (default to 0 if nil) and clamp between 0 and 100
         local armor_class = enemy.armorclass or 0
