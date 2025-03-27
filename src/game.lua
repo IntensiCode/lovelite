@@ -70,8 +70,18 @@ function _game.draw()
     -- Draw particles above the redrawn wall tiles
     _game.particles.draw()
 
-    love.graphics.translate(-translation.x, -translation.y)
+    -- Draw debug positions in world space
+    if _game.debug.enabled then
+        _game.debug.draw_entity_positions()
+    end
 
+    -- Reset graphics
+    love.graphics.translate(-translation.x, -translation.y)
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.origin()
+    love.graphics.setBlendMode("alpha")
+
+    -- Draw UI elements
     _game.player.draw_ui()
     _game.debug.draw()
 
