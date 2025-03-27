@@ -13,8 +13,8 @@ local function clone(t)
     return copy
 end
 
-local table_utils = {
+local t = {
     clone = clone
 }
 
-return table_utils 
+return t 

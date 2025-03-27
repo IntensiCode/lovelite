@@ -1,6 +1,6 @@
 local STI = require("src.libraries.sti.init")
 local Vector2 = require("src.base.vector2")
-local table_utils = require("src.base.table")
+local t = require("src.base.table")
 
 -- Constants
 local OBJECTS_LAYER_ID = 2
@@ -116,14 +116,14 @@ function dungeon.process_tiles()
         if props["kind"] then
             -- print(string.format("  Has kind: %s", props["kind"]))
             if props["kind"] == "enemy" then
-                dungeon.enemies[gid] = table_utils.clone(props)
+                dungeon.enemies[gid] = t.clone(props)
                 dungeon.enemies[gid].max_hitpoints = dungeon.enemies[gid].hitpoints
                 dungeon.enemies[gid].tile = tile
             elseif props["kind"] == "weapon" then
-                dungeon.weapons[gid] = table_utils.clone(props)
+                dungeon.weapons[gid] = t.clone(props)
                 dungeon.weapons[gid].tile = tile
             elseif props["kind"] == "shield" then
-                dungeon.shields[gid] = table_utils.clone(props)
+                dungeon.shields[gid] = t.clone(props)
                 dungeon.shields[gid].max_hitpoints = dungeon.shields[gid].hitpoints
                 dungeon.shields[gid].tile = tile
             elseif props["kind"] == "chest" then
@@ -131,7 +131,7 @@ function dungeon.process_tiles()
                 local anim_frame = props["anim"] or 0
                 dungeon.chest_anim[anim_frame + 1] = gid
             elseif props["kind"] == "player" then
-                dungeon.player = table_utils.clone(props)
+                dungeon.player = t.clone(props)
                 dungeon.player.max_hitpoints = dungeon.player.hitpoints
                 dungeon.player.tile = tile
             end

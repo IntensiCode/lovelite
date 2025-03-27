@@ -1,5 +1,5 @@
 local Vector2 = require("src.base.vector2")
-local table_utils = require("src.base.table")
+local t = require("src.base.table")
 
 -- Constants
 local JUMP_SPEED = 5
@@ -23,7 +23,7 @@ function enemies_load.load(enemies, game)
             if tile and tile.properties and tile.properties["kind"] == "enemy" then
                 local enemy_data = game.dungeon.enemies[tile.gid]
                 -- Clone the enemy data and add instance-specific properties
-                local enemy = table_utils.clone(enemy_data)
+                local enemy = t.clone(enemy_data)
                 -- Add instance-specific properties
                 enemy.pos = Vector2.new(x + 0.5, y + 0.5)
                 enemy.tile = tile

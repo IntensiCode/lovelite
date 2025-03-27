@@ -1,4 +1,4 @@
-local table_utils = require("src.base.table")
+local t = require("src.base.table")
 
 ---@class Weapon
 ---@field name string
@@ -43,7 +43,7 @@ local weapons = {
 function weapons.init(dungeon)
     -- Add all weapons from map manager
     for gid, weapon_props in pairs(dungeon.weapons) do
-        local weapon = table_utils.clone(weapon_props)
+        local weapon = t.clone(weapon_props)
         weapon.tile = weapon_props.tile
         weapons[weapon.name] = weapon
     end
