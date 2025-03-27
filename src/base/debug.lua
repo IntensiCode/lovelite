@@ -1,7 +1,8 @@
 local debug = {
-    enabled = true,
-    font = nil
+    enabled = true
 }
+
+local font = require("src.base.font")
 
 -- Helper function to print a table's contents
 local function print_table(tbl, indent)
@@ -38,7 +39,7 @@ end
 function debug.draw_entity_positions()
     -- Set debug font if available
     local default_font = love.graphics.getFont()
-    love.graphics.setFont(debug.font)
+    love.graphics.setFont(font.tiny)
 
     local tile_width = _game.dungeon.map.tilewidth
     local tile_height = _game.dungeon.map.tileheight
@@ -59,7 +60,7 @@ function debug.draw_entity_positions()
 
     -- Draw player position text with background
     local pos_text = string.format("%.2f, %.2f", _game.player.pos.x, _game.player.pos.y)
-    local text_width = debug.font:getWidth(pos_text)
+    local text_width = font.tiny:getWidth(pos_text)
     local line_height = 9 -- 8px font height + 1px spacing
     local padding = 1
 
@@ -80,20 +81,7 @@ function debug.draw_entity_positions()
     )
 
     -- Restore default font
-    if debug.font then
-        love.graphics.setFont(default_font)
-    end
-end
-
-function debug.load()
-    local success, result = pcall(function()
-        return love.graphics.newFont("assets/fonts/font_tiny.fnt")
-    end)
-    if success then
-        debug.font = result
-    else
-        print("Failed to load debug font:", result)
-    end
+    love.graphics.setFont(default_font)
 end
 
 function debug.draw()
@@ -105,7 +93,7 @@ function debug.draw()
 
     -- Set debug font if available
     local default_font = love.graphics.getFont()
-    love.graphics.setFont(debug.font)
+    love.graphics.setFont(font.tiny)
 
     -- Calculate text dimensions for background
     local info = {
@@ -119,7 +107,7 @@ function debug.draw()
     local padding = 1
     local max_width = 0
     for _, text in ipairs(info) do
-        max_width = math.max(max_width, debug.font:getWidth(text))
+        max_width = math.max(max_width, font.tiny:getWidth(text))
     end
 
     -- Draw semi-transparent black background
