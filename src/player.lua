@@ -97,7 +97,12 @@ function player.load(opts)
         local setup = _game.dungeon.player
         player.speed = setup.speed
         player.armorclass = setup.armorclass
-        player.hitpoints = setup.hitpoints
+        -- Set lower hitpoints in debug mode
+        if _game.debug.enabled then
+            player.hitpoints = 5
+        else
+            player.hitpoints = setup.hitpoints
+        end
         player.max_hitpoints = setup.max_hitpoints
 
         -- Reset combat state
