@@ -17,10 +17,19 @@ local backoff = require("src.enemy.backoff")
 ---@field backoff number|nil Time to back off after being hit
 ---@field backoff_tile Vector2|nil The tile to move to during backoff
 ---@field will_retreat boolean Whether the enemy will retreat when hit (default: true)
+---@field jump_height number Current height of happy jump
+---@field jump_time number Time elapsed in current jump
+---@field next_jump_delay number Time until next jump starts
+---@field jump_speed number Speed of the jump animation
 
 local enemies = {
     items = {}
 }
+
+-- Jump animation constants
+local JUMP_DURATION = 0.5
+local JUMP_MAX_HEIGHT = 0.3 -- In tile units
+local JUMP_SPEED = 2        -- Halved from 4
 
 function enemies.load()
     -- Get the Objects layer
@@ -40,6 +49,11 @@ function enemies.load()
                 enemy.name = tile.properties["name"] or "Enemy"
                 enemy.is_dead = false
                 enemy.will_retreat = enemy_data.will_retreat ~= false -- Default to true unless explicitly set to false
+                -- Initialize jump properties with random initial delay
+                enemy.jump_height = 0
+                enemy.jump_time = 0
+                enemy.next_jump_delay = math.random() * 0.5 -- Initial delay still random 0-0.5
+                enemy.jump_speed = JUMP_SPEED
                 table.insert(enemies.items, enemy)
             end
         end
@@ -51,6 +65,27 @@ function enemies.load()
         print(string.format("  %d. %s at (%d, %d) with %d HP, AC %d, and resistances (F:%s I:%s L:%s)",
             i, enemy.behavior or "Unknown", enemy.pos.x, enemy.pos.y, enemy.hitpoints or 0, enemy.armorclass or 0,
             enemy.resistance_fire or "N/A", enemy.resistance_ice or "N/A", enemy.resistance_lightning or "N/A"))
+    end
+end
+
+---Update enemy jump animation
+---@param enemy Enemy The enemy to update
+---@param dt number Delta time in seconds
+local function update_happy_jump(enemy, dt)
+    if enemy.next_jump_delay > 0 then
+        enemy.next_jump_delay = enemy.next_jump_delay - dt
+        return
+    end
+
+    enemy.jump_time = enemy.jump_time + dt * enemy.jump_speed
+
+    -- Calculate jump height using sine wave
+    enemy.jump_height = math.abs(math.sin(enemy.jump_time * math.pi * 2) * JUMP_MAX_HEIGHT)
+
+    -- If we completed a jump, set up the next one with random delay between 1.0 and 2.0
+    if enemy.jump_time >= 1 then
+        enemy.jump_time = 0
+        enemy.next_jump_delay = 1.0 + math.random() -- Random between 1.0 and 2.0
     end
 end
 
@@ -73,6 +108,12 @@ function enemies.update(dt)
             goto continue
         end
 
+        -- If player is dead, do happy jumps!
+        if _game.player.is_dead then
+            update_happy_jump(enemy, dt)
+            goto continue
+        end
+
         -- Handle stun time
         if enemy.stun_time and enemy.stun_time > 0 then
             enemy.stun_time = enemy.stun_time - dt
@@ -90,7 +131,7 @@ function enemies.update(dt)
             goto continue
         end
 
-        -- In the enemies.update function
+        -- Handle backoff behavior
         if enemy.backoff and enemy.backoff > 0 then
             backoff.update(enemy, dt)
             goto continue
@@ -112,6 +153,9 @@ function enemies.draw()
         local screen_x = ((enemy.pos.x - 1) * tile_size)
         local screen_y = ((enemy.pos.y - 1) * tile_size)
 
+        -- Apply jump height offset
+        screen_y = screen_y - (enemy.jump_height or 0) * tile_size
+
         -- Set color to blue tint if stunned, white otherwise
         if enemy.stun_time and enemy.stun_time > 0 then
             love.graphics.setBlendMode("alpha", "premultiplied")
@@ -127,11 +171,11 @@ function enemies.draw()
             enemy.tile.quad,
             screen_x,
             screen_y,
-            0,           -- rotation
-            1,           -- scale x
-            1,           -- scale y
+            0,             -- rotation
+            1,             -- scale x
+            1,             -- scale y
             tile_size / 2, -- origin x (center of sprite)
-            tile_size / 2 -- origin y (center of sprite)
+            tile_size / 2  -- origin y (center of sprite)
         )
 
         -- Reset blend mode
