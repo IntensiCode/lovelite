@@ -31,7 +31,6 @@ function _game.load()
     _game.dungeon.load()
     _game.collision.load()
     _game.pathfinder.load()
-    _game.debug.load()
     _game.player.load()
     _game.collectibles.load()
     _game.enemies.load()
@@ -115,9 +114,7 @@ function _game.find_overlappable_positions()
 end
 
 function _game.keypressed(key)
-    if key == "escape" then
-        love.event.quit()
-    elseif key == "d" then
+    if key == "d" then
         _game.debug.toggle()
     end
 end

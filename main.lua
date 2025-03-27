@@ -3,26 +3,45 @@ print("Main module started!")
 -- Add src directory to the Lua path
 love.filesystem.setRequirePath("src/?.lua;src/?/init.lua;" .. love.filesystem.getRequirePath())
 
--- Load the game module
-local game = require("game")
+local font = require("src.base.font")
+local screen = require("src.base.screen")
+local title = require("src.title")
+local game = require("src.game")
 
--- Forward LÖVE callbacks to the game module
 function love.load()
-    if game.load then game.load() end
+    -- Load global resources first
+    font.load()
+
+    screen.register("title", title)
+    screen.register("game", game)
+
+    title.load()
+    game.load()
 end
 
 function love.update(dt)
-    if game.update then game.update(dt) end
+    local current_screen = screen.get_current()
+    current_screen.update(dt)
 end
 
 function love.draw()
-    if game.draw then game.draw() end
+    local current_screen = screen.get_current()
+    current_screen.draw()
 end
 
 function love.keypressed(key)
-    if game.keypressed then game.keypressed(key) end
+    -- Handle global keys first
+    if key == "escape" then
+        love.event.quit()
+        return
+    end
+
+    -- Then forward to current screen
+    local current_screen = screen.get_current()
+    current_screen.keypressed(key)
 end
 
 function love.resize(w, h)
-    if game.resize then game.resize(w, h) end
-end 
+    local current_screen = screen.get_current()
+    current_screen.resize(w, h)
+end
