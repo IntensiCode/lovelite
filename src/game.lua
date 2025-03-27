@@ -12,6 +12,7 @@ local sound = require("src.sound")
 local collision = require("src.map.collision")
 local fade = require("src.base.fade")
 local screen = require("src.base.screen")
+local font = require("src.base.font")
 
 -- Make game a global variable
 _game = {
@@ -25,7 +26,10 @@ _game = {
     collectibles = collectibles,
     enemies = enemies,
     sound = sound,
-    collision = collision
+    collision = collision,
+    font = font,
+    blink_timer = 0,
+    blink_visible = true
 }
 
 ---Load the game module
@@ -41,6 +45,7 @@ function _game.load(opts)
     _game.collectibles.load(opts)
     _game.enemies.load(opts)
     _game.sound.load(opts)
+    _game.font.load() -- Load fonts before using them
 
     -- Start with fade in
     fade.on_fade_done = nil
@@ -51,9 +56,25 @@ function _game.load(opts)
     -- _game.particles.load()
 end
 
+---Update the blink timer state
+---@param dt number Delta time
+function _game.update_blink_timer(dt)
+    _game.blink_timer = _game.blink_timer + dt
+    if _game.blink_visible and _game.blink_timer >= 0.8 then
+        _game.blink_visible = false
+        _game.blink_timer = 0
+    elseif not _game.blink_visible and _game.blink_timer >= 0.2 then
+        _game.blink_visible = true
+        _game.blink_timer = 0
+    end
+end
+
 function _game.update(dt)
     -- Update fade
     fade.update(dt)
+
+    -- Update blink timer
+    _game.update_blink_timer(dt)
 
     _game.dungeon.map:update(dt)
     _game.player.update(dt)
@@ -105,10 +126,35 @@ function _game.draw()
     _game.player.draw_ui()
     _game.debug.draw()
 
+    -- Draw game over overlay if player is dead
+    if _game.player.is_dead and (_game.player.death_time == nil or _game.player.death_time <= 0) then
+        _game.draw_game_over_overlay()
+    end
+
     -- Draw fade overlay last
     fade.draw(_game.camera.width, _game.camera.height)
 
     _game.camera.endDraw()
+end
+
+---Draw the game over overlay
+function _game.draw_game_over_overlay()
+    -- Semi-transparent black background
+    love.graphics.setColor(0, 0, 0, 0.7)
+    love.graphics.rectangle("fill", 0, 0, _game.camera.width, _game.camera.height)
+
+    -- Reset color for text
+    love.graphics.setColor(1, 1, 1, 1)
+
+    -- Draw "GAME OVER" and "YOU DIED"
+    _game.font.draw_text("GAME OVER", _game.camera.width / 2, _game.camera.height / 2 - 80, _game.font.anchor.center)
+    _game.font.draw_text("YOU DIED", _game.camera.width / 2, _game.camera.height / 2 - 60, _game.font.anchor.center)
+
+    -- Draw "Press SPACE to continue" at the bottom (only when visible)
+    if _game.blink_visible then
+        _game.font.draw_text("Press SPACE to continue", _game.camera.width / 2, _game.camera.height - 8,
+        _game.font.anchor.bottom_center)
+    end
 end
 
 ---Find all positions that need wall checking
@@ -134,6 +180,12 @@ function _game.keypressed(key)
         _game.debug.toggle()
     elseif key == "escape" then
         -- Fade out and return to title screen
+        fade.on_fade_done = function()
+            screen.switch_to("title")
+        end
+        fade.reset("fade_out", 0.2)
+    elseif key == "space" and _game.player.is_dead and (_game.player.death_time == nil or _game.player.death_time <= 0) then
+        -- Fade out and return to title screen when dead
         fade.on_fade_done = function()
             screen.switch_to("title")
         end
