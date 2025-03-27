@@ -58,10 +58,11 @@ function _game.draw()
         _game.pathfinder.draw()
     end
 
-    _game.collectibles.draw()
+    -- Draw in correct order
     _game.player.draw()
-    _game.projectiles.draw()
+    _game.collectibles.draw()
     _game.enemies.draw()
+    _game.projectiles.draw()
 
     -- Find and draw all overlapping tiles
     local positions = _game.find_overlappable_positions()
