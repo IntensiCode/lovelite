@@ -10,6 +10,7 @@ local collectibles = require("src.collectibles")
 local enemies = require("src.enemies")
 local sound = require("src.sound")
 local collision = require("src.map.collision")
+local fade = require("src.base.fade")
 
 -- Make game a global variable
 _game = {
@@ -36,12 +37,19 @@ function _game.load()
     _game.enemies.load()
     _game.sound.load()
 
+    -- Start with fade in
+    fade.on_fade_done = nil  -- No callback needed for initial fade
+    fade.reset("fade_in", 0.2)
+
     -- No loading for projectiles and particles
     -- _game.projectiles.load()
     -- _game.particles.load()
 end
 
 function _game.update(dt)
+    -- Update fade
+    fade.update(dt)
+
     _game.dungeon.map:update(dt)
     _game.player.update(dt)
     _game.camera.update(dt)
@@ -91,6 +99,9 @@ function _game.draw()
     -- Draw UI elements
     _game.player.draw_ui()
     _game.debug.draw()
+
+    -- Draw fade overlay last
+    fade.draw(_game.camera.width, _game.camera.height)
 
     _game.camera.endDraw()
 end
