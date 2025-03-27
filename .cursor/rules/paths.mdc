@@ -1,8 +1,20 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
 # Path Rules
+
+## Module Paths
+- Local modules must be required using the `src.` prefix (e.g., `require("src.base.vector2")`)
 
 ## Library Paths
 - STI library path must be `src/libraries/sti.init`
 - This is the correct path that was previously fixed and should not be changed to `libs.sti` or any other variation
+
+## Constants
+- Game constants should be defined in their respective modules
+- Shared constants should be defined in `src.base.constants`
 
 ## Map Paths
 - Map file path must be `assets/maps/level1.lua`

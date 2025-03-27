@@ -26,8 +26,8 @@ local particles = {
 function particles.spawn(data)
     -- Convert tile space position to screen space
     local screen_pos = Vector2.new(
-        (data.pos.x - 1) * _game.map_manager.map.tilewidth,
-        (data.pos.y - 1) * _game.map_manager.map.tileheight
+        (data.pos.x - 1) * _game.dungeon.map.tilewidth,
+        (data.pos.y - 1) * _game.dungeon.map.tileheight
     )
 
     -- Use provided count or default based on particle type

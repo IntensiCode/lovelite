@@ -40,8 +40,8 @@ function debug.draw_entity_positions()
     local default_font = love.graphics.getFont()
     love.graphics.setFont(debug.font)
 
-    local tile_width = _game.map_manager.map.tilewidth
-    local tile_height = _game.map_manager.map.tileheight
+    local tile_width = _game.dungeon.map.tilewidth
+    local tile_height = _game.dungeon.map.tileheight
 
     -- Draw enemy position dots in red first
     love.graphics.setColor(1, 0, 0, 0.5) -- Red with 25% opacity
@@ -147,12 +147,12 @@ end
 function debug.print_map_tiles()
     print("\nProcessed tiles:")
 
-    dump_tiles("Enemies", _game.map_manager.enemies)
-    dump_tiles("Weapons", _game.map_manager.weapons)
-    dump_tiles("Shields", _game.map_manager.shields)
+    dump_tiles("Enemies", _game.dungeon.enemies)
+    dump_tiles("Weapons", _game.dungeon.weapons)
+    dump_tiles("Shields", _game.dungeon.shields)
 
     print("\nChest animation frames:")
-    for frame, gid in ipairs(_game.map_manager.chest_anim) do
+    for frame, gid in ipairs(_game.dungeon.chest_anim) do
         print(string.format("Frame %d: Tile ID %d", frame - 1, gid))
     end
 end

@@ -48,8 +48,8 @@ function camera.update(dt)
     assert(_game.player.pos ~= nil, "Player must have a position for camera update")
     
     -- Get map dimensions in tiles
-    local map_width = _game.map_manager.map.width
-    local map_height = _game.map_manager.map.height
+    local map_width = _game.dungeon.map.width
+    local map_height = _game.dungeon.map.height
     local virtual_width, virtual_height = camera.getDimensions()
     
     -- Calculate camera position to center on player
@@ -113,8 +113,8 @@ end
 function camera.translation()
     -- Convert player position (in tiles) to pixels and center the view
     return Vector2.new(
-        -(camera.world_pos.x * _game.map_manager.map.tilewidth) + (camera.width / 2),
-        -(camera.world_pos.y * _game.map_manager.map.tileheight) + (camera.height / 2)
+        -(camera.world_pos.x * _game.dungeon.map.tilewidth) + (camera.width / 2),
+        -(camera.world_pos.y * _game.dungeon.map.tileheight) + (camera.height / 2)
     )
 end
 

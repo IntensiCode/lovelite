@@ -1,4 +1,4 @@
-local map_manager = require("src.map_manager")
+local dungeon = require("src.map.dungeon")
 local constants = require("src.base.constants")
 
 ---@class Pathfinder
@@ -17,8 +17,8 @@ local pathfinder = {
 function pathfinder.load()
     -- Initialize pathfinder with map dimensions and walkable function
     pathfinder.init(
-        _game.map_manager.map.width,
-        _game.map_manager.map.height,
+        _game.dungeon.map.width,
+        _game.dungeon.map.height,
         _game.collision.is_walkable_tile
     )
 end
@@ -227,7 +227,7 @@ end
 function pathfinder.draw()
     if not pathfinder.dijkstra_distances then return end
 
-    local tile_size = map_manager.map.tilewidth
+    local tile_size = dungeon.map.tilewidth
     local max_dist = 0
 
     -- Find maximum distance for color scaling

@@ -104,8 +104,8 @@ function projectiles.update(dt)
 
         -- Check if outside map bounds
         if proj.pos.x < 1 or proj.pos.y < 1 or
-            proj.pos.x > _game.map_manager.map.width or
-            proj.pos.y > _game.map_manager.map.height then
+            proj.pos.x > _game.dungeon.map.width or
+            proj.pos.y > _game.dungeon.map.height then
             table.remove(projectiles.active, i)
         else
             -- Check for enemy collisions
@@ -131,8 +131,8 @@ end
 
 function projectiles.draw()
     for _, proj in ipairs(projectiles.active) do
-        local screen_x = math.floor((proj.pos.x - 1) * _game.map_manager.map.tilewidth)
-        local screen_y = math.floor((proj.pos.y - 1) * _game.map_manager.map.tileheight)
+        local screen_x = math.floor((proj.pos.x - 1) * _game.dungeon.map.tilewidth)
+        local screen_y = math.floor((proj.pos.y - 1) * _game.dungeon.map.tileheight)
 
         -- Get tile dimensions
         local _, _, tile_width, tile_height = proj.weapon.tile.quad:getViewport()
@@ -145,7 +145,7 @@ function projectiles.draw()
         if proj.weapon.melee then
             -- Draw projectile centered and rotated
             love.graphics.draw(
-                _game.map_manager.map.tilesets[1].image,
+                _game.dungeon.map.tilesets[1].image,
                 proj.weapon.tile.quad,
                 screen_x,
                 screen_y,

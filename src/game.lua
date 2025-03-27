@@ -1,6 +1,6 @@
 -- Import modules
 local camera = require("src.camera")
-local map_manager = require("src.map_manager")
+local dungeon = require("src.map.dungeon")
 local pathfinder = require("src.pathfinder")
 local debug = require("src.base.debug")
 local player = require("src.player")
@@ -14,7 +14,7 @@ local collision = require("src.map.collision")
 -- Make game a global variable
 _game = {
     camera = camera,
-    map_manager = map_manager,
+    dungeon = dungeon,
     pathfinder = pathfinder,
     debug = debug,
     player = player,
@@ -28,7 +28,7 @@ _game = {
 
 function _game.load()
     _game.camera.load()
-    _game.map_manager.load()
+    _game.dungeon.load()
     _game.collision.load()
     _game.pathfinder.load()
     _game.debug.load()
@@ -43,7 +43,7 @@ function _game.load()
 end
 
 function _game.update(dt)
-    _game.map_manager.map:update(dt)
+    _game.dungeon.map:update(dt)
     _game.player.update(dt)
     _game.camera.update(dt)
     _game.debug.update(dt)
@@ -59,7 +59,7 @@ function _game.draw()
     local translation = _game.camera.translation()
     love.graphics.translate(translation.x, translation.y)
 
-    _game.map_manager.map:draw(translation.x, translation.y)
+    _game.dungeon.map:draw(translation.x, translation.y)
     if _game.debug.enabled then
         _game.pathfinder.draw()
     end

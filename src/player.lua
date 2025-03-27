@@ -81,7 +81,7 @@ function player.on_hit(weapon)
 end
 
 function player.load()
-    local start = _game.map_manager.get_player_start_position()
+    local start = _game.dungeon.get_player_start_position()
     print("Player setup:", start)
     print("Player position:", start.pos)
 
@@ -89,17 +89,17 @@ function player.load()
     player.tile = start.tile
     player.tile_id = start.tile.id
 
-    local setup = _game.map_manager.player
+    local setup = _game.dungeon.player
     player.speed = setup.speed
     player.armorclass = setup.armorclass
     player.hitpoints = setup.hitpoints
     player.max_hitpoints = setup.max_hitpoints
 
     -- Get tile size from tileset
-    player.tile_size = _game.map_manager.map.tilewidth
+    player.tile_size = _game.dungeon.map.tilewidth
 
     -- Assign initial weapon
-    for gid, weapon in pairs(_game.map_manager.weapons) do
+    for _, weapon in pairs(_game.dungeon.weapons) do
         if weapon.name == setup.weapon then
             player.weapon = weapon
             break
@@ -281,8 +281,8 @@ end
 function player.draw()
     -- Convert tile position to screen position (snap to integer pixels)
     -- Subtract 1 from position to account for Lua's 1-based indexing
-    local screen_x = math.floor((player.pos.x - 1) * _game.map_manager.map.tilewidth)
-    local screen_y = math.floor((player.pos.y - 1) * _game.map_manager.map.tileheight)
+    local screen_x = math.floor((player.pos.x - 1) * _game.dungeon.map.tilewidth)
+    local screen_y = math.floor((player.pos.y - 1) * _game.dungeon.map.tileheight)
 
     -- Get tile dimensions
     local _, _, tile_width, tile_height = player.tile.quad:getViewport()
@@ -330,7 +330,7 @@ function player.draw()
     if player.tile and player.tile.quad then
         -- Draw sprite centered on player position
         love.graphics.draw(
-            _game.map_manager.map.tilesets[1].image,
+            _game.dungeon.map.tilesets[1].image,
             player.tile.quad,
             screen_x,
             screen_y,
@@ -346,7 +346,7 @@ function player.draw()
     if player.shield then
         -- Draw shield centered on player position with rotation
         love.graphics.draw(
-            _game.map_manager.map.tilesets[1].image,
+            _game.dungeon.map.tilesets[1].image,
             player.shield.tile.quad,
             screen_x - tile_width,
             screen_y - tile_height / 3
@@ -357,7 +357,7 @@ function player.draw()
     if player.weapon then
         -- Draw weapon centered on player position with rotation
         love.graphics.draw(
-            _game.map_manager.map.tilesets[1].image,
+            _game.dungeon.map.tilesets[1].image,
             player.weapon.tile.quad,
             screen_x + tile_width / 2,
             screen_y - tile_height * 2 / 3,
@@ -372,7 +372,7 @@ function player.draw_ui()
     local bar_width = 50                             -- Width of health bars
     local bar_height = 4                             -- Height of health bars
     local bar_spacing = 4                            -- Space between bars
-    local box_size = _game.map_manager.map.tilewidth -- Use tile size for indicator boxes
+    local box_size = _game.dungeon.map.tilewidth -- Use tile size for indicator boxes
 
     -- Reset blend mode to default
     love.graphics.setBlendMode("alpha")
@@ -399,7 +399,7 @@ function player.draw_ui()
         -- Draw weapon
         love.graphics.setColor(1, 1, 1, 1)
         love.graphics.draw(
-            _game.map_manager.map.tilesets[1].image,
+            _game.dungeon.map.tilesets[1].image,
             player.weapon.tile.quad,
             box_padding,
             _game.camera.height - box_size - box_padding
@@ -427,7 +427,7 @@ function player.draw_ui()
     if player.shield then
         love.graphics.setColor(1, 1, 1, 1)
         love.graphics.draw(
-            _game.map_manager.map.tilesets[1].image,
+            _game.dungeon.map.tilesets[1].image,
             player.shield.tile.quad,
             box_padding * 2 + box_size,
             _game.camera.height - box_size - box_padding
@@ -489,9 +489,9 @@ end
 function player.update_pathfinder(current_tile)
     if not current_tile then return end
 
-    -- Get map dimensions from map_manager
-    local map_width = _game.map_manager.map.width
-    local map_height = _game.map_manager.map.height
+    -- Get map dimensions from dungeon
+    local map_width = _game.dungeon.map.width
+    local map_height = _game.dungeon.map.height
 
     -- Calculate Dijkstra distances from current tile position
     _game.pathfinder.calculate_dijkstra_distances(

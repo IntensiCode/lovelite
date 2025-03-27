@@ -2,8 +2,8 @@ local Vector2 = require("src.base.vector2")
 
 ---@class Collectible
 ---@field pos Vector2
----@field tile table Reference to the tile from map_manager.tiles
----@field weapon table Reference to the weapon from map_manager.weapons (optional, only if this is a weapon collectible)
+---@field tile table Reference to the tile from dungeon.tiles
+---@field weapon table Reference to the weapon from dungeon.weapons (optional, only if this is a weapon collectible)
 ---@field hover_offset number
 ---@field hover_time number
 local collectibles = {
@@ -14,16 +14,16 @@ local collectibles = {
 
 function collectibles.load()
     -- Get the Objects layer
-    local objects_layer = _game.map_manager.get_objects_layer()
+    local objects_layer = _game.dungeon.get_objects_layer()
 
     -- Process each tile in the Objects layer
     for y = 1, objects_layer.height do
         for x = 1, objects_layer.width do
-            local tile = _game.map_manager.get_objects_tile(x, y)
+            local tile = _game.dungeon.get_objects_tile(x, y)
             if tile and tile.properties then
                 if tile.properties["kind"] == "weapon" then
-                    -- Get the weapon reference from map_manager
-                    local weapon = _game.map_manager.weapons[tile.gid]
+                    -- Get the weapon reference from dungeon
+                    local weapon = _game.dungeon.weapons[tile.gid]
                     if weapon then
                         -- Create a collectible for this weapon tile
                         table.insert(collectibles.items, {
@@ -36,8 +36,8 @@ function collectibles.load()
                         })
                     end
                 elseif tile.properties["kind"] == "shield" then
-                    -- Get the shield reference from map_manager
-                    local shield = _game.map_manager.shields[tile.gid]
+                    -- Get the shield reference from dungeon
+                    local shield = _game.dungeon.shields[tile.gid]
                     if shield then
                         -- Create a collectible for this shield tile
                         table.insert(collectibles.items, {
@@ -83,8 +83,8 @@ function collectibles.draw()
 
     for _, item in ipairs(collectibles.items) do
         -- Convert tile position to screen position
-        local screen_x = (item.pos.x - 1) * _game.map_manager.map.tilewidth
-        local screen_y = (item.pos.y - 1) * _game.map_manager.map.tileheight
+        local screen_x = (item.pos.x - 1) * _game.dungeon.map.tilewidth
+        local screen_y = (item.pos.y - 1) * _game.dungeon.map.tileheight
 
         -- Get tile dimensions
         local _, _, tile_width, tile_height = item.tile.quad:getViewport()
@@ -102,7 +102,7 @@ function collectibles.draw()
 
         -- Draw collectible centered with hover offset
         love.graphics.draw(
-            _game.map_manager.map.tilesets[1].image,
+            _game.dungeon.map.tilesets[1].image,
             item.tile.quad,
             screen_x,
             screen_y + item.hover_offset,

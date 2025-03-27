@@ -14,7 +14,7 @@ _game.collision = collision
 
 ---Initialize the collision system
 function collision.load()
-    collision.map = _game.map_manager.map
+    collision.map = _game.dungeon.map
     collision.process_walkable_tiles()
 end
 

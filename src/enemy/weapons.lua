@@ -39,10 +39,10 @@ local weapons = {
 }
 
 ---Initialize weapons from map manager
----@param map_manager table The map manager instance
-function weapons.init(map_manager)
+---@param dungeon table The map manager instance
+function weapons.init(dungeon)
     -- Add all weapons from map manager
-    for gid, weapon_props in pairs(map_manager.weapons) do
+    for gid, weapon_props in pairs(dungeon.weapons) do
         local weapon = table_utils.clone(weapon_props)
         weapon.tile = weapon_props.tile
         weapons[weapon.name] = weapon
