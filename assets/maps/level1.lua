@@ -170,7 +170,8 @@ return {
             ["armorclass"] = 20,
             ["hitpoints"] = 100,
             ["kind"] = "player",
-            ["speed"] = 5
+            ["speed"] = 5,
+            ["weapon"] = "sword"
           }
         },
         {
@@ -289,7 +290,6 @@ return {
           id = 103,
           properties = {
             ["cooldown"] = 0.5,
-            ["initial"] = true,
             ["kind"] = "weapon",
             ["melee"] = 25,
             ["name"] = "sword",

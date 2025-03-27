@@ -7,18 +7,17 @@ local OBJECTS_LAYER_ID = 2
 
 ---@class MapManager
 ---@field map table The STI map object
----@field player_tile_id number The tile ID for the player
 ---@field tile_center Vector2 The center position of the current tile
 ---@field map_size Vector2 The size of the map in tiles
 ---@field walkable_tiles table<number, boolean> Map of tile IDs to walkable status
----@field enemies table<number, {hitpoints: number, armorclass: number}>
+---@field enemies table<number, {hitpoints: number, armorclass: number, tile: table, armorclass: number, hitpoints: number, max_hitpoints: number}>
 ---@field weapons table<number, {name: string, melee: number, speed: number, initial: boolean, tile: table, cooldown: number}>
----@field shields table<number, {name: string, armorclass: number, hitpoints: number, max_hitpoints: number}>
+---@field shields table<number, {name: string, tile: table, armorclass: number, hitpoints: number, max_hitpoints: number}>
 ---@field chest_anim number[] Array of tile IDs for chest animation frames
 ---@field objects_layer table The layer containing game objects
+---@field player {hitpoints: number, armorclass: number, tile: table, max_hitpoints: number, armorclass: number, hitpoints: number, speed: number, weapon: string}
 local map_manager = {
     map = nil,
-    player_tile_id = nil,
     tile_center = Vector2.new(0, 0),
     map_size = Vector2.new(0, 0),
     walkable_tiles = {},
@@ -26,7 +25,8 @@ local map_manager = {
     weapons = {},
     shields = {},
     chest_anim = {},
-    objects_layer = nil
+    objects_layer = nil,
+    player = nil
 }
 
 ---Get the objects layer from the map
@@ -94,9 +94,7 @@ end
 ---@field tile table
 ---@return PlayerSetup
 function map_manager.get_player_start_position()
-    print("Looking for player tile with ID:", map_manager.player_tile_id)
-
-    local location = map_manager.find_tile_by_id(map_manager.player_tile_id)
+    local location = map_manager.find_tile_by_id(map_manager.find_player_tile_id())
     assert(location ~= nil, "Player tile not found in map! This should never happen as we verified the tile exists.")
 
     -- Add 0.5 to center the player in the tile
@@ -139,6 +137,10 @@ function map_manager.process_tiles()
                 -- Store chest animation frames in order
                 local anim_frame = props["anim"] or 0
                 map_manager.chest_anim[anim_frame + 1] = gid
+            elseif props["kind"] == "player" then
+                map_manager.player = table_utils.clone(props)
+                map_manager.player.max_hitpoints = map_manager.player.hitpoints
+                map_manager.player.tile = tile
             end
         end
 
@@ -152,9 +154,6 @@ function map_manager.load()
     -- Load the map
     map_manager.map = STI("assets/maps/level1.lua")
     print("Map loaded:", map_manager.map.width, "x", map_manager.map.height)
-
-    -- Find player tile ID in the Objects layer
-    map_manager.player_tile_id = map_manager.find_player_tile_id()
 
     -- Calculate tile center once
     map_manager.tile_center = Vector2.new(map_manager.map.tilewidth / 2, map_manager.map.tileheight / 2)

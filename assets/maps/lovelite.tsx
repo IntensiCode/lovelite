@@ -115,6 +115,7 @@
    <property name="hitpoints" type="int" value="100"/>
    <property name="kind" value="player"/>
    <property name="speed" type="int" value="5"/>
+   <property name="weapon" value="sword"/>
   </properties>
  </tile>
  <tile id="88">
@@ -220,7 +221,6 @@
  <tile id="103">
   <properties>
    <property name="cooldown" type="float" value="0.5"/>
-   <property name="initial" type="bool" value="true"/>
    <property name="kind" value="weapon"/>
    <property name="melee" type="int" value="25"/>
    <property name="name" value="sword"/>

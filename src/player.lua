@@ -6,42 +6,50 @@ local events = require("src.base.events")
 ---@field tile_id number
 ---@field tile table
 ---@field speed number
+---@field hitpoints number
+---@field max_hitpoints number
 ---@field weapon table
 ---@field shield table
 ---@field tile_size number
 ---@field last_direction Vector2
 ---@field cooldown number
----@field armor_class number
+---@field armorclass number
 local player = {
     pos = Vector2.new(0, 0),
     tile_id = nil,
     tile = nil,
     speed = 5, -- tiles per second
+    hitpoints = 100,
+    max_hitpoints = 100,
     weapon = nil,
     shield = nil,
     tile_size = nil,
     last_direction = Vector2.new(1, 0), -- Default facing right
     cooldown = 0,                       -- Initialize cooldown to 0
-    armor_class = 0                     -- Base armor class
+    armorclass = 0                      -- Base armor class
 }
 
 function player.load()
-    local setup = _game.map_manager.get_player_start_position()
-    print("Player setup:", setup)
-    print("Player position:", setup.pos)
-    print("Player tile:", setup.tile)
+    local start = _game.map_manager.get_player_start_position()
+    print("Player setup:", start)
+    print("Player position:", start.pos)
 
-    player.pos = setup.pos
-    player.tile = setup.tile
-    player.tile_id = setup.tile.id
+    player.pos = start.pos
+    player.tile = start.tile
+    player.tile_id = start.tile.id
+
+    local setup = _game.map_manager.player
+    player.speed = setup.speed
+    player.armorclass = setup.armorclass
+    player.hitpoints = setup.hitpoints
+    player.max_hitpoints = setup.max_hitpoints
 
     -- Get tile size from tileset
     player.tile_size = _game.map_manager.map.tilewidth
 
     -- Assign initial weapon
-    player.weapon = nil
     for gid, weapon in pairs(_game.map_manager.weapons) do
-        if weapon.initial then
+        if weapon.name == setup.weapon then
             player.weapon = weapon
             break
         end
