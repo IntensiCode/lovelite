@@ -1,5 +1,5 @@
 local STI = require("src.libraries.sti.init")
-local Vector2 = require("src.base.vector2")
+local pos = require("src.base.pos")
 local t = require("src.base.table")
 
 -- Constants
@@ -7,8 +7,8 @@ local OBJECTS_LAYER_ID = 2
 
 ---@class Dungeon
 ---@field map table The STI map object
----@field tile_center Vector2 The center position of the current tile
----@field map_size Vector2 The size of the map in tiles
+---@field tile_center pos The center position of the current tile
+---@field map_size pos The size of the map in tiles
 ---@field enemies table<number, {hitpoints: number, armorclass: number, tile: table, armorclass: number, hitpoints: number, max_hitpoints: number}>
 ---@field weapons table<number, {name: string, melee: number, speed: number, initial: boolean, tile: table, cooldown: number}>
 ---@field shields table<number, {name: string, tile: table, armorclass: number, hitpoints: number, max_hitpoints: number}>
@@ -17,8 +17,8 @@ local OBJECTS_LAYER_ID = 2
 ---@field player {hitpoints: number, armorclass: number, tile: table, max_hitpoints: number, armorclass: number, hitpoints: number, speed: number, weapon: string}
 local dungeon = {
     map = nil,
-    tile_center = Vector2.new(0, 0),
-    map_size = Vector2.new(0, 0),
+    tile_center = pos.new(0, 0),
+    map_size = pos.new(0, 0),
     enemies = {},
     weapons = {},
     shields = {},
@@ -88,7 +88,7 @@ function dungeon.find_tile_by_id(tile_id)
 end
 
 ---@class PlayerSetup
----@field pos Vector2
+---@field pos pos
 ---@field tile table
 ---@return PlayerSetup
 function dungeon.get_player_start_position()
@@ -97,7 +97,7 @@ function dungeon.get_player_start_position()
 
     -- Add 0.5 to center the player in the tile
     return {
-        pos = Vector2.new(location.x + 0.5, location.y + 0.5),
+        pos = pos.new(location.x + 0.5, location.y + 0.5),
         tile = location.tile
     }
 end
@@ -160,8 +160,8 @@ function dungeon.load(opts)
         dungeon.player = nil
 
         -- Calculate tile center and map size
-        dungeon.tile_center = Vector2.new(dungeon.map.tilewidth / 2, dungeon.map.tileheight / 2)
-        dungeon.map_size = Vector2.new(
+        dungeon.tile_center = pos.new(dungeon.map.tilewidth / 2, dungeon.map.tileheight / 2)
+        dungeon.map_size = pos.new(
             dungeon.map.width * dungeon.map.tilewidth,
             dungeon.map.height * dungeon.map.tileheight
         )
@@ -175,7 +175,7 @@ function dungeon.load(opts)
 end
 
 ---Convert world coordinates to grid coordinates
----@param world_pos Vector2 World position
+---@param world_pos pos World position
 ---@return number, number grid_x, grid_y Grid coordinates
 function dungeon.world_to_grid(world_pos)
     local grid_x = math.floor(world_pos.x / dungeon.map.tilewidth)
@@ -186,9 +186,9 @@ end
 ---Convert grid coordinates to world coordinates
 ---@param grid_x number Grid X coordinate
 ---@param grid_y number Grid Y coordinate
----@return Vector2 world_pos World position
+---@return pos world_pos World position
 function dungeon.grid_to_world(grid_x, grid_y)
-    return Vector2.new(
+    return pos.new(
         grid_x * dungeon.map.tilewidth + dungeon.map.tilewidth / 2,
         grid_y * dungeon.map.tileheight + dungeon.map.tileheight / 2
     )

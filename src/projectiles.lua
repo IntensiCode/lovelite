@@ -1,9 +1,9 @@
-local Vector2 = require("src.base.vector2")
+local pos = require("src.base.pos")
 local events = require("src.base.events")
 
 ---@class Projectile
----@field pos Vector2
----@field direction Vector2
+---@field pos pos
+---@field direction pos
 ---@field speed number
 ---@field rotation number
 ---@field weapon table
@@ -17,8 +17,8 @@ local projectiles = {
 }
 
 ---Create a new projectile
----@param pos Vector2 Starting position
----@param direction Vector2 Direction vector
+---@param pos pos Starting position
+---@param direction pos Direction vector
 ---@param weapon table Weapon data
 ---@param owner string Owner type ("player" or "enemy")
 function projectiles.spawn(pos, direction, weapon, owner)
@@ -29,9 +29,9 @@ function projectiles.spawn(pos, direction, weapon, owner)
         _game.sound.play("magic_swoosh", 0.8)
     end
 
-    -- Ensure we have Vector2 objects
-    local proj_pos = Vector2.new(pos.x, pos.y)
-    local proj_dir = Vector2.new(direction.x, direction.y):normalized()
+    -- Ensure we have pos objects
+    local proj_pos = pos.new(pos.x, pos.y)
+    local proj_dir = pos.new(direction.x, direction.y):normalized()
 
     table.insert(projectiles.active, {
         pos = proj_pos,
@@ -113,7 +113,7 @@ function projectiles.update(dt)
             if #nearby_enemies > 0 then
                 projectiles.handle_enemy_hit(proj, nearby_enemies)
                 table.remove(projectiles.active, i)
-            elseif not _game.collision.is_walkable(proj.pos.x, proj.pos.y, Vector2.new(0.25, 0.1)) then
+            elseif not _game.collision.is_walkable(proj.pos.x, proj.pos.y, pos.new(0.25, 0.1)) then
                 -- Play appropriate wall hit sound
                 if proj.weapon.melee then
                     _game.sound.play("melee_wall_hit", 0.8)

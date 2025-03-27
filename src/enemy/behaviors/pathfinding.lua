@@ -1,9 +1,9 @@
-local Vector2 = require("src.base.vector2")
+local pos = require("src.base.pos")
 local pathfinder = require("src.pathfinder")
 
 ---@class Enemy
----@field pos Vector2
----@field move_target Vector2|nil
+---@field pos pos
+---@field move_target pos|nil
 
 local pathfinding = {}
 
@@ -20,7 +20,7 @@ function pathfinding.update_target(enemy)
     if path and #path > 1 and #path <= 10 then
         -- Get first position in path (closest to player)
         local target = path[2]
-        enemy.move_target = Vector2.new(target.x + 0.5, target.y + 0.5)  -- Add 0.5 to target to center it
+        enemy.move_target = pos.new(target.x + 0.5, target.y + 0.5)  -- Add 0.5 to target to center it
     else
         enemy.move_target = nil
     end

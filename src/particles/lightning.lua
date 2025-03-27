@@ -1,17 +1,17 @@
-local Vector2 = require("src.base.vector2")
+local pos = require("src.base.pos")
 local constants = require("src.base.constants")
 
 ---@class LightningParticle
----@field pos Vector2
----@field velocity Vector2
+---@field pos pos
+---@field velocity pos
 ---@field color table
 ---@field size number
 ---@field life number
 ---@field max_life number
 ---@field kind string
----@field jitter1 Vector2 Random offset for first zag point
----@field jitter2 Vector2 Random offset for middle point
----@field jitter3 Vector2 Random offset for second zag point
+---@field jitter1 pos Random offset for first zag point
+---@field jitter2 pos Random offset for middle point
+---@field jitter3 pos Random offset for second zag point
 ---@field jitter_time number Time counter for jitter movement
 ---@field delay number Delay before particle becomes visible
 ---@field flip_x boolean Whether to flip the x-axis pattern
@@ -20,8 +20,8 @@ local LightningParticle = {}
 LightningParticle.__index = LightningParticle
 
 ---Create a new lightning particle
----@param pos Vector2 Initial position
----@param velocity Vector2 Initial velocity
+---@param pos pos Initial position
+---@param velocity pos Initial velocity
 ---@param life number Lifetime in seconds
 ---@param size number Size of the lightning
 ---@param delay number Initial delay before becoming visible
@@ -36,9 +36,9 @@ function LightningParticle.new(pos, velocity, life, size, delay)
         max_life = life,
         kind = "lightning",
         jitter_time = math.random() * math.pi * 2,
-        jitter1 = Vector2.new(0, 0),
-        jitter2 = Vector2.new(0, 0),
-        jitter3 = Vector2.new(0, 0),
+        jitter1 = pos.new(0, 0),
+        jitter2 = pos.new(0, 0),
+        jitter3 = pos.new(0, 0),
         delay = delay,
         flip_x = math.random() < 0.5,
         blink = false
@@ -67,15 +67,15 @@ function LightningParticle:update(dt)
     local jitter_amount = self.size * 0.5  -- Scale jitter with particle size
     
     -- Update each jitter point with smooth random movement
-    self.jitter1 = Vector2.new(
+    self.jitter1 = pos.new(
         math.sin(self.jitter_time * 0.7) * jitter_amount,
         math.cos(self.jitter_time * 0.3) * jitter_amount
     )
-    self.jitter2 = Vector2.new(
+    self.jitter2 = pos.new(
         math.sin(self.jitter_time * 0.1) * jitter_amount,
         math.cos(self.jitter_time * 0.9) * jitter_amount
     )
-    self.jitter3 = Vector2.new(
+    self.jitter3 = pos.new(
         math.sin(self.jitter_time * 0.5) * jitter_amount,
         math.cos(self.jitter_time * 0.5) * jitter_amount
     )
@@ -92,9 +92,9 @@ end
 ---@param x number Center x position
 ---@param y number Center y position
 ---@param size number Base size of the lightning
----@param jitter1 Vector2 Offset for first zag point
----@param jitter2 Vector2 Offset for middle point
----@param jitter3 Vector2 Offset for second zag point
+---@param jitter1 pos Offset for first zag point
+---@param jitter2 pos Offset for middle point
+---@param jitter3 pos Offset for second zag point
 ---@param scale_y number Vertical scale factor (0 to 1)
 ---@param flip_x boolean Whether to flip the x-axis pattern
 local function draw_lightning_strike(x, y, size, jitter1, jitter2, jitter3, scale_y, flip_x)
@@ -151,18 +151,18 @@ function LightningParticle.get_color(t)
     end
 end
 
----@param pos Vector2 The position to spawn particle at (in screen space)
+---@param pos pos The position to spawn particle at (in screen space)
 ---@return LightningParticle The created lightning particle
 function LightningParticle.spawn(pos)
     -- Add some randomness to position
-    local offset = Vector2.new(
+    local offset = pos.new(
         (math.random() - 0.5) * 4,  -- ±2 pixels
         (math.random() - 0.5) * 4
     )
     
     -- Lightning moves horizontally with slight random direction
     local direction = math.random() < 0.5 and -1 or 1  -- Random left or right
-    local velocity = Vector2.new(
+    local velocity = pos.new(
         direction * constants.lightning_drift_speed * (0.8 + math.random() * 0.4),
         0  -- No vertical movement
     )

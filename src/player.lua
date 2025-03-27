@@ -1,9 +1,9 @@
-local Vector2 = require("src.base.vector2")
+local pos = require("src.base.pos")
 local events = require("src.base.events")
 local m = require("src.base.math")
 
 ---@class Player
----@field pos Vector2
+---@field pos pos
 ---@field tile_id number
 ---@field tile table
 ---@field speed number
@@ -12,13 +12,13 @@ local m = require("src.base.math")
 ---@field weapon table
 ---@field shield table
 ---@field tile_size number
----@field last_direction Vector2
+---@field last_direction pos
 ---@field cooldown number
 ---@field armorclass number
 ---@field is_dead boolean
 ---@field death_time number|nil Time remaining in death animation
 local player = {
-    pos = Vector2.new(0, 0),
+    pos = pos.new(0, 0),
     tile_id = nil,
     tile = nil,
     speed = 5, -- tiles per second
@@ -29,7 +29,7 @@ local player = {
     weapon = nil,
     shield = nil,
     tile_size = nil,
-    last_direction = Vector2.new(1, 0), -- Default facing right
+    last_direction = pos.new(1, 0), -- Default facing right
     cooldown = 0,                       -- Initialize cooldown to 0
     armorclass = 0                      -- Base armor class
 }
@@ -111,7 +111,7 @@ function player.load(opts)
         player.cooldown = 0
         player.sonic_damage = nil
         player.last_tile = nil
-        player.last_direction = Vector2.new(1, 0) -- Default facing right
+        player.last_direction = pos.new(1, 0) -- Default facing right
 
         -- Reset equipment
         player.weapon = nil
@@ -135,8 +135,8 @@ function player.load(opts)
     _game.player = player
 end
 
----@param movement Vector2 The normalized movement vector
----@param original_movement Vector2 The non-normalized movement vector for wall sliding
+---@param movement pos The normalized movement vector
+---@param original_movement pos The non-normalized movement vector for wall sliding
 ---@param dt number Delta time in seconds
 function player.handle_movement(movement, original_movement, dt)
     -- Calculate new position
@@ -147,8 +147,8 @@ function player.handle_movement(movement, original_movement, dt)
         player.pos = new_pos
     else
         -- If full movement blocked, try sliding along walls using original (non-normalized) movement
-        local slide_x = Vector2.new(player.pos.x + original_movement.x * (player.speed * dt), player.pos.y)
-        local slide_y = Vector2.new(player.pos.x, player.pos.y + original_movement.y * (player.speed * dt))
+        local slide_x = pos.new(player.pos.x + original_movement.x * (player.speed * dt), player.pos.y)
+        local slide_y = pos.new(player.pos.x, player.pos.y + original_movement.y * (player.speed * dt))
 
         -- Try horizontal movement
         if original_movement.x ~= 0 and _game.collision.is_walkable(slide_x.x, slide_x.y) then
@@ -164,10 +164,10 @@ function player.handle_movement(movement, original_movement, dt)
     end
 end
 
----@return Vector2 The movement vector from keyboard input
+---@return pos The movement vector from keyboard input
 function player.get_movement_input()
-    ---@type Vector2
-    local movement = Vector2.new(0, 0)
+    ---@type pos
+    local movement = pos.new(0, 0)
     if love.keyboard.isDown("left") or love.keyboard.isDown("a") then
         movement.x = movement.x - 1
     end
@@ -223,10 +223,10 @@ function player.handle_collection()
 end
 
 ---Check if player's tile position has changed and update pathfinding if needed
----@param current_tile Vector2 The current tile position
+---@param current_tile pos The current tile position
 function player.check_tile_position_change(current_tile)
     -- Initialize last_tile if not set
-    player.last_tile = player.last_tile or Vector2.new(-1, -1)
+    player.last_tile = player.last_tile or pos.new(-1, -1)
 
     -- Check if tile position changed
     if current_tile.x ~= player.last_tile.x or current_tile.y ~= player.last_tile.y then
@@ -269,7 +269,7 @@ function player.update(dt)
     end
 
     -- Store original movement for wall sliding
-    local original_movement = Vector2.new(movement.x, movement.y)
+    local original_movement = pos.new(movement.x, movement.y)
 
     -- Normalize diagonal movement for the initial movement attempt
     if movement.x ~= 0 and movement.y ~= 0 then
@@ -291,7 +291,7 @@ function player.update(dt)
     player.handle_collection()
 
     -- Get current tile position (floored)
-    local current_tile = Vector2.new(
+    local current_tile = pos.new(
         math.floor(player.pos.x),
         math.floor(player.pos.y)
     )

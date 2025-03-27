@@ -1,7 +1,7 @@
-local Vector2 = require("src.base.vector2")
+local pos = require("src.base.pos")
 
 ---@class Collectible
----@field pos Vector2
+---@field pos pos
 ---@field tile table Reference to the tile from dungeon.tiles
 ---@field weapon table Reference to the weapon from dungeon.weapons (optional, only if this is a weapon collectible)
 ---@field hover_offset number
@@ -34,7 +34,7 @@ function collectibles.load(opts)
                         if weapon then
                             -- Create a collectible for this weapon tile
                             table.insert(collectibles.items, {
-                                pos = Vector2.new(x, y),
+                                pos = pos.new(x, y),
                                 tile = tile,     -- Store reference to the tile
                                 name = weapon.name,
                                 weapon = weapon, -- Store reference to the weapon
@@ -48,7 +48,7 @@ function collectibles.load(opts)
                         if shield then
                             -- Create a collectible for this shield tile
                             table.insert(collectibles.items, {
-                                pos = Vector2.new(x, y),
+                                pos = pos.new(x, y),
                                 name = shield.name,
                                 tile = tile,     -- Store reference to the tile
                                 shield = shield, -- Store reference to the shield
@@ -123,7 +123,7 @@ function collectibles.draw()
 end
 
 ---Check if a position is close enough to collect a collectible
----@param pos Vector2 The position to check
+---@param pos pos The position to check
 ---@param collect_range number The range within which to collect (in tile units)
 ---@return table|nil The collected item if one was collected, nil otherwise
 function collectibles.check_collection(pos, collect_range)
@@ -133,7 +133,7 @@ function collectibles.check_collection(pos, collect_range)
     while i <= #collectibles.items do
         local item = collectibles.items[i]
         -- Use item.pos + 0.5 to account for the tile center
-        local distance = (item.pos + Vector2.new(0.5, 0.5) - pos):length()
+        local distance = (item.pos + pos.new(0.5, 0.5) - pos):length()
 
         if distance <= collect_range then
             -- Debug print collection

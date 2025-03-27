@@ -6,7 +6,7 @@ alwaysApply: true
 # Path Rules
 
 ## Module Paths
-- Local modules must be required using the `src.` prefix (e.g., `require("src.base.vector2")`)
+- Local modules must be required using the `src.` prefix (e.g., `require("src.base.pos")`)
 
 ## Library Paths
 - STI library path must be `src/libraries/sti.init`

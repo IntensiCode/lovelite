@@ -1,4 +1,4 @@
-local Vector2 = require("src.base.vector2")
+local pos = require("src.base.pos")
 local animation = require("src.particles.animation")
 local constants = require("src.base.constants")
 
@@ -12,13 +12,13 @@ end
 local FireParticle = {
     spawn = function(pos)
         -- Add some randomness to position
-        local offset = Vector2.new(
+        local offset = pos.new(
             (math.random() - 0.5) * 4, -- ±2 pixels
             (math.random() - 0.5) * 4
         )
 
         -- Create velocity with upward movement and spread
-        local velocity = Vector2.new(
+        local velocity = pos.new(
             (math.random() - 0.5) * constants.magic_spread * constants.magic_speed,
             -constants.magic_speed * (0.1 + math.random() * 0.4)
         )

@@ -1,4 +1,4 @@
-local Vector2 = require("src.base.vector2")
+local pos = require("src.base.pos")
 local events = require("src.base.events")
 local m = require("src.base.math")
 local bully = require("src.enemy.bully")
@@ -6,7 +6,7 @@ local backoff = require("src.enemy.backoff")
 local enemies_load = require("src.enemies_load")
 
 ---@class Enemy
----@field pos Vector2
+---@field pos pos
 ---@field tile table Reference to the tile from dungeon.tiles
 ---@field name string
 ---@field behavior string The enemy's behavior type (wizard, bully, etc.)
@@ -15,7 +15,7 @@ local enemies_load = require("src.enemies_load")
 ---@field is_dead boolean Whether the enemy is dead
 ---@field stun_time number Stun time in seconds
 ---@field backoff number|nil Time to back off after being hit
----@field backoff_tile Vector2|nil The tile to move to during backoff
+---@field backoff_tile pos|nil The tile to move to during backoff
 ---@field will_retreat boolean Whether the enemy will retreat when hit (default: true)
 ---@field jump_height number Current height of happy jump
 ---@field jump_time number Time elapsed in current jump
@@ -73,7 +73,7 @@ function enemies.update(dt)
         if enemy.is_dead then
             -- Spawn dust particles
             events.send("particles.spawn", {
-                pos = enemy.pos + Vector2.new(0.5, 0.5),
+                pos = enemy.pos + pos.new(0.5, 0.5),
                 kind = "dust"
             })
 
@@ -98,7 +98,7 @@ function enemies.update(dt)
             -- Spawn ice particles to indicate stun, randomly
             if math.random() < 0.025 then
                 events.send("particles.spawn", {
-                    pos = enemy.pos + Vector2.new(0.5, 0.5),
+                    pos = enemy.pos + pos.new(0.5, 0.5),
                     kind = "ice",
                     count = 1
                 })
@@ -188,7 +188,7 @@ function enemies.draw()
     love.graphics.setBlendMode(original_blend_mode)
 end
 
----@param pos Vector2 The position to check around
+---@param pos pos The position to check around
 ---@return Enemy[] Array of enemies within one tile distance
 function enemies.find_enemies_close_to(pos)
     local nearby_enemies = {}

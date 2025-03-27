@@ -1,21 +1,21 @@
-local Vector2 = require("src.base.vector2")
+local pos = require("src.base.pos")
 
 ---@class Enemy
----@field pos Vector2
+---@field pos pos
 ---@field speed number
----@field move_target Vector2|nil
+---@field move_target pos|nil
 
 local movement = {}
 
 ---Try to slide along walls when movement is blocked
----@param pos Vector2 Current position
----@param direction Vector2 Movement direction
+---@param pos pos Current position
+---@param direction pos Movement direction
 ---@param speed number Movement speed
 ---@param dt number Delta time
----@return Vector2|nil New position if slide successful, nil otherwise
+---@return pos|nil New position if slide successful, nil otherwise
 local function try_slide_movement(pos, direction, speed, dt)
     -- Try moving horizontally
-    local horizontal_pos = Vector2.new(
+    local horizontal_pos = pos.new(
         pos.x + direction.x * speed * dt,
         pos.y
     )
@@ -24,7 +24,7 @@ local function try_slide_movement(pos, direction, speed, dt)
     end
 
     -- Try moving vertically
-    local vertical_pos = Vector2.new(
+    local vertical_pos = pos.new(
         pos.x,
         pos.y + direction.y * speed * dt
     )
@@ -37,7 +37,7 @@ end
 
 ---Move enemy towards a target position
 ---@param enemy Enemy The enemy to move
----@param target Vector2 The target position
+---@param target pos The target position
 ---@param dt number Delta time in seconds
 function movement.move_towards_target(enemy, target, dt)
     local direction = target - enemy.pos

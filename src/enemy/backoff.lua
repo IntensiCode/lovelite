@@ -1,16 +1,16 @@
-local Vector2 = require("src.base.vector2")
+local pos = require("src.base.pos")
 local movement = require("src.enemy.behaviors.movement")
 
 ---@class Enemy
----@field pos Vector2
----@field backoff_tile Vector2|nil
+---@field pos pos
+---@field backoff_tile pos|nil
 ---@field backoff number|nil
 ---@field speed number
 local backoff = {}
 
 ---Find the best backoff tile (furthest from player)
 ---@param enemy Enemy The enemy to find a backoff tile for
----@return Vector2|nil The best backoff tile position, or nil if no walkable tiles found
+---@return pos|nil The best backoff tile position, or nil if no walkable tiles found
 function backoff.find_best_tile(enemy)
     local player_pos = _game.player.pos
     local current_tile_x = math.floor(enemy.pos.x + 0.5)
@@ -22,7 +22,7 @@ function backoff.find_best_tile(enemy)
     -- Create table of tiles with their distances
     local tiles_with_distances = {}
     for _, tile in ipairs(walkable_tiles) do
-        local tile_pos = Vector2.new(tile.x + 0.5, tile.y + 0.5)
+        local tile_pos = pos.new(tile.x + 0.5, tile.y + 0.5)
         local distance = (tile_pos - player_pos):length()
         
         -- Only consider tiles that are further from the player than our current position
@@ -38,7 +38,7 @@ function backoff.find_best_tile(enemy)
     -- If no valid tiles found, try again without the distance requirement
     if #tiles_with_distances == 0 then
         for _, tile in ipairs(walkable_tiles) do
-            local tile_pos = Vector2.new(tile.x + 0.5, tile.y + 0.5)
+            local tile_pos = pos.new(tile.x + 0.5, tile.y + 0.5)
             -- At least make sure it's a different tile
             if math.abs(tile_pos.x - enemy.pos.x) > 0.1 or math.abs(tile_pos.y - enemy.pos.y) > 0.1 then
                 local distance = (tile_pos - player_pos):length()

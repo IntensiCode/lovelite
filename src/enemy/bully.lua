@@ -1,18 +1,18 @@
-local Vector2 = require("src.base.vector2")
+local pos = require("src.base.pos")
 local weapons = require("src.enemy.weapons")
 local movement = require("src.enemy.behaviors.movement")
 local combat = require("src.enemy.behaviors.combat")
 local pathfinding = require("src.enemy.behaviors.pathfinding")
 
 ---@class Bully
----@field pos Vector2
+---@field pos pos
 ---@field hitpoints number
 ---@field max_hitpoints number
 ---@field is_dead boolean
 ---@field stun_time number|nil
 ---@field speed number
----@field last_direction Vector2
----@field move_target Vector2|nil
+---@field last_direction pos
+---@field move_target pos|nil
 ---@field weapon table
 ---@field cooldown number
 

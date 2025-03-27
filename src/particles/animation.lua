@@ -1,4 +1,4 @@
-local Vector2 = require("src.base.vector2")
+local pos = require("src.base.pos")
 
 ---@class Animation
 ---@field frames table Array of frame data
@@ -6,8 +6,8 @@ local Vector2 = require("src.base.vector2")
 ---@field pixel_size number Size of each pixel in the animation
 
 ---@class AnimatedParticle
----@field pos Vector2
----@field velocity Vector2
+---@field pos pos
+---@field velocity pos
 ---@field color table
 ---@field size number
 ---@field life number
@@ -25,8 +25,8 @@ local AnimatedParticle = {}
 AnimatedParticle.__index = AnimatedParticle
 
 ---Create a new animated particle
----@param pos Vector2 Initial position
----@param velocity Vector2 Initial velocity
+---@param pos pos Initial position
+---@param velocity pos Initial velocity
 ---@param life number Lifetime in seconds
 ---@param kind string Type of particle ("fire" or "ice")
 ---@param color_hook function Function to update particle color based on lifetime

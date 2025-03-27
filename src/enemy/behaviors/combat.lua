@@ -1,9 +1,9 @@
-local Vector2 = require("src.base.vector2")
+local pos = require("src.base.pos")
 local events = require("src.base.events")
 local weapons = require("src.enemy.weapons")
 
 ---@class Enemy
----@field pos Vector2
+---@field pos pos
 ---@field weapon table
 ---@field cooldown number
 ---@field backoff number|nil

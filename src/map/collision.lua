@@ -1,4 +1,4 @@
-local Vector2 = require("src.base.vector2")
+local pos = require("src.base.pos")
 
 ---@class Collision
 ---@field walkable_tiles table<number, boolean> Map of tile IDs to walkable status
@@ -58,11 +58,11 @@ end
 ---Check if a position is walkable (with buffer zone for movement)
 ---@param x number The x coordinate in tile space
 ---@param y number The y coordinate in tile space
----@param buffer Vector2? The buffer zone size in tile space (default: Vector2(0.4, 0.2))
+---@param buffer pos? The buffer zone size in tile space (default: pos(0.4, 0.2))
 ---@return boolean walkable Whether the position is walkable
 function collision.is_walkable(x, y, buffer)
     -- Default buffer zone in tile space
-    buffer = buffer or Vector2.new(0.4, 0.2)
+    buffer = buffer or pos.new(0.4, 0.2)
 
     -- Check all corners of the entity's collision box
     local points_to_check = {
@@ -134,7 +134,7 @@ local function check_offset_position(pos_x, pos_y, offset)
 end
 
 ---Find tiles that should appear above the given positions
----@param positions Vector2[] List of positions to check
+---@param positions pos[] List of positions to check
 ---@return table[] List of {tile, screen_x, screen_y} tuples
 function collision.find_overlapping_tiles(positions)
     local result = {}

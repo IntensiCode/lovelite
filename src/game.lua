@@ -158,7 +158,7 @@ function _game.draw_game_over_overlay()
 end
 
 ---Find all positions that need wall checking
----@return Vector2[] List of positions that need wall checking
+---@return pos[] List of positions that need wall checking
 function _game.find_overlappable_positions()
     local positions = { _game.player.pos }
 

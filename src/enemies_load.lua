@@ -1,4 +1,4 @@
-local Vector2 = require("src.base.vector2")
+local pos = require("src.base.pos")
 local t = require("src.base.table")
 
 -- Constants
@@ -25,7 +25,7 @@ function enemies_load.load(enemies, game)
                 -- Clone the enemy data and add instance-specific properties
                 local enemy = t.clone(enemy_data)
                 -- Add instance-specific properties
-                enemy.pos = Vector2.new(x + 0.5, y + 0.5)
+                enemy.pos = pos.new(x + 0.5, y + 0.5)
                 enemy.tile = tile
                 enemy.name = tile.properties["name"] or "Enemy"
                 enemy.is_dead = false
