@@ -64,14 +64,18 @@ local constants = {
         return closest_stop[2]
     end,
 
-    -- Pathfinder rainbow colors (red, orange, yellow, green, blue, purple but reversed)
+    -- Pathfinder colors
     pathfinder_colors = {
-        { 0.0, { 0.5, 0, 1, 1 } }, -- Purple
-        { 0.2, { 0, 0, 1, 1 } },   -- Blue
-        { 0.4, { 0, 1, 0, 1 } },   -- Green
-        { 0.6, { 1, 1, 0, 1 } },   -- Yellow
-        { 0.8, { 1, 0.5, 0, 1 } }, -- Orange
-        { 1.0, { 1, 0, 0, 1 } },   -- Red
+        { 0.0, { 1, 0, 0, 1 } },     -- Red
+        { 0.1, { 0, 1, 0, 1 } },     -- Green
+        { 0.2, { 0, 0, 1, 1 } },     -- Blue
+        { 0.3, { 1, 1, 0, 1 } },     -- Yellow
+        { 0.4, { 1, 0, 1, 1 } },     -- Magenta
+        { 0.5, { 0, 1, 1, 1 } },     -- Cyan
+        { 0.6, { 1, 0.5, 0, 1 } },   -- Orange
+        { 0.7, { 0.5, 0, 1, 1 } },   -- Purple
+        { 0.8, { 0, 0.8, 0.4, 1 } }, -- Turquoise
+        { 1.0, { 1, 0.4, 0.7, 1 } }, -- Pink
     },
 
     -- Fire particle color stops (ordered from t=1 to t=0)

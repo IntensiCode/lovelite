@@ -235,7 +235,7 @@ function pathfinder.draw()
         end
     end
 
-    local debug_size = 0.25
+    local debug_size = 0.5
 
     -- Draw distance visualization
     for y = 1, #pathfinder.grid do
@@ -247,10 +247,11 @@ function pathfinder.draw()
                 -- Calculate color based on distance using interpolate_color
                 local t = dist / max_dist
                 local color = constants.interpolate_color(t, constants.pathfinder_colors)
-
+                -- Set alpha to 0.25
+                color[4] = 0.5
                 -- Draw rectangle in center of tile
                 love.graphics.setColor(unpack(color))
-                love.graphics.rectangle("fill",
+                love.graphics.rectangle("line",
                     (x - 1) * tile_size + tile_size * (1 - debug_size) / 2,
                     (y - 1) * tile_size + tile_size * (1 - debug_size) / 2,
                     tile_size * debug_size,
