@@ -71,6 +71,11 @@ end
 
 -- Try to attack player if in range
 function bully.try_attack_player(enemy)
+    -- Don't attack dead players
+    if _game.player.is_dead then
+        return
+    end
+
     local player_pos = _game.player.pos
     local distance_to_player = (player_pos - enemy.pos):length()
     -- Attack range of 1.5 tiles

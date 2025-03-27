@@ -15,6 +15,8 @@ local m = require("src.base.math")
 ---@field last_direction Vector2
 ---@field cooldown number
 ---@field armorclass number
+---@field is_dead boolean
+---@field death_time number|nil Time remaining in death animation
 local player = {
     pos = Vector2.new(0, 0),
     tile_id = nil,
@@ -23,7 +25,7 @@ local player = {
     hitpoints = 100,
     max_hitpoints = 100,
     is_dead = false,
-    armorclass = 0,
+    death_time = nil,
     weapon = nil,
     shield = nil,
     tile_size = nil,
@@ -33,6 +35,11 @@ local player = {
 }
 
 function player.on_hit(weapon)
+    -- Don't take damage if already dead
+    if player.is_dead then
+        return
+    end
+
     if weapon.melee then
         -- Get armor class (default to 0 if nil) and clamp between 0 and 100
         local armor_class = player.armorclass or 0
@@ -62,6 +69,9 @@ function player.on_hit(weapon)
     if player.hitpoints <= 0 then
         player.hitpoints = 0
         player.is_dead = true
+        player.death_time = 0.5
+        -- Clear pathfinding data when player dies
+        _game.pathfinder.clear()
     end
 end
 
@@ -212,6 +222,14 @@ function player.handle_sonic_damage(dt)
 end
 
 function player.update(dt)
+    -- Handle death animation
+    if player.is_dead then
+        if player.death_time and player.death_time > 0 then
+            player.death_time = player.death_time - dt
+        end
+        return
+    end
+
     -- Get movement input
     local movement = player.get_movement_input()
 
@@ -264,6 +282,46 @@ function player.draw()
     -- Get tile dimensions
     local _, _, tile_width, tile_height = player.tile.quad:getViewport()
 
+    -- Calculate death animation scale
+    local scale_y = 1
+    if player.is_dead and player.death_time and player.death_time > 0 then
+        scale_y = player.death_time / 0.5 -- Squeeze down over 0.5 seconds
+    end
+
+    -- Draw blood spots if dead
+    if player.is_dead then
+        -- Create random but consistent blood spots
+        math.randomseed(screen_x * screen_y) -- Use position as seed for consistency
+
+        -- Draw 5 blood spots with random properties
+        for i = 1, 5 do
+            -- Random dark red colors
+            local red = 0.6 + math.random() * 0.3 -- Between 0.6 and 0.9
+            local green = 0.0
+            local blue = 0.0
+            love.graphics.setColor(red, green, blue, 1)
+
+            -- Random positions within a small area
+            local offset_x = math.random(-8, 8)
+            local offset_y = math.random(-8, 8)
+
+            -- Random sizes
+            local spot_radius = 2 + math.random() * 3 -- Between 2 and 5 pixels
+
+            love.graphics.circle("fill",
+                screen_x + offset_x,
+                screen_y + offset_y,
+                spot_radius
+            )
+        end
+
+        love.graphics.setColor(1, 1, 1, 1) -- Reset color
+
+        if not player.death_time or player.death_time <= 0 then
+            return -- Don't draw player sprite if dead
+        end
+    end
+
     if player.tile and player.tile.quad then
         -- Draw sprite centered on player position
         love.graphics.draw(
@@ -273,7 +331,7 @@ function player.draw()
             screen_y,
             0,              -- rotation
             1,              -- scale x
-            1,              -- scale y
+            scale_y,        -- scale y (squeeze down when dead)
             tile_width / 2, -- origin x (center of sprite)
             tile_height / 2 -- origin y (center of sprite)
         )
@@ -304,11 +362,11 @@ function player.draw()
 end
 
 function player.draw_ui()
-    local padding = 8 -- Virtual pixels padding
-    local box_padding = padding / 2 -- Half padding for indicator boxes
-    local bar_width = 50 -- Width of health bars
-    local bar_height = 4 -- Height of health bars
-    local bar_spacing = 4 -- Space between bars
+    local padding = 8                                -- Virtual pixels padding
+    local box_padding = padding / 2                  -- Half padding for indicator boxes
+    local bar_width = 50                             -- Width of health bars
+    local bar_height = 4                             -- Height of health bars
+    local bar_spacing = 4                            -- Space between bars
     local box_size = _game.map_manager.map.tilewidth -- Use tile size for indicator boxes
 
     -- Reset blend mode to default
