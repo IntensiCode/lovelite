@@ -1,5 +1,6 @@
 local Vector2 = require("src.base.vector2")
 local events = require("src.base.events")
+local m = require("src.base.math")
 
 ---@class Player
 ---@field pos Vector2
@@ -21,6 +22,8 @@ local player = {
     speed = 5, -- tiles per second
     hitpoints = 100,
     max_hitpoints = 100,
+    is_dead = false,
+    armorclass = 0,
     weapon = nil,
     shield = nil,
     tile_size = nil,
@@ -28,6 +31,39 @@ local player = {
     cooldown = 0,                       -- Initialize cooldown to 0
     armorclass = 0                      -- Base armor class
 }
+
+function player.on_hit(weapon)
+    if weapon.melee then
+        -- Get armor class (default to 0 if nil) and clamp between 0 and 100
+        local armor_class = player.armorclass or 0
+        armor_class = m.clamp(armor_class, 0, 100)
+
+        -- Calculate damage reduction based on armor class percentage
+        local damage_reduction = weapon.melee * (armor_class / 100)
+        local actual_damage = weapon.melee - damage_reduction
+
+        player.hitpoints = player.hitpoints - actual_damage
+    elseif weapon.sonic or weapon.strongsonic then
+        -- Sonic weapons apply damage over time
+        -- Store the damage and duration in a table if not exists
+        player.sonic_damage = player.sonic_damage or {}
+        table.insert(player.sonic_damage, {
+            damage = weapon.damage,
+            time_left = 0.0
+        })
+        player.sonic_damage.damage = player.sonic_damage.damage + weapon.damage
+        player.sonic_damage.time_left = player.sonic_damage.time_left + 2.0
+    elseif weapon.damage then
+        -- Direct damage weapons
+        player.hitpoints = player.hitpoints - weapon.damage
+    end
+
+    -- Check if player is dead
+    if player.hitpoints <= 0 then
+        player.hitpoints = 0
+        player.is_dead = true
+    end
+end
 
 function player.load()
     local start = _game.map_manager.get_player_start_position()
@@ -192,6 +228,17 @@ function player.update(dt)
         player.update_pathfinder(current_tile)
         -- Store new position
         player.last_tile = current_tile
+    end
+
+    -- Handle sonic damage
+    if player.sonic_damage then
+        player.sonic_damage.time_left = player.sonic_damage.time_left - dt
+        if player.sonic_damage.time_left <= 0 then
+            player.sonic_damage = nil
+        else
+            local amount = player.sonic_damage.damage * dt
+            player.hitpoints = player.hitpoints - amount
+        end
     end
 end
 
