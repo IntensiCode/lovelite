@@ -14,3 +14,6 @@ alwaysApply: true
   - Use descriptive type names (e.g., `PlayerSetup` instead of just `table`)
   - Make sure and/or change names to use snake_case instead of camelCase and update callsites appropriately
   - If possible, add new code in new functions and call them instead of adding code to existing functions
+- Always prefer moving a file instead of deleting and creating new. Even if it means that the moved file needs to be modified after moving.
+- Always prefer copy-past or cut-paste for existing functionality over deleting existing functionality and adding same or slighly changed functionality in same or different place.
+- Always try to minimize the git diff!
