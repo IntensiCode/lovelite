@@ -304,33 +304,123 @@ function player.draw()
 end
 
 function player.draw_ui()
-    -- Draw active weapon in UI
-    if player.weapon then
-        local padding = 8 -- Virtual pixels padding
-        local _, _, tile_width, tile_height = player.weapon.tile.quad:getViewport()
+    local padding = 8 -- Virtual pixels padding
+    local box_padding = padding / 2 -- Half padding for indicator boxes
+    local bar_width = 50 -- Width of health bars
+    local bar_height = 4 -- Height of health bars
+    local bar_spacing = 4 -- Space between bars
+    local box_size = _game.map_manager.map.tilewidth -- Use tile size for indicator boxes
 
-        -- Draw at bottom left with padding
+    -- Reset blend mode to default
+    love.graphics.setBlendMode("alpha")
+
+    -- Draw active weapon in UI with background box
+    if player.weapon then
+        -- Draw weapon box background
+        love.graphics.setColor(0, 0, 0, 0.7)
+        love.graphics.rectangle("fill",
+            box_padding,
+            _game.camera.height - box_size - box_padding,
+            box_size,
+            box_size
+        )
+        -- Draw weapon box border
+        love.graphics.setColor(1, 1, 1, 1) -- Solid white border
+        love.graphics.setLineWidth(1)
+        love.graphics.rectangle("line",
+            box_padding,
+            _game.camera.height - box_size - box_padding,
+            box_size,
+            box_size
+        )
+        -- Draw weapon
+        love.graphics.setColor(1, 1, 1, 1)
         love.graphics.draw(
             _game.map_manager.map.tilesets[1].image,
             player.weapon.tile.quad,
-            padding,                                    -- x position
-            _game.camera.height - padding - tile_height -- y position
+            box_padding,
+            _game.camera.height - box_size - box_padding
         )
     end
 
-    -- Draw active shield in UI
+    -- Always draw shield box background
+    love.graphics.setColor(0, 0, 0, 0.7)
+    love.graphics.rectangle("fill",
+        box_padding * 2 + box_size,
+        _game.camera.height - box_size - box_padding,
+        box_size,
+        box_size
+    )
+    -- Draw shield box border
+    love.graphics.setColor(1, 1, 1, 1) -- Solid white border
+    love.graphics.setLineWidth(1)
+    love.graphics.rectangle("line",
+        box_padding * 2 + box_size,
+        _game.camera.height - box_size - box_padding,
+        box_size,
+        box_size
+    )
+    -- Draw shield if player has one
     if player.shield then
-        local padding = 8 -- Virtual pixels padding
-        local _, _, tile_width, tile_height = player.shield.tile.quad:getViewport()
-
-        -- Draw at bottom left with padding, next to weapon
+        love.graphics.setColor(1, 1, 1, 1)
         love.graphics.draw(
             _game.map_manager.map.tilesets[1].image,
             player.shield.tile.quad,
-            padding + tile_width + 8,                   -- x position (after weapon)
-            _game.camera.height - padding - tile_height -- y position
+            box_padding * 2 + box_size,
+            _game.camera.height - box_size - box_padding
         )
     end
+
+    -- Position for health bars (to the right of weapon/shield boxes)
+    local bars_x = padding * 3 + box_size * 2
+    local bars_y = _game.camera.height - bar_height - bar_spacing * 1.5 - padding
+
+    -- Set line width for health bars
+    love.graphics.setLineWidth(1)
+
+    -- Draw player health bar
+    local health_percent = player.hitpoints / player.max_hitpoints
+    -- Draw dark border
+    love.graphics.setColor(0.5, 0, 0, 1) -- Solid dark red border
+    love.graphics.rectangle("line",
+        bars_x,
+        bars_y,
+        bar_width,
+        bar_height
+    )
+    -- Draw fill
+    love.graphics.setColor(1, 0, 0, 1) -- Solid red
+    love.graphics.rectangle("fill",
+        bars_x,
+        bars_y,
+        bar_width * health_percent,
+        bar_height
+    )
+
+    -- Draw shield health bar if player has a shield
+    if player.shield then
+        local shield_percent = player.shield.hitpoints / player.shield.max_hitpoints
+        -- Draw dark border
+        love.graphics.setColor(0, 0.5, 0, 1) -- Solid dark green border
+        love.graphics.rectangle("line",
+            bars_x,
+            bars_y + bar_height + bar_spacing,
+            bar_width,
+            bar_height
+        )
+        -- Draw fill
+        love.graphics.setColor(0, 1, 0, 1) -- Solid green
+        love.graphics.rectangle("fill",
+            bars_x,
+            bars_y + bar_height + bar_spacing,
+            bar_width * shield_percent,
+            bar_height
+        )
+    end
+
+    -- Reset color and line width
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.setLineWidth(1)
 end
 
 function player.update_pathfinder(current_tile)
