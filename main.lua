@@ -30,13 +30,7 @@ function love.draw()
 end
 
 function love.keypressed(key)
-    -- Handle global keys first
-    if key == "escape" then
-        love.event.quit()
-        return
-    end
-
-    -- Then forward to current screen
+    -- Forward to current screen
     local current_screen = screen.get_current()
     current_screen.keypressed(key)
 end

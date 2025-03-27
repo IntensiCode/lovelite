@@ -144,7 +144,13 @@ function title.draw()
 end
 
 function title.keypressed(key)
-    -- Nop for now
+    if key == "escape" then
+        -- Fade out before quitting
+        fade.on_fade_done = function()
+            love.event.quit()
+        end
+        fade.reset("fade_out", 0.2)
+    end
 end
 
 function title.resize(w, h)

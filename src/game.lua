@@ -11,6 +11,7 @@ local enemies = require("src.enemies")
 local sound = require("src.sound")
 local collision = require("src.map.collision")
 local fade = require("src.base.fade")
+local screen = require("src.base.screen")
 
 -- Make game a global variable
 _game = {
@@ -131,6 +132,12 @@ end
 function _game.keypressed(key)
     if key == "d" then
         _game.debug.toggle()
+    elseif key == "escape" then
+        -- Fade out and return to title screen
+        fade.on_fade_done = function()
+            screen.switch_to("title")
+        end
+        fade.reset("fade_out", 0.2)
     end
 end
 
