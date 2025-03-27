@@ -70,10 +70,21 @@ function collectibles.update(dt)
 end
 
 function collectibles.draw()
+    -- Helper function to check if an item overlaps with player
+    local function is_overlapping_player(pos)
+        return math.abs(pos.x - _game.player.pos.x) < 1 and 
+               math.abs(pos.y - _game.player.pos.y) < 1
+    end
+
+    -- Store original graphics state
+    local original_color = {love.graphics.getColor()}
+    local original_blend_mode = love.graphics.getBlendMode()
+    love.graphics.setBlendMode("alpha")
+
     for _, item in ipairs(collectibles.items) do
         -- Convert tile position to screen position
-        local screen_x = ((item.pos.x - 1) * _game.map_manager.map.tilewidth)
-        local screen_y = ((item.pos.y - 1) * _game.map_manager.map.tileheight)
+        local screen_x = (item.pos.x - 1) * _game.map_manager.map.tilewidth
+        local screen_y = (item.pos.y - 1) * _game.map_manager.map.tileheight
         
         -- Get tile dimensions
         local _, _, tile_width, tile_height = item.tile.quad:getViewport()
@@ -81,9 +92,15 @@ function collectibles.draw()
         -- Draw a dark gray circle below as pseudo-shadow
         love.graphics.setColor(0.2, 0.2, 0.2, 0.5)
         love.graphics.circle("fill", screen_x + tile_width/2, screen_y + tile_height, 3)
-        love.graphics.setColor(1, 1, 1, 1)
+
+        -- Set transparency if this specific item overlaps player
+        if is_overlapping_player(item.pos) then
+            love.graphics.setColor(1, 1, 1, 0.75)
+        else
+            love.graphics.setColor(1, 1, 1, 1)
+        end
         
-        -- Draw collectible centered
+        -- Draw collectible centered with hover offset
         love.graphics.draw(
             _game.map_manager.map.tilesets[1].image,
             item.tile.quad,
@@ -93,6 +110,10 @@ function collectibles.draw()
             1, 1
         )
     end
+
+    -- Restore original graphics state
+    love.graphics.setColor(unpack(original_color))
+    love.graphics.setBlendMode(original_blend_mode)
 end
 
 ---Check if a position is close enough to collect a collectible

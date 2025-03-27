@@ -147,22 +147,39 @@ function enemies.update(dt)
 end
 
 function enemies.draw()
+    -- Helper function to check if an enemy overlaps with player
+    local function is_overlapping_player(pos)
+        return math.abs(pos.x - _game.player.pos.x) < 1 and 
+               math.abs(pos.y - _game.player.pos.y) < 1
+    end
+
+    -- Store original graphics state
+    local original_color = {love.graphics.getColor()}
+    local original_blend_mode = love.graphics.getBlendMode()
+    love.graphics.setBlendMode("alpha")
+
     for _, enemy in ipairs(enemies.items) do
         -- Convert tile position to screen position
         local tile_size = _game.map_manager.map.tilewidth
-        local screen_x = ((enemy.pos.x - 1) * tile_size)
-        local screen_y = ((enemy.pos.y - 1) * tile_size)
+        local screen_x = (enemy.pos.x - 1) * tile_size
+        local screen_y = (enemy.pos.y - 1) * tile_size
 
         -- Apply jump height offset
         screen_y = screen_y - (enemy.jump_height or 0) * tile_size
 
-        -- Set color to blue tint if stunned, white otherwise
+        -- Set color based on overlap and stun state
         if enemy.stun_time and enemy.stun_time > 0 then
-            love.graphics.setBlendMode("alpha", "premultiplied")
-            love.graphics.setColor(0.6, 0.6, 1.0, 1) -- Blueish tint
+            if is_overlapping_player(enemy.pos) then
+                love.graphics.setColor(0.6, 0.6, 1.0, 0.75) -- Transparent blue tint
+            else
+                love.graphics.setColor(0.6, 0.6, 1.0, 1.0) -- Blue tint
+            end
         else
-            love.graphics.setBlendMode("alpha")
-            love.graphics.setColor(1, 1, 1, 1) -- Normal color
+            if is_overlapping_player(enemy.pos) then
+                love.graphics.setColor(1, 1, 1, 0.75) -- Transparent
+            else
+                love.graphics.setColor(1, 1, 1, 1) -- Normal color
+            end
         end
 
         -- Draw enemy centered
@@ -178,9 +195,22 @@ function enemies.draw()
             tile_size / 2  -- origin y (center of sprite)
         )
 
-        -- Reset blend mode
-        love.graphics.setBlendMode("alpha")
+        -- Draw health bar if damaged
+        if enemy.hitpoints < enemy.max_hitpoints then
+            -- Health bar background
+            love.graphics.setColor(0.5, 0, 0, 1)
+            love.graphics.rectangle("fill", screen_x - tile_size/2, screen_y - tile_size/2 - 5, tile_size, 2)
+            
+            -- Health bar foreground
+            love.graphics.setColor(0, 1, 0, 1)
+            local health_width = (enemy.hitpoints / enemy.max_hitpoints) * tile_size
+            love.graphics.rectangle("fill", screen_x - tile_size/2, screen_y - tile_size/2 - 5, health_width, 2)
+        end
     end
+
+    -- Restore original graphics state
+    love.graphics.setColor(unpack(original_color))
+    love.graphics.setBlendMode(original_blend_mode)
 end
 
 ---@param pos Vector2 The position to check around
