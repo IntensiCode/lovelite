@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Love Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        canvas {
+            border: 1px solid #333;
+        }
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            display: none;
+        }
+        #loading.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">Loading game...</div>
+    <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+    <script>
+        var Module = {
+            canvas: document.getElementById('canvas'),
+            preRun: [],
+            postRun: [],
+            print: function(text) { console.log(text); },
+            printErr: function(text) { console.error(text); },
+            setStatus: function(text) { 
+                console.log(text);
+                document.getElementById('loading').textContent = text;
+            },
+            totalDependencies: 0,
+            monitorRunDependencies: function(left) {
+                this.totalDependencies = Math.max(this.totalDependencies, left);
+                this.setStatus(left ? 'Loading... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+            }
+        };
+        document.getElementById('loading').classList.add('visible');
+    </script>
+    <script src="love.js"></script>
+    <script>
+        Module.arguments = ['game.love'];
+    </script>
+</body>
+</html>
