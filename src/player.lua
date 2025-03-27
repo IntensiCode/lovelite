@@ -80,31 +80,51 @@ function player.on_hit(weapon)
     end
 end
 
-function player.load()
-    local start = _game.dungeon.get_player_start_position()
-    print("Player setup:", start)
-    print("Player position:", start.pos)
+---@param opts? {reset: boolean} Options for loading (default: {reset = true})
+function player.load(opts)
+    opts = opts or { reset = true }
 
-    player.pos = start.pos
-    player.tile = start.tile
-    player.tile_id = start.tile.id
+    if opts.reset then
+        -- Reset all player state
+        local start = _game.dungeon.get_player_start_position()
+        print("Player setup:", start)
+        print("Player position:", start.pos)
 
-    local setup = _game.dungeon.player
-    player.speed = setup.speed
-    player.armorclass = setup.armorclass
-    player.hitpoints = setup.hitpoints
-    player.max_hitpoints = setup.max_hitpoints
+        player.pos = start.pos
+        player.tile = start.tile
+        player.tile_id = start.tile.id
 
-    -- Get tile size from tileset
-    player.tile_size = _game.dungeon.map.tilewidth
+        local setup = _game.dungeon.player
+        player.speed = setup.speed
+        player.armorclass = setup.armorclass
+        player.hitpoints = setup.hitpoints
+        player.max_hitpoints = setup.max_hitpoints
 
-    -- Assign initial weapon
-    for _, weapon in pairs(_game.dungeon.weapons) do
-        if weapon.name == setup.weapon then
-            player.weapon = weapon
-            break
+        -- Reset combat state
+        player.is_dead = false
+        player.death_time = nil
+        player.cooldown = 0
+        player.sonic_damage = nil
+        player.last_tile = nil
+        player.last_direction = Vector2.new(1, 0) -- Default facing right
+
+        -- Reset equipment
+        player.weapon = nil
+        player.shield = nil
+
+        -- Assign initial weapon if specified in dungeon setup
+        if setup.weapon then
+            for _, weapon in pairs(_game.dungeon.weapons) do
+                if weapon.name == setup.weapon then
+                    player.weapon = weapon
+                    break
+                end
+            end
         end
     end
+
+    -- Get tile size from tileset (this is constant and only needs to be set once)
+    player.tile_size = _game.dungeon.map.tilewidth
 
     -- Add player to global game variable
     _game.player = player

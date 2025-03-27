@@ -27,18 +27,22 @@ _game = {
     collision = collision
 }
 
-function _game.load()
-    _game.camera.load()
-    _game.dungeon.load()
-    _game.collision.load()
-    _game.pathfinder.load()
-    _game.player.load()
-    _game.collectibles.load()
-    _game.enemies.load()
-    _game.sound.load()
+---Load the game module
+---@param opts? {reset: boolean} Options for loading (default: {reset = true})
+function _game.load(opts)
+    opts = opts or { reset = true }
+
+    _game.camera.load(opts)
+    _game.dungeon.load(opts)
+    _game.collision.load(opts)
+    _game.pathfinder.load(opts)
+    _game.player.load(opts)
+    _game.collectibles.load(opts)
+    _game.enemies.load(opts)
+    _game.sound.load(opts)
 
     -- Start with fade in
-    fade.on_fade_done = nil  -- No callback needed for initial fade
+    fade.on_fade_done = nil
     fade.reset("fade_in", 0.2)
 
     -- No loading for projectiles and particles

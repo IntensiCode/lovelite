@@ -142,29 +142,36 @@ function dungeon.process_tiles()
 end
 
 ---Load and initialize the map, processing all tiles and their properties
----@return nil
-function dungeon.load()
-    -- Load the map
-    dungeon.map = STI("assets/maps/level1.lua")
-    print("Map loaded:", dungeon.map.width, "x", dungeon.map.height)
+---@param opts? {reset: boolean} Options for loading (default: {reset = true})
+function dungeon.load(opts)
+    opts = opts or { reset = true }
 
-    -- Calculate tile center once
-    dungeon.tile_center = Vector2.new(dungeon.map.tilewidth / 2, dungeon.map.tileheight / 2)
+    if opts.reset then
+        -- Reset all state
+        dungeon.map = STI("assets/maps/level1.lua")
+        print("Map loaded:", dungeon.map.width, "x", dungeon.map.height)
 
-    -- Calculate map size once
-    dungeon.map_size = Vector2.new(
-        dungeon.map.width * dungeon.map.tilewidth,
-        dungeon.map.height * dungeon.map.tileheight
-    )
+        -- Reset all entity tables
+        dungeon.enemies = {}
+        dungeon.weapons = {}
+        dungeon.shields = {}
+        dungeon.chest_anim = {}
+        dungeon.objects_layer = nil
+        dungeon.player = nil
 
-    -- Process all tiles and their properties
-    dungeon.process_tiles()
+        -- Calculate tile center and map size
+        dungeon.tile_center = Vector2.new(dungeon.map.tilewidth / 2, dungeon.map.tileheight / 2)
+        dungeon.map_size = Vector2.new(
+            dungeon.map.width * dungeon.map.tilewidth,
+            dungeon.map.height * dungeon.map.tileheight
+        )
 
-    -- Hide the Objects layer
-    dungeon.map.layers[OBJECTS_LAYER_ID].visible = false
+        -- Process all tiles and their properties
+        dungeon.process_tiles()
 
-    -- Print debug information about processed tiles
-    -- _game.debug.print_map_tiles()
+        -- Hide the Objects layer
+        dungeon.map.layers[OBJECTS_LAYER_ID].visible = false
+    end
 end
 
 ---Convert world coordinates to grid coordinates

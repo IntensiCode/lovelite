@@ -290,8 +290,18 @@ end
 -- Cache for our generated sounds
 local sound_cache = {}
 
--- Initialize all our sound effects
-function sound.load()
+---@param opts? {reset: boolean} Options for loading (default: {reset = true})
+function sound.load(opts)
+    opts = opts or { reset = true }
+
+    -- Add sound to global game variable (this is constant and only needs to be set once)
+    _game = _game or {}
+    _game.sound = sound
+
+    -- Sound effects are resources that only need to be loaded once
+    -- They don't represent game state that needs to be reset
+    if sound_cache.melee_hit then return end
+
     -- Basic gameplay sounds
     sound_cache.melee_hit = love.audio.newSource(
         generate_impact(150, 0.1, 40),
@@ -387,9 +397,5 @@ function sound.play_death(enemy_type)
         sound.play("magic_death", 0.6)
     end
 end
-
--- Add sound to global game variable when loaded
-_game = _game or {}
-_game.sound = sound
 
 return sound 

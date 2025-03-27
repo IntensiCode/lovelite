@@ -26,39 +26,43 @@ local camera = {
     loaded = false
 }
 
-function camera.load()
-    -- Return early if already loaded
-    if camera.loaded then return end
+function camera.load(opts)
+    opts = opts or { reset = true }
 
-    -- Set initial camera position
-    camera.pos = Vector2.new(0, 0)
-    camera.target = Vector2.new(0, 0)
-    camera.zoom = 1
+    -- One-time initialization
+    if not camera.loaded then
+        -- Set up window
+        love.window.setMode(1600, 1200, {
+            resizable = true,
+            minwidth = camera.width,
+            minheight = camera.height
+        })
 
-    -- Set up window
-    love.window.setMode(1600, 1200, {
-        resizable = true,
-        minwidth = camera.width,
-        minheight = camera.height
-    })
+        -- Set up canvas for virtual resolution with pixel-perfect scaling
+        love.graphics.setDefaultFilter('nearest', 'nearest')
+        camera.canvas = love.graphics.newCanvas(camera.width, camera.height)
 
-    -- Set up canvas for virtual resolution with pixel-perfect scaling
-    love.graphics.setDefaultFilter('nearest', 'nearest')
-    camera.canvas = love.graphics.newCanvas(camera.width, camera.height)
+        -- Calculate initial scaling
+        camera.updateScaling()
 
-    -- Calculate initial scaling
-    camera.updateScaling()
+        -- Calculate initial virtual center
+        camera.virtual_center = Vector2.new(camera.width / 2, camera.height / 2)
 
-    -- Calculate initial virtual center
-    camera.virtual_center = Vector2.new(camera.width / 2, camera.height / 2)
+        camera.loaded = true
+    end
 
-    -- Initialize camera position to player's starting position
-    assert(_game.player ~= nil, "Player must exist before camera is loaded")
-    assert(_game.player.pos ~= nil, "Player must have a position before camera is loaded")
-    camera.world_pos = _game.player.pos
+    -- State that should be reset
+    if opts.reset then
+        -- Reset camera position and zoom
+        camera.pos = Vector2.new(0, 0)
+        camera.target = Vector2.new(0, 0)
+        camera.zoom = 1
 
-    -- Mark as loaded
-    camera.loaded = true
+        -- Initialize camera position to player's starting position
+        assert(_game.player ~= nil, "Player must exist before camera is loaded")
+        assert(_game.player.pos ~= nil, "Player must have a position before camera is loaded")
+        camera.world_pos = _game.player.pos
+    end
 end
 
 function camera.update(dt)

@@ -13,9 +13,16 @@ _game = _game or {}
 _game.collision = collision
 
 ---Initialize the collision system
-function collision.load()
-    collision.map = _game.dungeon.map
-    collision.process_walkable_tiles()
+---@param opts? {reset: boolean} Options for loading (default: {reset = true})
+function collision.load(opts)
+    opts = opts or { reset = true }
+
+    if opts.reset then
+        -- Reset state
+        collision.walkable_tiles = {}
+        collision.map = _game.dungeon.map
+        collision.process_walkable_tiles()
+    end
 end
 
 ---Process walkable tiles from the map

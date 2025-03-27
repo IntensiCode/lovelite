@@ -14,13 +14,24 @@ local pathfinder = {
 }
 
 ---Load and initialize the pathfinder using the current map
-function pathfinder.load()
-    -- Initialize pathfinder with map dimensions and walkable function
-    pathfinder.init(
-        _game.dungeon.map.width,
-        _game.dungeon.map.height,
-        _game.collision.is_walkable_tile
-    )
+---@param opts? {reset: boolean} Options for loading (default: {reset = true})
+function pathfinder.load(opts)
+    opts = opts or { reset = true }
+
+    if opts.reset then
+        -- Reset all pathfinding state
+        pathfinder.grid = nil
+        pathfinder.dijkstra_distances = nil
+        pathfinder.dijkstra_start_x = nil
+        pathfinder.dijkstra_start_y = nil
+
+        -- Initialize pathfinder with map dimensions and walkable function
+        pathfinder.init(
+            _game.dungeon.map.width,
+            _game.dungeon.map.height,
+            _game.collision.is_walkable_tile
+        )
+    end
 end
 
 ---Initialize the pathfinder with a grid
