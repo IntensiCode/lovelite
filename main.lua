@@ -7,6 +7,7 @@ local font = require("src.base.font")
 local screen = require("src.base.screen")
 local title = require("src.title")
 local game = require("src.game")
+local debug = require("src.base.debug")
 local argparse = require("src.libraries.argparse")
 
 function love.load()
@@ -14,7 +15,11 @@ function love.load()
     local parser = argparse("love-test", "A roguelike game.")
     parser:argument("game_folder", "Game folder. Usually just the '.'.")
     parser:flag("--dev", "Start in development mode (skip title screen).")
+    parser:flag("--debug", "Enable debug mode.")
     local args = parser:parse()
+
+    -- Set debug state based on flag
+    debug.enabled = args.debug
 
     -- Load global resources first
     font.load()
