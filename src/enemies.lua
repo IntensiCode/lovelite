@@ -219,9 +219,6 @@ function enemies.find_enemies_close_to(pos)
     local nearby_enemies = {}
     local max_distance = 0.8
 
-    -- Translate pos half tile to the left and up
-    pos = pos - Vector2.new(0.5, 0.5)
-
     for _, enemy in ipairs(enemies.items) do
         if not enemy.is_dead then
             local distance = (enemy.pos - pos):length()
