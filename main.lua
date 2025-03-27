@@ -7,16 +7,23 @@ local font = require("src.base.font")
 local screen = require("src.base.screen")
 local title = require("src.title")
 local game = require("src.game")
+local argparse = require("src.libraries.argparse")
 
 function love.load()
+    -- Parse command line arguments
+    local parser = argparse("love-test", "A roguelike game.")
+    parser:argument("game_folder", "Game folder. Usually just the '.'.")
+    parser:flag("--dev", "Start in development mode (skip title screen).")
+    local args = parser:parse()
+
     -- Load global resources first
     font.load()
 
     screen.register("title", title)
     screen.register("game", game)
 
-    -- Initialize with title screen
-    screen.switch_to("title")
+    -- Initialize with title screen or game screen based on dev flag
+    screen.switch_to(args.dev and "game" or "title")
 end
 
 function love.update(dt)
