@@ -31,7 +31,7 @@ function enemies.load()
                 -- Clone the enemy data and add instance-specific properties
                 local enemy = table_utils.clone(enemy_data)
                 -- Add instance-specific properties
-                enemy.pos = Vector2.new(x, y)
+                enemy.pos = Vector2.new(x + 0.5, y + 0.5)
                 enemy.tile = tile
                 enemy.name = tile.properties["name"] or "Enemy"
                 enemy.is_dead = false
@@ -116,8 +116,11 @@ function enemies.draw()
             enemy.tile.quad,
             screen_x,
             screen_y,
-            0,
-            1, 1
+            0,              -- rotation
+            1,              -- scale x
+            1,              -- scale y
+            tile_size/2,   -- origin x (center of sprite)
+            tile_size/2   -- origin y (center of sprite)
         )
 
         -- Reset blend mode
