@@ -141,7 +141,8 @@ return {
             ["resistance_fire"] = 10,
             ["resistance_ice"] = 10,
             ["resistance_lightning"] = 10,
-            ["speed"] = 3
+            ["speed"] = 3,
+            ["weapon"] = "firestaff"
           }
         },
         {
@@ -151,7 +152,8 @@ return {
             ["behavior"] = "bully",
             ["hitpoints"] = 75,
             ["kind"] = "enemy",
-            ["speed"] = 5
+            ["speed"] = 5,
+            ["weapon"] = "fist"
           }
         },
         {
@@ -161,7 +163,8 @@ return {
             ["behavior"] = "blacksmith",
             ["hitpoints"] = 75,
             ["kind"] = "enemy",
-            ["speed"] = 4
+            ["speed"] = 4,
+            ["weapon"] = "thorhammer"
           }
         },
         {
@@ -181,7 +184,8 @@ return {
             ["behavior"] = "weirdo",
             ["hitpoints"] = 50,
             ["kind"] = "enemy",
-            ["speed"] = 5
+            ["speed"] = 5,
+            ["weapon"] = "fist"
           }
         },
         {
@@ -219,7 +223,8 @@ return {
             ["behavior"] = "knight",
             ["hitpoints"] = 100,
             ["kind"] = "enemy",
-            ["speed"] = 5
+            ["speed"] = 5,
+            ["weapon"] = "longsword"
           }
         },
         {
@@ -229,7 +234,8 @@ return {
             ["behavior"] = "knight",
             ["hitpoints"] = 100,
             ["kind"] = "enemy",
-            ["speed"] = 5
+            ["speed"] = 5,
+            ["weapon"] = "sword"
           }
         },
         {
@@ -239,7 +245,8 @@ return {
             ["behavior"] = "youngknight",
             ["hitpoints"] = 75,
             ["kind"] = "enemy",
-            ["speed"] = 5
+            ["speed"] = 5,
+            ["weapon"] = "sword"
           }
         },
         {
@@ -252,7 +259,8 @@ return {
             ["resistance_fire"] = 5,
             ["resistance_ice"] = 5,
             ["resistance_lightning"] = 5,
-            ["speed"] = 5
+            ["speed"] = 5,
+            ["weapon"] = "firestaff"
           }
         },
         {
@@ -265,7 +273,8 @@ return {
             ["resistance_fire"] = 10,
             ["resistance_ice"] = 10,
             ["resistance_lightning"] = 10,
-            ["speed"] = 5
+            ["speed"] = 5,
+            ["weapon"] = "icestaff"
           }
         },
         {
@@ -289,7 +298,7 @@ return {
         {
           id = 103,
           properties = {
-            ["cooldown"] = 0.5,
+            ["cooldown"] = 0.3,
             ["kind"] = "weapon",
             ["melee"] = 25,
             ["name"] = "sword",
@@ -346,7 +355,8 @@ return {
             ["resistance_fire"] = 5,
             ["resistance_ice"] = 5,
             ["resistance_lightning"] = 5,
-            ["speed"] = 1
+            ["speed"] = 1,
+            ["weapon"] = "sonic"
           }
         },
         {
@@ -356,7 +366,8 @@ return {
             ["behavior"] = "golem",
             ["hitpoints"] = 100,
             ["kind"] = "enemy",
-            ["speed"] = 1
+            ["speed"] = 1,
+            ["weapon"] = "fist"
           }
         },
         {
@@ -366,7 +377,8 @@ return {
             ["behavior"] = "crab",
             ["hitpoints"] = 50,
             ["kind"] = "enemy",
-            ["speed"] = 3
+            ["speed"] = 3,
+            ["weapon"] = "strongbite"
           }
         },
         {
@@ -379,7 +391,8 @@ return {
             ["resistance_fire"] = 10,
             ["resistance_ice"] = 10,
             ["resistance_lightning"] = 10,
-            ["speed"] = 3
+            ["speed"] = 3,
+            ["weapon"] = "lightningstaff"
           }
         },
         {
@@ -460,7 +473,8 @@ return {
             ["behavior"] = "bat",
             ["hitpoints"] = 20,
             ["kind"] = "enemy",
-            ["speed"] = 6
+            ["speed"] = 6,
+            ["weapon"] = "bite"
           }
         },
         {
@@ -473,7 +487,8 @@ return {
             ["resistance_fire"] = 5,
             ["resistance_ice"] = 5,
             ["resistance_lightning"] = 5,
-            ["speed"] = 1
+            ["speed"] = 1,
+            ["weapon"] = "strongsonic"
           }
         },
         {
@@ -483,7 +498,8 @@ return {
             ["behavior"] = "spider",
             ["hitpoints"] = 20,
             ["kind"] = "enemy",
-            ["speed"] = 2
+            ["speed"] = 2,
+            ["weapon"] = "web"
           }
         },
         {
@@ -493,7 +509,8 @@ return {
             ["behavior"] = "rat",
             ["hitpoints"] = 20,
             ["kind"] = "enemy",
-            ["speed"] = 6
+            ["speed"] = 6,
+            ["weapon"] = "bite"
           }
         },
         {
@@ -503,7 +520,8 @@ return {
             ["behavior"] = "grayrat",
             ["hitpoints"] = 50,
             ["kind"] = "enemy",
-            ["speed"] = 6
+            ["speed"] = 6,
+            ["weapon"] = "strongbite"
           }
         },
         {

@@ -89,6 +89,7 @@
    <property name="resistance_ice" type="int" value="10"/>
    <property name="resistance_lightning" type="int" value="10"/>
    <property name="speed" type="int" value="3"/>
+   <property name="weapon" value="firestaff"/>
   </properties>
  </tile>
  <tile id="85">
@@ -98,6 +99,7 @@
    <property name="hitpoints" type="int" value="75"/>
    <property name="kind" value="enemy"/>
    <property name="speed" type="int" value="5"/>
+   <property name="weapon" value="fist"/>
   </properties>
  </tile>
  <tile id="86">
@@ -107,6 +109,7 @@
    <property name="hitpoints" type="int" value="75"/>
    <property name="kind" value="enemy"/>
    <property name="speed" type="int" value="4"/>
+   <property name="weapon" value="thorhammer"/>
   </properties>
  </tile>
  <tile id="87">
@@ -125,6 +128,7 @@
    <property name="hitpoints" type="int" value="50"/>
    <property name="kind" value="enemy"/>
    <property name="speed" type="int" value="5"/>
+   <property name="weapon" value="fist"/>
   </properties>
  </tile>
  <tile id="89">
@@ -158,6 +162,7 @@
    <property name="hitpoints" type="int" value="100"/>
    <property name="kind" value="enemy"/>
    <property name="speed" type="int" value="5"/>
+   <property name="weapon" value="longsword"/>
   </properties>
  </tile>
  <tile id="97">
@@ -167,6 +172,7 @@
    <property name="hitpoints" type="int" value="100"/>
    <property name="kind" value="enemy"/>
    <property name="speed" type="int" value="5"/>
+   <property name="weapon" value="sword"/>
   </properties>
  </tile>
  <tile id="98">
@@ -176,6 +182,7 @@
    <property name="hitpoints" type="int" value="75"/>
    <property name="kind" value="enemy"/>
    <property name="speed" type="int" value="5"/>
+   <property name="weapon" value="sword"/>
   </properties>
  </tile>
  <tile id="99">
@@ -188,6 +195,7 @@
    <property name="resistance_ice" type="int" value="5"/>
    <property name="resistance_lightning" type="int" value="5"/>
    <property name="speed" type="int" value="5"/>
+   <property name="weapon" value="firestaff"/>
   </properties>
  </tile>
  <tile id="100">
@@ -200,6 +208,7 @@
    <property name="resistance_ice" type="int" value="10"/>
    <property name="resistance_lightning" type="int" value="10"/>
    <property name="speed" type="int" value="5"/>
+   <property name="weapon" value="icestaff"/>
   </properties>
  </tile>
  <tile id="101">
@@ -220,7 +229,7 @@
  </tile>
  <tile id="103">
   <properties>
-   <property name="cooldown" type="float" value="0.5"/>
+   <property name="cooldown" type="float" value="0.3"/>
    <property name="kind" value="weapon"/>
    <property name="melee" type="int" value="25"/>
    <property name="name" value="sword"/>
@@ -273,6 +282,7 @@
    <property name="resistance_ice" type="int" value="5"/>
    <property name="resistance_lightning" type="int" value="5"/>
    <property name="speed" type="int" value="1"/>
+   <property name="weapon" value="sonic"/>
   </properties>
  </tile>
  <tile id="109">
@@ -282,6 +292,7 @@
    <property name="hitpoints" type="int" value="100"/>
    <property name="kind" value="enemy"/>
    <property name="speed" type="int" value="1"/>
+   <property name="weapon" value="fist"/>
   </properties>
  </tile>
  <tile id="110">
@@ -291,6 +302,7 @@
    <property name="hitpoints" type="int" value="50"/>
    <property name="kind" value="enemy"/>
    <property name="speed" type="int" value="3"/>
+   <property name="weapon" value="strongbite"/>
   </properties>
  </tile>
  <tile id="111">
@@ -303,6 +315,7 @@
    <property name="resistance_ice" type="int" value="10"/>
    <property name="resistance_lightning" type="int" value="10"/>
    <property name="speed" type="int" value="3"/>
+   <property name="weapon" value="lightningstaff"/>
   </properties>
  </tile>
  <tile id="112">
@@ -375,6 +388,7 @@
    <property name="hitpoints" type="int" value="20"/>
    <property name="kind" value="enemy"/>
    <property name="speed" type="int" value="6"/>
+   <property name="weapon" value="bite"/>
   </properties>
  </tile>
  <tile id="121">
@@ -387,6 +401,7 @@
    <property name="resistance_ice" type="int" value="5"/>
    <property name="resistance_lightning" type="int" value="5"/>
    <property name="speed" type="int" value="1"/>
+   <property name="weapon" value="strongsonic"/>
   </properties>
  </tile>
  <tile id="122">
@@ -396,6 +411,7 @@
    <property name="hitpoints" type="int" value="20"/>
    <property name="kind" value="enemy"/>
    <property name="speed" type="int" value="2"/>
+   <property name="weapon" value="web"/>
   </properties>
  </tile>
  <tile id="123">
@@ -405,6 +421,7 @@
    <property name="hitpoints" type="int" value="20"/>
    <property name="kind" value="enemy"/>
    <property name="speed" type="int" value="6"/>
+   <property name="weapon" value="bite"/>
   </properties>
  </tile>
  <tile id="124">
@@ -414,6 +431,7 @@
    <property name="hitpoints" type="int" value="50"/>
    <property name="kind" value="enemy"/>
    <property name="speed" type="int" value="6"/>
+   <property name="weapon" value="strongbite"/>
   </properties>
  </tile>
  <tile id="125">
