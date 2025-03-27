@@ -301,6 +301,34 @@ function map_manager.grid_to_world(grid_x, grid_y)
     )
 end
 
+---Find all walkable tiles directly adjacent to the given position
+---@param tile_x number The x coordinate in tile space
+---@param tile_y number The y coordinate in tile space
+---@return table[] Array of {x: number, y: number} positions of walkable tiles
+function map_manager.find_walkable_around(tile_x, tile_y)
+    local walkable_tiles = {}
+    local directions = {
+        {dx = -1, dy = 0},  -- left
+        {dx = 1, dy = 0},   -- right
+        {dx = 0, dy = -1},  -- up
+        {dx = 0, dy = 1},   -- down
+        {dx = -1, dy = -1}, -- up-left
+        {dx = 1, dy = -1},  -- up-right
+        {dx = -1, dy = 1},  -- down-left
+        {dx = 1, dy = 1}    -- down-right
+    }
+
+    for _, dir in ipairs(directions) do
+        local check_x = tile_x + dir.dx
+        local check_y = tile_y + dir.dy
+        if map_manager.is_walkable_tile(check_x, check_y) then
+            table.insert(walkable_tiles, {x = check_x, y = check_y})
+        end
+    end
+
+    return walkable_tiles
+end
+
 -- Add map manager to global game variable when loaded
 _game = _game or {}
 _game.map_manager = map_manager
