@@ -1,248 +1,289 @@
-export default async (canvas, uri, arg, ops) => {
-  return new Promise(async (resolve, reject) => {
-    const indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
-    
-    const openDB = async () => {
-      // Open the local database used to cache packages
-      let db = await new Promise((resolve, reject) => {
-        const req = indexedDB.open('EM_PRELOAD_CACHE', 1);
-        req.onupgradeneeded = (event) => {
-          const targ = event.target.result;
-          if (targ.objectStoreNames.contains('PACKAGES'))
-            targ.deleteObjectStore('PACKAGES');
-          targ.createObjectStore('PACKAGES');
-        };
-        req.onerror = (error) => {
-          reject(error);
-        };
-        req.onsuccess = (event) => {
-          resolve(event.target.result);
-        };
-      });
-      // Check if the database is malformed
-      if (!db.objectStoreNames.contains('PACKAGES')) {
-        db.close();
-        await new Promise((resolve, reject) => {
-          const req = indexedDB.deleteDatabase('EM_PRELOAD_CACHE');
-          req.onerror = (error) => {
-            reject(error);
-          }
-          req.onsuccess = (event) => {
-            resolve(event.target.result);
-          }
-        });
-        db = await openDB();
-      }
-      return db;
-    }
-    
-    const deletePkg = async (uri) => {
-      const db = await openDB();
-      // Delete the store package from cache
-      const ok = await new Promise((resolve, reject) => {
-        const trans = db.transaction(['PACKAGES'], 'readwrite');
-        const req = trans.objectStore('PACKAGES').delete(uri);
-        req.onerror = (error) => {
-          reject(error);
-        };
-        req.onsuccess = (event) => {
-          resolve();
-        };
-      });
-      return ok;
-    }
-    
-    const fetchPkg = async (usecache) => {
-      // Open the local database used to cache packages
-      const db = await openDB();
-      // Check if there's a cached package, and if so whether it's the latest available
-      let data = null;
-      if (usecache) {
-        data = await new Promise((resolve, reject) => {
-          const trans = db.transaction(['PACKAGES'], 'readonly');
-          const req = trans.objectStore('PACKAGES').get(uri);
-          req.onerror = (error) => {
-            reject(error);
-          };
-          req.onsuccess = (event) => {
-            resolve(event.target.result);
-          };
-        });
-      }
 
-      // Fetch the package remotely, if we do not have it in local storage
-      if (!data || !(data instanceof Uint8Array)) {
-        console.log('fetching:'+uri);
-        const res = await fetch(uri);
-        if (!res.ok)
-          return reject('Could not fetch the love package');
-        data = await res.arrayBuffer();
-        // Check if the header is a valid ZIP archive
-        data = new Uint8Array(data);
-        const head = [80,75,3,4];
-        for (let i = 0; i < head.length; i++)
-          if (data[i] != head[i])
-            return reject('The fetched resource is not a valid love package');
-        // Cache remote package for subsequent requests
-        await new Promise((resolve, reject) => {
-          const trans = db.transaction(['PACKAGES'], 'readwrite');
-          const req = trans.objectStore('PACKAGES').put(data, uri);
-          req.onerror = (error) => {
-            reject(error);
-          };
-          req.onsuccess = (event) => {
-            resolve();
-          };
-        });
+var Module;
+
+if (typeof Module === 'undefined') Module = eval('(function() { try { return Module || {} } catch(e) { return {} } })()');
+
+if (!Module.expectedDataFileDownloads) {
+  Module.expectedDataFileDownloads = 0;
+  Module.finishedDataFileDownloads = 0;
+}
+Module.expectedDataFileDownloads++;
+(function() {
+ var loadPackage = function(metadata) {
+
+  var PACKAGE_PATH;
+  if (typeof window === 'object') {
+    PACKAGE_PATH = window['encodeURIComponent'](window.location.pathname.toString().substring(0, window.location.pathname.toString().lastIndexOf('/')) + '/');
+  } else if (typeof location !== 'undefined') {
+      // worker
+      PACKAGE_PATH = encodeURIComponent(location.pathname.toString().substring(0, location.pathname.toString().lastIndexOf('/')) + '/');
+    } else {
+      throw 'using preloaded data can only be done on a web page or in a web worker';
+    }
+    var PACKAGE_NAME = 'game.data';
+    var REMOTE_PACKAGE_BASE = 'game.data';
+    if (typeof Module['locateFilePackage'] === 'function' && !Module['locateFile']) {
+      Module['locateFile'] = Module['locateFilePackage'];
+      Module.printErr('warning: you defined Module.locateFilePackage, that has been renamed to Module.locateFile (using your locateFilePackage for now)');
+    }
+    var REMOTE_PACKAGE_NAME = typeof Module['locateFile'] === 'function' ?
+    Module['locateFile'](REMOTE_PACKAGE_BASE) :
+    ((Module['filePackagePrefixURL'] || '') + REMOTE_PACKAGE_BASE);
+
+    var REMOTE_PACKAGE_SIZE = metadata.remote_package_size;
+    var PACKAGE_UUID = metadata.package_uuid;
+
+    function fetchRemotePackage(packageName, packageSize, callback, errback) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', packageName, true);
+      xhr.responseType = 'arraybuffer';
+      xhr.onprogress = function(event) {
+        var url = packageName;
+        var size = packageSize;
+        if (event.total) size = event.total;
+        if (event.loaded) {
+          if (!xhr.addedTotal) {
+            xhr.addedTotal = true;
+            if (!Module.dataFileDownloads) Module.dataFileDownloads = {};
+            Module.dataFileDownloads[url] = {
+              loaded: event.loaded,
+              total: size
+            };
+          } else {
+            Module.dataFileDownloads[url].loaded = event.loaded;
+          }
+          var total = 0;
+          var loaded = 0;
+          var num = 0;
+          for (var download in Module.dataFileDownloads) {
+            var data = Module.dataFileDownloads[download];
+            total += data.total;
+            loaded += data.loaded;
+            num++;
+          }
+          total = Math.ceil(total * Module.expectedDataFileDownloads/num);
+          if (Module['setStatus']) Module['setStatus']('Downloading data... (' + loaded + '/' + total + ')');
+        } else if (!Module.dataFileDownloads) {
+          if (Module['setStatus']) Module['setStatus']('Downloading data...');
+        }
       };
-      return data;
+      xhr.onerror = function(event) {
+        throw new Error("NetworkError for: " + packageName);
+      }
+      xhr.onload = function(event) {
+        if (xhr.status == 200 || xhr.status == 304 || xhr.status == 206 || (xhr.status == 0 && xhr.response)) { // file URLs can return 0
+          var packageData = xhr.response;
+          callback(packageData);
+        } else {
+          throw new Error(xhr.statusText + " : " + xhr.responseURL);
+        }
+      };
+      xhr.send(null);
+    };
+
+    function handleError(error) {
+      console.error('package error:', error);
+    };
+
+    function runWithFS() {
+
+      function assert(check, msg) {
+        if (!check) throw msg + new Error().stack;
+      }
+      
+
+      function DataRequest(start, end, crunched, audio) {
+        this.start = start;
+        this.end = end;
+        this.crunched = crunched;
+        this.audio = audio;
+      }
+      DataRequest.prototype = {
+        requests: {},
+        open: function(mode, name) {
+          this.name = name;
+          this.requests[name] = this;
+          Module['addRunDependency']('fp ' + this.name);
+        },
+        send: function() {},
+        onload: function() {
+          var byteArray = this.byteArray.subarray(this.start, this.end);
+
+          this.finish(byteArray);
+
+        },
+        finish: function(byteArray) {
+          var that = this;
+
+        Module['FS_createDataFile'](this.name, null, byteArray, true, true, true); // canOwn this data in the filesystem, it is a slide into the heap that will never change
+        Module['removeRunDependency']('fp ' + that.name);
+
+        this.requests[this.name] = null;
+      }
+    };
+
+    var files = metadata.files;
+    for (i = 0; i < files.length; ++i) {
+      new DataRequest(files[i].start, files[i].end, files[i].crunched, files[i].audio).open('GET', files[i].filename);
     }
-    
-    const data = await fetchPkg(!ops.nocache);
-    if (!data)
-      return reject('Could not parse the package contents');
-    
-    //const pkg = 'game.love';
-    const pkg = uri.substring(uri.lastIndexOf('/') + 1);
-    let Module = {};
 
-    const mem = (navigator.deviceMemory || 1)*1e+9;
-    Module.INITIAL_MEMORY = Math.min(4*data.length + 2e+7, mem);
-    Module.canvas = canvas;
-    Module.printErr = window.onerror;
-    
-    Module.arguments = [pkg];
-    if (arg && Array.isArray(arg))
-      for (let i = 0; i < arg.length; i++)
-        Module.arguments.push(String(arg[i]));
 
-    const runWithFS = async () => {
-      Module.addRunDependency('fp '+pkg);
-      const ptr = Module.getMemory(data.length);
-      Module['HEAPU8'].set(data, ptr);
-      Module.FS_createDataFile('/', pkg, data, true, true, true);
-      Module.removeRunDependency('fp '+pkg);
+    var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+    var IDB_RO = "readonly";
+    var IDB_RW = "readwrite";
+    var DB_NAME = "EM_PRELOAD_CACHE";
+    var DB_VERSION = 1;
+    var METADATA_STORE_NAME = 'METADATA';
+    var PACKAGE_STORE_NAME = 'PACKAGES';
+    function openDatabase(callback, errback) {
+      try {
+        var openRequest = indexedDB.open(DB_NAME, DB_VERSION);
+      } catch (e) {
+        return errback(e);
+      }
+      openRequest.onupgradeneeded = function(event) {
+        var db = event.target.result;
 
-      resolve(Module);
-      Module.finishedDataFileDownloads ++;
+        if(db.objectStoreNames.contains(PACKAGE_STORE_NAME)) {
+          db.deleteObjectStore(PACKAGE_STORE_NAME);
+        }
+        var packages = db.createObjectStore(PACKAGE_STORE_NAME);
+
+        if(db.objectStoreNames.contains(METADATA_STORE_NAME)) {
+          db.deleteObjectStore(METADATA_STORE_NAME);
+        }
+        var metadata = db.createObjectStore(METADATA_STORE_NAME);
+      };
+      openRequest.onsuccess = function(event) {
+        var db = event.target.result;
+        callback(db);
+      };
+      openRequest.onerror = function(error) {
+        errback(error);
+      };
+    };
+
+    /* Check if there's a cached package, and if so whether it's the latest available */
+    function checkCachedPackage(db, packageName, callback, errback) {
+      var transaction = db.transaction([METADATA_STORE_NAME], IDB_RO);
+      var metadata = transaction.objectStore(METADATA_STORE_NAME);
+
+      var getRequest = metadata.get("metadata/" + packageName);
+      getRequest.onsuccess = function(event) {
+        var result = event.target.result;
+        if (!result) {
+          return callback(false);
+        } else {
+          return callback(PACKAGE_UUID === result.uuid);
+        }
+      };
+      getRequest.onerror = function(error) {
+        errback(error);
+      };
+    };
+
+    function fetchCachedPackage(db, packageName, callback, errback) {
+      var transaction = db.transaction([PACKAGE_STORE_NAME], IDB_RO);
+      var packages = transaction.objectStore(PACKAGE_STORE_NAME);
+
+      var getRequest = packages.get("package/" + packageName);
+      getRequest.onsuccess = function(event) {
+        var result = event.target.result;
+        callback(result);
+      };
+      getRequest.onerror = function(error) {
+        errback(error);
+      };
+    };
+
+    function cacheRemotePackage(db, packageName, packageData, packageMeta, callback, errback) {
+      var transaction_packages = db.transaction([PACKAGE_STORE_NAME], IDB_RW);
+      var packages = transaction_packages.objectStore(PACKAGE_STORE_NAME);
+
+      var putPackageRequest = packages.put(packageData, "package/" + packageName);
+      putPackageRequest.onsuccess = function(event) {
+        var transaction_metadata = db.transaction([METADATA_STORE_NAME], IDB_RW);
+        var metadata = transaction_metadata.objectStore(METADATA_STORE_NAME);
+        var putMetadataRequest = metadata.put(packageMeta, "metadata/" + packageName);
+        putMetadataRequest.onsuccess = function(event) {
+          callback(packageData);
+        };
+        putMetadataRequest.onerror = function(error) {
+          errback(error);
+        };
+      };
+      putPackageRequest.onerror = function(error) {
+        errback(error);
+      };
+    };
+
+    function processPackageData(arrayBuffer) {
+      Module.finishedDataFileDownloads++;
+      assert(arrayBuffer, 'Loading data file failed.');
+      assert(arrayBuffer instanceof ArrayBuffer, 'bad input to processPackageData');
+      var byteArray = new Uint8Array(arrayBuffer);
+      var curr;
+
+        // copy the entire loaded file into a spot in the heap. Files will refer to slices in that. They cannot be freed though
+        // (we may be allocating before malloc is ready, during startup).
+        if (Module['SPLIT_MEMORY']) Module.printErr('warning: you should run the file packager with --no-heap-copy when SPLIT_MEMORY is used, otherwise copying into the heap may fail due to the splitting');
+        var ptr = Module['getMemory'](byteArray.length);
+        Module['HEAPU8'].set(byteArray, ptr);
+        DataRequest.prototype.byteArray = Module['HEAPU8'].subarray(ptr, ptr+byteArray.length);
+
+        var files = metadata.files;
+        for (i = 0; i < files.length; ++i) {
+          DataRequest.prototype.requests[files[i].filename].onload();
+        }
+        Module['removeRunDependency']('datafile_game.data');
+
+      };
+      Module['addRunDependency']('datafile_game.data');
+
+      if (!Module.preloadResults) Module.preloadResults = {};
+
+      function preloadFallback(error) {
+        console.error(error);
+        console.error('falling back to default preload behavior');
+        fetchRemotePackage(REMOTE_PACKAGE_NAME, REMOTE_PACKAGE_SIZE, processPackageData, handleError);
+      };
+
+      openDatabase(
+        function(db) {
+          checkCachedPackage(db, PACKAGE_PATH + PACKAGE_NAME,
+            function(useCached) {
+              Module.preloadResults[PACKAGE_NAME] = {fromCache: useCached};
+              if (useCached) {
+                console.info('loading ' + PACKAGE_NAME + ' from cache');
+                fetchCachedPackage(db, PACKAGE_PATH + PACKAGE_NAME, processPackageData, preloadFallback);
+              } else {
+                console.info('loading ' + PACKAGE_NAME + ' from remote');
+                fetchRemotePackage(REMOTE_PACKAGE_NAME, REMOTE_PACKAGE_SIZE,
+                  function(packageData) {
+                    cacheRemotePackage(db, PACKAGE_PATH + PACKAGE_NAME, packageData, {uuid:PACKAGE_UUID}, processPackageData,
+                      function(error) {
+                        console.error(error);
+                        processPackageData(packageData);
+                      });
+                  }
+                  , preloadFallback);
+              }
+            }
+            , preloadFallback);
+        }
+        , preloadFallback);
+
+      if (Module['setStatus']) Module['setStatus']('Downloading...');
+
     }
-
-    if (Module.calledRun) {
+    if (Module['calledRun']) {
       runWithFS();
     } else {
-      // FS is not initialized yet, wait for it
-      if (!Module.preRun)
-        Module.preRun = [];
-      Module.preRun.push(runWithFS);
-    }
-    
-    Module.load_libs = async () => {
-      // include fetch.lua
-      const req = await fetch('./fetch.lua');
-      const lua = await req.text();
-      Module.FS_createPath('/', '/usr/local/share/lua/5.1', true, true);
-      Module.FS_createDataFile('/usr/local/share/lua/5.1', 'fetch.lua', lua, true, true, true);
+      if (!Module['preRun']) Module['preRun'] = [];
+      Module["preRun"].push(runWithFS); // FS is not initialized yet, wait for it
     }
 
-    if (window.Love === undefined) {
-      // this operation initiates local storage
-      if (ops.version == null)
-        ops.version = '11.5';
-      let s = document.createElement('script');
-      s.type = 'text/javascript';
-      s.src = ops.version + ((ops.compat) ? '/compat/love.js' : '/release/love.js');
-      s.async = true;
-      s.onload = () => {
-        Love(Module);
-        Module.load_libs();
-      };
-      document.body.appendChild(s);
-    } else {
-      window.Module.pauseMainLoop();
-      Love(Module);
-      Module.load_libs();
-    }
+  }
+  loadPackage({"package_uuid":"09f4493c-1593-4c28-bddd-d40f005a9678","remote_package_size":11142241,"files":[{"filename":"/game.love","crunched":0,"start":0,"end":11142241,"audio":false}]});
 
-    window.Module = Module;
-
-    if (Module._console)
-      return;
-    
-    // grab the console and process fetch requests
-    const _console = window.console;
-    Module._console = _console;
-    window.console = {};
-    for (let k in _console)
-      if (typeof _console[k] == 'function')
-        window.console[k] = _console[k].bind(_console);
-
-    window.console.log = async (...args) => {
-      const a = args[0];
-      if (typeof(a)  === 'string' && a.startsWith('@')) {
-        const list = a.match(/^@([^\t]+)\t([^\t]+)\t([^\t]+)\t?(.*)/);
-        if (list) {
-          let output = '';
-          try {
-            if (list[1] == 'fetch') {
-              // fetch api requests
-              const ops = (list[4]) ? JSON.parse(list[4]) : {};
-              ops.headers = ops.headers || {};
-              if (ops.body && typeof(ops.body) === 'object') {
-                const form = new FormData();
-                for (let k in ops.body)
-                  form.append(k, ops.body[k]);
-                ops.body = form;
-              }
-              const res = await fetch(list[3], ops);
-              let code = Array.from(String(res.code), Number);
-              while (code.length < 3)
-                code.unshift(0);
-              code = Uint8Array.from(code);
-              let data = await res.arrayBuffer();
-              if (data && data.byteLength > 0) {
-                output = new Uint8Array(output.byteLength + 3);
-                output.set(code, 0);
-                output.set(data, 3);
-              } else {
-                output = code;
-              }
-            } else if (list[1] == 'speak') {
-              // text-to-speech functionality
-              const synth = window.speechSynthesis;
-              if (synth) {
-                if (synth.speaking)
-                  synth.cancel();
-                const ops = (list[4]) ? JSON.parse(list[4]) : {};
-                const utter = new SpeechSynthesisUtterance(list[3]);
-                utter.volume = ops.volume;
-                utter.rate = ops.rate;
-                synth.speak(utter);
-                output = 'true';
-              } else {
-                output = 'false';
-              }
-            } else if (list[1] == 'reload') {
-              // package reloading
-              await deletePkg(uri);
-              window.location.reload();
-            }
-          } catch (error) {
-            output = error;
-            _console.warn(error);
-          } finally {
-            // thanks to Nivas from stackoverflow.com/questions/3820381
-            if (list[2] && list[2] != '.') {
-              const offset = list[2].lastIndexOf('/');
-              const base = list[2].substring(offset + 1);
-              const path = list[2].substring(0, offset);
-              Module.FS_createPath('/', path, true, true);
-              Module.FS_createDataFile(path, base, output, true, true, true);
-            }
-          }
-          return;
-        }
-      }
-      return _console.info(...args);
-    }
-  });
-};
+})();
