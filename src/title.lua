@@ -2,6 +2,7 @@ local title = {}
 local screen = require("src.base.screen")
 local camera = require("src.camera")
 local font = require("src.base.font")
+local fade = require("src.base.fade")
 
 -- Constants
 local PADDING = 8
@@ -58,9 +59,16 @@ function title.load()
     -- Calculate logo position
     title.logo_x = (camera.width - title.logo:getWidth()) / 2
     title.logo_y = 20
+
+    -- Start with fade in
+    fade.on_fade_done = nil  -- No callback needed for initial fade
+    fade.reset("fade_in", 0.2)
 end
 
 function title.update(dt)
+    -- Update fade
+    fade.update(dt)
+
     -- Update time for flame animation
     title.time = title.time + dt
 
@@ -78,9 +86,11 @@ function title.update(dt)
     end
 
     -- Check for space key press to start game
-    if love.keyboard.isDown("space") then
-        -- Switch to game screen
-        screen.switch_to("game")
+    if love.keyboard.isDown("space") and not fade.transitioning then
+        fade.on_fade_done = function()
+            screen.switch_to("game")
+        end
+        fade.reset("fade_out", 0.2)
     end
 end
 
@@ -125,6 +135,9 @@ function title.draw()
         local text = "Press SPACE to start"
         font.draw_text(text, camera.width/2, camera.height - PADDING, font.anchor.bottom_center)
     end
+
+    -- Draw fade overlay last
+    fade.draw(camera.width, camera.height)
 
     -- End camera transform
     camera.endDraw()
