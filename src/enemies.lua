@@ -3,6 +3,7 @@ local events = require("src.base.events")
 local table_utils = require("src.base.table")
 local m = require("src.base.math")
 local bully = require("src.enemy.bully")
+local backoff = require("src.enemy.backoff")
 
 ---@class Enemy
 ---@field pos Vector2
@@ -13,6 +14,9 @@ local bully = require("src.enemy.bully")
 ---@field max_hitpoints number The enemy's maximum health
 ---@field is_dead boolean Whether the enemy is dead
 ---@field stun_time number Stun time in seconds
+---@field backoff number|nil Time to back off after being hit
+---@field backoff_tile Vector2|nil The tile to move to during backoff
+---@field will_retreat boolean Whether the enemy will retreat when hit (default: true)
 
 local enemies = {
     items = {}
@@ -35,6 +39,7 @@ function enemies.load()
                 enemy.tile = tile
                 enemy.name = tile.properties["name"] or "Enemy"
                 enemy.is_dead = false
+                enemy.will_retreat = enemy_data.will_retreat ~= false -- Default to true unless explicitly set to false
                 table.insert(enemies.items, enemy)
             end
         end
@@ -85,6 +90,12 @@ function enemies.update(dt)
             goto continue
         end
 
+        -- In the enemies.update function
+        if enemy.backoff and enemy.backoff > 0 then
+            backoff.update(enemy, dt)
+            goto continue
+        end
+
         -- Call enemy behavior based on type
         if enemy.behavior == "bully" then
             bully.update(enemy, dt)
@@ -116,11 +127,11 @@ function enemies.draw()
             enemy.tile.quad,
             screen_x,
             screen_y,
-            0,              -- rotation
-            1,              -- scale x
-            1,              -- scale y
-            tile_size/2,   -- origin x (center of sprite)
-            tile_size/2   -- origin y (center of sprite)
+            0,           -- rotation
+            1,           -- scale x
+            1,           -- scale y
+            tile_size / 2, -- origin x (center of sprite)
+            tile_size / 2 -- origin y (center of sprite)
         )
 
         -- Reset blend mode
@@ -152,8 +163,8 @@ end
 ---@param enemy Enemy The enemy that was hit
 ---@param projectile table The projectile that hit the enemy
 function enemies.on_hit(enemy, projectile)
-    -- Set backoff state when hit by any projectile
-    if enemy.behavior == "bully" then
+    -- Set backoff state when hit by any projectile if the enemy will retreat
+    if enemy.will_retreat then
         enemy.backoff = 0.5
     end
 

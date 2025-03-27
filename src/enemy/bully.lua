@@ -2,7 +2,6 @@ local Vector2    = require("src.base.vector2")
 local pathfinder = require("src.pathfinder")
 local weapons    = require("src.enemy.weapons")
 local events     = require("src.base.events")
-local backoff    = require("src.enemy.backoff")
 
 ---@class Bully
 ---@field pos Vector2
@@ -15,16 +14,12 @@ local backoff    = require("src.enemy.backoff")
 ---@field move_target Vector2|nil
 ---@field weapon table
 ---@field cooldown number
----@field backoff number|nil Time to back off after attacking
----@field backoff_tile Vector2|nil The tile to move to during backoff
 
 local bully      = {}
 
 function bully.init(enemy)
     enemy.weapon = weapons.fist
     enemy.cooldown = 0
-    enemy.backoff = nil
-    enemy.backoff_tile = nil
 end
 
 ---Update the bully's behavior
@@ -33,13 +28,6 @@ end
 function bully.update(enemy, dt)
     if not enemy.cooldown then
         bully.init(enemy)
-    end
-
-    -- Handle backoff period
-    if backoff.is_still_backing_off(enemy) then
-        backoff.update(enemy, dt)
-        -- Skip normal movement and attack logic during backoff
-        return
     end
 
     -- Update cooldown
