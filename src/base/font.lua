@@ -17,25 +17,8 @@ font.anchor = {
 }
 
 function font.load()
-    -- Load tiny bitmap font
-    local success, result = pcall(function()
-        return love.graphics.newFont("assets/fonts/font_tiny.fnt")
-    end)
-    if success then
-        font.tiny = result
-    else
-        print("Failed to load tiny font:", result)
-    end
-
-    -- Load fancy font
-    success, result = pcall(function()
-        return love.graphics.newFont("assets/fonts/font_fancy.fnt")
-    end)
-    if success then
-        font.fancy = result
-    else
-        print("Failed to load fancy font:", result)
-    end
+    font.tiny = love.graphics.newFont("assets/fonts/font_tiny.fnt")
+    font.fancy = love.graphics.newFont("assets/fonts/font_fancy.fnt")
 end
 
 -- Draw text with specified anchor point
