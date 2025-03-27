@@ -15,8 +15,8 @@ function love.load()
     screen.register("title", title)
     screen.register("game", game)
 
-    title.load()
-    game.load()
+    -- Initialize with title screen
+    screen.switch_to("title")
 end
 
 function love.update(dt)
