@@ -50,6 +50,9 @@ function player.on_hit(weapon)
         local actual_damage = weapon.melee - damage_reduction
 
         player.hitpoints = player.hitpoints - actual_damage
+
+        -- Play hit sound with volume based on damage
+        _game.sound.play("player_hit", math.min(actual_damage / 20, 1))
     elseif weapon.sonic or weapon.strongsonic then
         -- Sonic weapons apply damage over time
         -- Store the damage and duration in a table if not exists
@@ -72,6 +75,8 @@ function player.on_hit(weapon)
         player.death_time = 0.5
         -- Clear pathfinding data when player dies
         _game.pathfinder.clear()
+        -- Play dramatic death sound
+        _game.sound.play("player_death", 1.0)
     end
 end
 

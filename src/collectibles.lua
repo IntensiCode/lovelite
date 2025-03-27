@@ -133,7 +133,10 @@ function collectibles.check_collection(pos, collect_range)
             -- Debug print collection
             print(string.format("\nCollectible collected at (%d, %d)! Weapon: %s",
                 item.pos.x, item.pos.y, item.name))
-            
+
+            -- Play pickup sound
+            _game.sound.play("pickup")
+
             -- Remove and return the collected item
             local collected = table.remove(collectibles.items, i)
             return collected

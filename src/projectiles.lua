@@ -7,22 +7,41 @@ local events = require("src.base.events")
 ---@field speed number
 ---@field rotation number
 ---@field weapon table
+---@field owner string
+---@field lifetime number
+---@field pulse_time number
 
 local projectiles = {
     active = {},             -- Array of active projectiles
     rotation_speed = math.pi -- Radians per second (half rotation)
 }
 
----@param pos Vector2 The starting position of the projectile
----@param direction Vector2 The direction the projectile will travel
----@param weapon table The weapon that fired the projectile
-function projectiles.spawn(pos, direction, weapon)
+---Create a new projectile
+---@param pos Vector2 Starting position
+---@param direction Vector2 Direction vector
+---@param weapon table Weapon data
+---@param owner string Owner type ("player" or "enemy")
+function projectiles.spawn(pos, direction, weapon, owner)
+    -- Play appropriate swoosh sound based on weapon type
+    if weapon.melee then
+        _game.sound.play("melee_swoosh", 0.7)
+    else
+        _game.sound.play("magic_swoosh", 0.8)
+    end
+
+    -- Ensure we have Vector2 objects
+    local proj_pos = Vector2.new(pos.x, pos.y)
+    local proj_dir = Vector2.new(direction.x, direction.y):normalized()
+
     table.insert(projectiles.active, {
-        pos = Vector2.new(pos.x, pos.y),
-        direction = direction:normalized(), -- Ensure normalized
-        speed = weapon.speed,
-        rotation = 0,
-        weapon = weapon -- Store entire weapon for future use
+        pos = proj_pos,
+        direction = proj_dir,
+        weapon = weapon,
+        owner = owner,
+        lifetime = weapon.lifetime or 0.5,
+        speed = weapon.speed or 10,  -- Add default speed if not specified
+        rotation = 0,                -- Initial rotation
+        pulse_time = 0              -- Initial pulse time for magic projectiles
     })
 end
 
@@ -94,8 +113,13 @@ function projectiles.update(dt)
             if #nearby_enemies > 0 then
                 projectiles.handle_enemy_hit(proj, nearby_enemies)
                 table.remove(projectiles.active, i)
-                -- Check if projectile hit a non-walkable tile with a smaller buffer
             elseif not _game.map_manager.is_walkable(proj.pos.x, proj.pos.y, Vector2.new(0.25, 0.1)) then
+                -- Play appropriate wall hit sound
+                if proj.weapon.melee then
+                    _game.sound.play("melee_wall_hit", 0.8)
+                else
+                    _game.sound.play("magic_wall_hit", 0.7)
+                end
                 projectiles.spawn_hit_particles(proj)
                 table.remove(projectiles.active, i)
             else
@@ -158,7 +182,7 @@ end
 
 -- Register for projectile spawn events (moved to end of file)
 events.register("projectile.spawn", function(data)
-    projectiles.spawn(data.pos, data.direction, data.weapon)
+    projectiles.spawn(data.pos, data.direction, data.weapon, "player")
 end)
 
 return projectiles

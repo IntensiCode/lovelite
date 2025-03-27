@@ -254,7 +254,13 @@ function enemies.on_hit(enemy, projectile)
         enemy.hitpoints = enemy.hitpoints - actual_damage
         if enemy.hitpoints <= 0 then
             enemy.is_dead = true
+            -- Play appropriate death sound based on enemy type
+            _game.sound.play_death(enemy.behavior)
         end
+
+        -- Play melee hit sound with volume based on damage
+        _game.sound.play("melee_hit", math.min(actual_damage / 10, 1))
+
     elseif projectile.weapon.fire then
         -- Get fire resistance (default to 0 if nil) and clamp between 0 and 100
         local fire_resistance = enemy.resistance_fire or 0
@@ -267,7 +273,13 @@ function enemies.on_hit(enemy, projectile)
         enemy.hitpoints = enemy.hitpoints - actual_damage
         if enemy.hitpoints <= 0 then
             enemy.is_dead = true
+            -- Play appropriate death sound based on enemy type
+            _game.sound.play_death(enemy.behavior)
         end
+
+        -- Play magic sound for fire damage
+        _game.sound.play("magic", math.min(actual_damage / 10, 1))
+
     elseif projectile.weapon.ice then
         -- Get ice resistance (default to 0 if nil) and clamp between 0 and 100
         local ice_resistance = enemy.resistance_ice or 0
@@ -280,10 +292,16 @@ function enemies.on_hit(enemy, projectile)
         enemy.hitpoints = enemy.hitpoints - actual_damage
         if enemy.hitpoints <= 0 then
             enemy.is_dead = true
+            -- Play appropriate death sound based on enemy type
+            _game.sound.play_death(enemy.behavior)
         end
 
         -- Add stun time based on damage
         enemy.stun_time = (enemy.stun_time or 0) + (actual_damage / 10)
+
+        -- Play ice sound
+        _game.sound.play("ice", math.min(actual_damage / 10, 1))
+
     elseif projectile.weapon.lightning then
         -- Get lightning resistance (default to 0 if nil) and clamp between 0 and 100
         local lightning_resistance = enemy.resistance_lightning or 0
@@ -296,7 +314,12 @@ function enemies.on_hit(enemy, projectile)
         enemy.hitpoints = enemy.hitpoints - actual_damage
         if enemy.hitpoints <= 0 then
             enemy.is_dead = true
+            -- Play appropriate death sound based on enemy type
+            _game.sound.play_death(enemy.behavior)
         end
+
+        -- Play magic sound for lightning damage
+        _game.sound.play("magic", math.min(actual_damage / 10, 1))
     end
 end
 

@@ -8,6 +8,7 @@ local projectiles = require("src.projectiles")
 local particles = require("src.particles")
 local collectibles = require("src.collectibles")
 local enemies = require("src.enemies")
+local sound = require("src.sound")
 
 print("Game module loaded!")
 
@@ -21,7 +22,8 @@ _game = {
     projectiles = projectiles,
     particles = particles,
     collectibles = collectibles,
-    enemies = enemies
+    enemies = enemies,
+    sound = sound
 }
 
 function _game.load()
@@ -32,6 +34,7 @@ function _game.load()
     _game.player.load()
     _game.collectibles.load()
     _game.enemies.load()
+    _game.sound.load()
 
     -- No loading for projectiles and particles
 end
