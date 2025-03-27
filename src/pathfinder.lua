@@ -200,7 +200,9 @@ end
 ---@param end_y number Ending Y coordinate
 ---@return table|nil path The path as a list of {x, y} coordinates, or nil if no path found
 function pathfinder.find_path_to_start(end_x, end_y)
-    assert(pathfinder.dijkstra_distances, "Dijkstra distances not calculated")
+    if not pathfinder.dijkstra_distances then
+        return nil
+    end
 
     -- Use the stored Dijkstra distances to find path back to start
     return pathfinder.find_path(end_x, end_y,
@@ -263,6 +265,13 @@ function pathfinder.draw()
 
     -- Reset color
     love.graphics.setColor(1, 1, 1, 1)
+end
+
+---Clear all pathfinding data
+function pathfinder.clear()
+    pathfinder.dijkstra_distances = nil
+    pathfinder.dijkstra_start_x = nil
+    pathfinder.dijkstra_start_y = nil
 end
 
 return pathfinder
