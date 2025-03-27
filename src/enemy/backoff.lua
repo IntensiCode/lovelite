@@ -1,4 +1,5 @@
 local Vector2 = require("src.base.vector2")
+local movement = require("src.enemy.behaviors.movement")
 
 ---@class Enemy
 ---@field pos Vector2
@@ -101,16 +102,7 @@ function backoff.update(enemy, dt)
 
     -- Move towards the backoff tile if we have one
     if enemy.backoff_tile then
-        local direction = enemy.backoff_tile - enemy.pos
-        local distance = direction:length()
-
-        if distance > 0 then
-            direction = direction / distance
-            local new_pos = enemy.pos + direction * enemy.speed * dt
-            if _game.map_manager.is_walkable(new_pos.x, new_pos.y) then
-                enemy.pos = new_pos
-            end
-        end
+        movement.move_towards_target(enemy, enemy.backoff_tile, dt)
     end
 
     -- If backoff is done, clear the backoff tile
