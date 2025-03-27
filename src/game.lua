@@ -9,8 +9,7 @@ local particles = require("src.particles")
 local collectibles = require("src.collectibles")
 local enemies = require("src.enemies")
 local sound = require("src.sound")
-
-print("Game module loaded!")
+local collision = require("src.map.collision")
 
 -- Make game a global variable
 _game = {
@@ -23,12 +22,14 @@ _game = {
     particles = particles,
     collectibles = collectibles,
     enemies = enemies,
-    sound = sound
+    sound = sound,
+    collision = collision
 }
 
 function _game.load()
     _game.camera.load()
     _game.map_manager.load()
+    _game.collision.load()
     _game.pathfinder.load()
     _game.debug.load()
     _game.player.load()
@@ -37,6 +38,8 @@ function _game.load()
     _game.sound.load()
 
     -- No loading for projectiles and particles
+    -- _game.projectiles.load()
+    -- _game.particles.load()
 end
 
 function _game.update(dt)
@@ -69,8 +72,8 @@ function _game.draw()
 
     -- Find and draw all overlapping tiles
     local positions = _game.find_overlappable_positions()
-    local overlapping_tiles = _game.map_manager.find_overlapping_tiles(positions)
-    _game.map_manager.draw_overlapping_tiles(overlapping_tiles)
+    local overlapping_tiles = _game.collision.find_overlapping_tiles(positions)
+    _game.collision.draw_overlapping_tiles(overlapping_tiles)
 
     -- Draw particles above the redrawn wall tiles
     _game.particles.draw()

@@ -16,7 +16,7 @@ function backoff.find_best_tile(enemy)
     local current_tile_x = math.floor(enemy.pos.x + 0.5)
     local current_tile_y = math.floor(enemy.pos.y + 0.5)
 
-    local walkable_tiles = _game.map_manager.find_walkable_around(current_tile_x, current_tile_y)
+    local walkable_tiles = _game.collision.find_walkable_around(current_tile_x, current_tile_y)
     if #walkable_tiles == 0 then return nil end
 
     -- Create table of tiles with their distances

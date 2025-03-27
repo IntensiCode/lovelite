@@ -113,7 +113,7 @@ function projectiles.update(dt)
             if #nearby_enemies > 0 then
                 projectiles.handle_enemy_hit(proj, nearby_enemies)
                 table.remove(projectiles.active, i)
-            elseif not _game.map_manager.is_walkable(proj.pos.x, proj.pos.y, Vector2.new(0.25, 0.1)) then
+            elseif not _game.collision.is_walkable(proj.pos.x, proj.pos.y, Vector2.new(0.25, 0.1)) then
                 -- Play appropriate wall hit sound
                 if proj.weapon.melee then
                     _game.sound.play("melee_wall_hit", 0.8)

@@ -1,4 +1,4 @@
-local STI = require("src/libraries/sti.init")
+local STI = require("src.libraries.sti.init")
 local Vector2 = require("src.base.vector2")
 local table_utils = require("src.base.table")
 
@@ -9,7 +9,6 @@ local OBJECTS_LAYER_ID = 2
 ---@field map table The STI map object
 ---@field tile_center Vector2 The center position of the current tile
 ---@field map_size Vector2 The size of the map in tiles
----@field walkable_tiles table<number, boolean> Map of tile IDs to walkable status
 ---@field enemies table<number, {hitpoints: number, armorclass: number, tile: table, armorclass: number, hitpoints: number, max_hitpoints: number}>
 ---@field weapons table<number, {name: string, melee: number, speed: number, initial: boolean, tile: table, cooldown: number}>
 ---@field shields table<number, {name: string, tile: table, armorclass: number, hitpoints: number, max_hitpoints: number}>
@@ -20,7 +19,6 @@ local map_manager = {
     map = nil,
     tile_center = Vector2.new(0, 0),
     map_size = Vector2.new(0, 0),
-    walkable_tiles = {},
     enemies = {},
     weapons = {},
     shields = {},
@@ -114,11 +112,6 @@ function map_manager.process_tiles()
             goto continue
         end
 
-        -- Store walkable tiles
-        if props["walkable"] == true then
-            map_manager.walkable_tiles[gid] = true
-        end
-
         -- Process by kind
         if props["kind"] then
             -- print(string.format("  Has kind: %s", props["kind"]))
@@ -174,113 +167,6 @@ function map_manager.load()
     -- _game.debug.print_map_tiles()
 end
 
----Check if a tile position is walkable (with buffer zone for movement)
----@param x number The x coordinate in tile space
----@param y number The y coordinate in tile space
----@param buffer Vector2 The buffer zone size in tile space (default: Vector2(0.4, 0.2))
----@return boolean walkable Whether the tile at (x,y) is walkable
-function map_manager.is_walkable(x, y, buffer)
-    -- Default buffer zone in tile space
-    buffer = buffer or Vector2.new(0.4, 0.2)
-
-    -- Check all corners of the player's collision box
-    local points_to_check = {
-        { x = x - buffer.x, y = y - buffer.y }, -- Top left
-        { x = x + buffer.x, y = y - buffer.y }, -- Top right
-        { x = x - buffer.x, y = y + buffer.y }, -- Bottom left
-        { x = x + buffer.x, y = y + buffer.y }  -- Bottom right
-    }
-
-    for _, point in ipairs(points_to_check) do
-        local tile_x = math.floor(point.x)
-        local tile_y = math.floor(point.y)
-        if not map_manager.is_walkable_tile(tile_x, tile_y) then
-            return false
-        end
-    end
-
-    return true
-end
-
----Check if a specific tile is walkable (without buffer zone)
----@param x integer The tile x coordinate
----@param y integer The tile y coordinate
----@return boolean walkable Whether the tile at (x,y) is walkable
-function map_manager.is_walkable_tile(x, y)
-    -- Check map boundaries
-    if x < 1 or x > map_manager.map.width or y < 1 or y > map_manager.map.height then
-        return false
-    end
-
-    -- Get the tile at this position from the first layer
-    local tile = map_manager.map.layers[1].data[y][x]
-    if not tile then return false end
-
-    -- Check if the tile's gid is in our walkable_tiles table
-    return map_manager.walkable_tiles[tile.gid] or false
-end
-
----Check a single offset position for overlapping tiles
----@param player_x number The player's x position in tile space
----@param player_y number The player's y position in tile space
----@param offset table The offset to check {dx: number, dy: number}
----@return table|nil The tile data and screen position if found, nil otherwise
-local function check_offset_position(player_x, player_y, offset)
-    local tile_x = player_x + offset.dx
-    local tile_y = player_y + offset.dy
-
-    -- If this is a non-walkable tile (wall), add it to the result
-    if not map_manager.is_walkable_tile(tile_x, tile_y) then
-        local tile = map_manager.map.layers[1].data[tile_y][tile_x]
-        if tile then
-            -- Calculate screen position
-            local screen_x = math.floor((tile_x - 1) * map_manager.map.tilewidth) - 0.5
-            local screen_y = math.floor((tile_y - 1) * map_manager.map.tileheight) - 0.5
-            return { tile = tile, screen_x = screen_x, screen_y = screen_y }
-        end
-    end
-    return nil
-end
-
----Find tiles that should appear above the given positions
----@param positions Vector2[] List of positions to check
----@return table[] List of {tile, screen_x, screen_y} tuples
-function map_manager.find_overlapping_tiles(positions)
-    local result = {}
-
-    -- List of (dx,dy) offsets to check
-    local offsets = {
-        { dx = -1, dy = 0 },
-        { dx = -1, dy = 1 },
-        { dx = 0,  dy = 1 },
-        { dx = 1,  dy = 1 }
-    }
-
-    for _, pos in ipairs(positions) do
-        local player_x = math.floor(pos.x)
-        local player_y = math.floor(pos.y)
-
-        -- Check each offset
-        for _, offset in ipairs(offsets) do
-            local tile_data = check_offset_position(player_x, player_y, offset)
-            if tile_data then
-                table.insert(result, tile_data)
-            end
-        end
-    end
-
-    return result
-end
-
----Draw tiles that should appear above the player
----@param tiles table[] List of {tile, screen_x, screen_y} tuples
-function map_manager.draw_overlapping_tiles(tiles)
-    for _, data in ipairs(tiles) do
-        local tileset = map_manager.map.tilesets[data.tile.tileset]
-        love.graphics.draw(tileset.image, data.tile.quad, data.screen_x, data.screen_y)
-    end
-end
-
 ---Convert world coordinates to grid coordinates
 ---@param world_pos Vector2 World position
 ---@return number, number grid_x, grid_y Grid coordinates
@@ -299,34 +185,6 @@ function map_manager.grid_to_world(grid_x, grid_y)
         grid_x * map_manager.map.tilewidth + map_manager.map.tilewidth / 2,
         grid_y * map_manager.map.tileheight + map_manager.map.tileheight / 2
     )
-end
-
----Find all walkable tiles directly adjacent to the given position
----@param tile_x number The x coordinate in tile space
----@param tile_y number The y coordinate in tile space
----@return table[] Array of {x: number, y: number} positions of walkable tiles
-function map_manager.find_walkable_around(tile_x, tile_y)
-    local walkable_tiles = {}
-    local directions = {
-        {dx = -1, dy = 0},  -- left
-        {dx = 1, dy = 0},   -- right
-        {dx = 0, dy = -1},  -- up
-        {dx = 0, dy = 1},   -- down
-        {dx = -1, dy = -1}, -- up-left
-        {dx = 1, dy = -1},  -- up-right
-        {dx = -1, dy = 1},  -- down-left
-        {dx = 1, dy = 1}    -- down-right
-    }
-
-    for _, dir in ipairs(directions) do
-        local check_x = tile_x + dir.dx
-        local check_y = tile_y + dir.dy
-        if map_manager.is_walkable_tile(check_x, check_y) then
-            table.insert(walkable_tiles, {x = check_x, y = check_y})
-        end
-    end
-
-    return walkable_tiles
 end
 
 -- Add map manager to global game variable when loaded

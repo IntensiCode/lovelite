@@ -118,7 +118,7 @@ function player.handle_movement(movement, original_movement, dt)
     local new_pos = player.pos + movement * (player.speed * dt)
 
     -- Try full movement first
-    if _game.map_manager.is_walkable(new_pos.x, new_pos.y) then
+    if _game.collision.is_walkable(new_pos.x, new_pos.y) then
         player.pos = new_pos
     else
         -- If full movement blocked, try sliding along walls using original (non-normalized) movement
@@ -126,13 +126,13 @@ function player.handle_movement(movement, original_movement, dt)
         local slide_y = Vector2.new(player.pos.x, player.pos.y + original_movement.y * (player.speed * dt))
 
         -- Try horizontal movement
-        if original_movement.x ~= 0 and _game.map_manager.is_walkable(slide_x.x, slide_x.y) then
+        if original_movement.x ~= 0 and _game.collision.is_walkable(slide_x.x, slide_x.y) then
             player.pos = slide_x
             return
         end
 
         -- Try vertical movement
-        if original_movement.y ~= 0 and _game.map_manager.is_walkable(slide_y.x, slide_y.y) then
+        if original_movement.y ~= 0 and _game.collision.is_walkable(slide_y.x, slide_y.y) then
             player.pos = slide_y
             return
         end

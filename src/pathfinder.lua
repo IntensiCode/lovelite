@@ -17,9 +17,9 @@ local pathfinder = {
 function pathfinder.load()
     -- Initialize pathfinder with map dimensions and walkable function
     pathfinder.init(
-        map_manager.map.width,
-        map_manager.map.height,
-        map_manager.is_walkable_tile
+        _game.map_manager.map.width,
+        _game.map_manager.map.height,
+        _game.collision.is_walkable_tile
     )
 end
 
