@@ -182,6 +182,35 @@ function player.handle_collection()
     end
 end
 
+---Check if player's tile position has changed and update pathfinding if needed
+---@param current_tile Vector2 The current tile position
+function player.check_tile_position_change(current_tile)
+    -- Initialize last_tile if not set
+    player.last_tile = player.last_tile or Vector2.new(-1, -1)
+
+    -- Check if tile position changed
+    if current_tile.x ~= player.last_tile.x or current_tile.y ~= player.last_tile.y then
+        -- Update pathfinding data
+        player.update_pathfinder(current_tile)
+        -- Store new position
+        player.last_tile = current_tile
+    end
+end
+
+---Handle sonic damage over time
+---@param dt number Delta time in seconds
+function player.handle_sonic_damage(dt)
+    if player.sonic_damage then
+        player.sonic_damage.time_left = player.sonic_damage.time_left - dt
+        if player.sonic_damage.time_left <= 0 then
+            player.sonic_damage = nil
+        else
+            local amount = player.sonic_damage.damage * dt
+            player.hitpoints = player.hitpoints - amount
+        end
+    end
+end
+
 function player.update(dt)
     -- Get movement input
     local movement = player.get_movement_input()
@@ -219,27 +248,11 @@ function player.update(dt)
         math.floor(player.pos.y)
     )
 
-    -- Initialize last_tile if not set
-    player.last_tile = player.last_tile or Vector2.new(-1, -1)
-
-    -- Check if tile position changed
-    if current_tile.x ~= player.last_tile.x or current_tile.y ~= player.last_tile.y then
-        -- Update pathfinding data
-        player.update_pathfinder(current_tile)
-        -- Store new position
-        player.last_tile = current_tile
-    end
+    -- Check tile position changes
+    player.check_tile_position_change(current_tile)
 
     -- Handle sonic damage
-    if player.sonic_damage then
-        player.sonic_damage.time_left = player.sonic_damage.time_left - dt
-        if player.sonic_damage.time_left <= 0 then
-            player.sonic_damage = nil
-        else
-            local amount = player.sonic_damage.damage * dt
-            player.hitpoints = player.hitpoints - amount
-        end
-    end
+    player.handle_sonic_damage(dt)
 end
 
 function player.draw()
