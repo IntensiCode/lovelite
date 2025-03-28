@@ -1,5 +1,4 @@
 local projectiles = require("src.projectiles")
-local t = require("src.base.table")
 
 ---@class Enemy
 ---@field pos pos
@@ -14,7 +13,7 @@ local combat = {}
 function combat.init(enemy)
     -- TODO: Apprentice
     if not enemy.weapon then
-        t.dump("enemy", enemy)
+        table.print_deep("enemy", enemy)
         assert(enemy.weapon, "Enemy must have a weapon set")
     end
     enemy.cooldown = 0

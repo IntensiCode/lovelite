@@ -1,5 +1,3 @@
-local t = require("src.base.table")
-
 ---@class Weapon
 ---@field name string
 ---@field damage number
@@ -55,7 +53,7 @@ function weapons.load()
     print("Initializing weapons")
     -- Add all weapons from map manager
     for gid, weapon_props in pairs(DI.dungeon.weapons) do
-        local weapon = t.clone(weapon_props)
+        local weapon = table.clone(weapon_props)
         -- weapon.tile = weapon_props.tile
         -- Set default range based on weapon type
         if not weapon.range then
@@ -67,7 +65,7 @@ function weapons.load()
         end
         weapons[weapon.name] = weapon
     end
-    t.print_keys(weapons, "  ")
+    table.print_keys(weapons, "  ")
 end
 
 return weapons 

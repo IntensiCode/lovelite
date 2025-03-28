@@ -1,5 +1,4 @@
 local pos = require("src.base.pos")
-local t = require("src.base.table")
 
 -- Constants
 local JUMP_SPEED = 5
@@ -23,7 +22,7 @@ function enemies_load.load(enemies, game)
             if tile and tile.properties and tile.properties["kind"] == "enemy" then
                 local enemy_data = game.dungeon.enemies[tile.gid]
                 -- Clone the enemy data and add instance-specific properties
-                local enemy = t.clone(enemy_data)
+                local enemy = table.clone(enemy_data)
                 -- Add instance-specific properties
                 enemy.pos = pos.new(x + 0.5, y + 0.5)
                 enemy.tile = tile
@@ -38,7 +37,7 @@ function enemies_load.load(enemies, game)
                         print("WEAPON NOT FOUND")
                         print("Weapon name:", enemy_data.weapon)
                         print("Enemy name:", enemy.name)
-                        t.dump("enemy", enemy)
+                        table.print_deep("enemy", enemy)
                     end
                 end
                 -- Initialize jump properties with random initial delay

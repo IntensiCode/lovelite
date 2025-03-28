@@ -1,13 +1,13 @@
-local t = {}
+---Table utility extensions
 
 ---Deep clone a table
----@param table table The table to clone
+---@param tbl table The table to clone
 ---@return table A new table with all the same values
-function t.clone(table)
+function table.clone(tbl)
     local copy = {}
-    for k, v in pairs(table) do
+    for k, v in pairs(tbl) do
         if type(v) == "table" then
-            copy[k] = t.clone(v)
+            copy[k] = table.clone(v)
         else
             copy[k] = v
         end
@@ -15,67 +15,67 @@ function t.clone(table)
     return copy
 end
 
--- Print keys, sorted by name
-function t.print_keys(table, indent)
+---Print keys, sorted by name
+---@param tbl table The table to print keys for
+---@param indent string? Optional indentation string
+function table.print_keys(tbl, indent)
     indent = indent or ""
     local keys = {}
-    for k in pairs(table) do
-        _G.table.insert(keys, k)
+    for k in pairs(tbl) do
+        table.insert(keys, k)
     end
-    _G.table.sort(keys)
+    table.sort(keys)
     for _, k in ipairs(keys) do
         print(indent .. k)
     end
 end
 
--- Deep dump a table
+---Deep dump a table
 ---@param name string The name of the table to dump
----@param table table The table to dump
+---@param tbl table The table to dump
 ---@param indent string? The indent string
-function t.dump(name, table, indent)
+function table.print_deep(name, tbl, indent)
     indent = indent or ""
     print(indent .. name .. ":")
     indent = indent .. "  "
 
     -- Collect and sort keys
     local keys = {}
-    for k in pairs(table) do
-        _G.table.insert(keys, k)
+    for k in pairs(tbl) do
+        table.insert(keys, k)
     end
-    _G.table.sort(keys)
+    table.sort(keys)
 
     -- Split into tables and non-tables
     local table_keys = {}
     local non_table_keys = {}
     for _, k in ipairs(keys) do
-        if type(table[k]) == "table" then
-            _G.table.insert(table_keys, k)
+        if type(tbl[k]) == "table" then
+            table.insert(table_keys, k)
         else
-            _G.table.insert(non_table_keys, k)
+            table.insert(non_table_keys, k)
         end
     end
 
     -- Process non-tables first
     for _, k in ipairs(non_table_keys) do
-        print(indent .. k .. ": " .. tostring(table[k]))
+        print(indent .. k .. ": " .. tostring(tbl[k]))
     end
 
     -- Then process tables
     for _, k in ipairs(table_keys) do
-        t.dump(k, table[k], indent)
+        table.print_deep(k, tbl[k], indent)
     end
 end
 
 ---Transform each element of a table using a function
----@param t table The input table
+---@param tbl table The input table
 ---@param f fun(any):any The transformation function
 ---@return table The new table with transformed elements
-function table.map(t, f)
+function table.map(tbl, f)
     local result = {}
-    for i, v in ipairs(t) do
+    for i, v in ipairs(tbl) do
         result[i] = f(v)
     end
     return result
-end
-
-return t 
+end 

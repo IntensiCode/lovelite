@@ -1,7 +1,6 @@
 local lg = love.graphics
 local pos = require("src.base.pos")
 local particles = require("src.particles")
-local t = require("src.base.table")
 
 ---@class Projectile
 ---@field pos pos
@@ -128,7 +127,7 @@ function projectiles.spawn_hit_particles(proj)
     elseif proj.weapon.melee or proj.weapon.web then
         kind = "dust"
     else
-        t.dump("proj", proj)
+        table.print_deep("proj", proj)
         assert(kind, "No kind found for projectile: " .. proj.weapon.name)
     end
     particles.spawn({
@@ -215,7 +214,7 @@ function projectiles.update(dt)
                 i = i + 1
             end
         else
-            t.dump("proj", proj)
+            table.print_deep("proj", proj)
             assert(false, "Unsupported projectile")
         end
     end
