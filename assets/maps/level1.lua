@@ -498,7 +498,7 @@ return {
             ["behavior"] = "spider",
             ["hitpoints"] = 20,
             ["kind"] = "enemy",
-            ["speed"] = 1,
+            ["speed"] = 2.5,
             ["weapon"] = "web"
           }
         },
