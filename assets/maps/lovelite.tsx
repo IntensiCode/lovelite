@@ -410,7 +410,7 @@
    <property name="behavior" value="spider"/>
    <property name="hitpoints" type="int" value="20"/>
    <property name="kind" value="enemy"/>
-   <property name="speed" type="int" value="2"/>
+   <property name="speed" type="int" value="1"/>
    <property name="weapon" value="web"/>
   </properties>
  </tile>

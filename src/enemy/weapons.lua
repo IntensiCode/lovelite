@@ -12,21 +12,18 @@ local weapons = {
         name = "fist",
         melee = 5,
         cooldown = 0.3,
-        speed = 1.0,
         range = 0.5
     },
     bite = {
         name = "bite",
         melee = 5,
         cooldown = 0.6,
-        speed = 1.0,
         range = 0.5
     },
     strongbite = {
         name = "strongbite",
         melee = 15,
         cooldown = 0.6,
-        speed = 1.0,
         range = 0.5
     },
     sonic = {
@@ -47,8 +44,8 @@ local weapons = {
         web = true, -- To make projectiles.spawn_hit_particles work
         name = "web",
         damage = 1,
-        cooldown = 1.0,
-        speed = 2.0,
+        cooldown = 3.0,
+        speed = 4.0,
         range = 5.0
     }
 }
