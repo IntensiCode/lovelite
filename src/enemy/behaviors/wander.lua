@@ -242,6 +242,11 @@ function wander.update(enemy, dt)
     local walkable = DI.collision.is_walkable({
         x = new_pos.x,
         y = new_pos.y
+    }) and not DI.collision.is_blocked_by_entity({
+        x = new_pos.x,
+        y = new_pos.y,
+        exclude_id = enemy.id,
+        min_distance = 0.9
     })
     if walkable then
         update_visited_positions(enemy, new_pos, state)

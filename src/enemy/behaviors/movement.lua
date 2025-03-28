@@ -57,13 +57,23 @@ function movement.move_towards_target(enemy, target, dt)
         if DI.collision.is_walkable({
             x = new_pos.x,
             y = new_pos.y
+        }) and not DI.collision.is_blocked_by_entity({
+            x = new_pos.x,
+            y = new_pos.y,
+            exclude_id = enemy.id,
+            min_distance = 0.9
         }) then
             enemy.pos = new_pos
             return true
         else
             -- If full movement blocked, try sliding along walls
             local slide_pos = try_slide_movement(enemy.pos, direction, enemy.speed, dt)
-            if slide_pos then
+            if slide_pos and not DI.collision.is_blocked_by_entity({
+                x = slide_pos.x,
+                y = slide_pos.y,
+                exclude_id = enemy.id,
+                min_distance = 0.9
+            }) then
                 enemy.pos = slide_pos
                 return true
             end
