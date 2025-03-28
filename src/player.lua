@@ -2,8 +2,9 @@ local pos = require("src.base.pos")
 local dmg = require("src.player.damage")
 local m = require("src.player.movement")
 local d = require("src.player.draw")
-local p = require("src.player.pathfinding")
+local pf = require("src.player.pathfinding")
 local a = require("src.player.actions")
+local p = require("src.particles")
 
 ---@class Player
 ---@field pos pos
@@ -20,6 +21,9 @@ local a = require("src.player.actions")
 ---@field armorclass number
 ---@field is_dead boolean
 ---@field death_time number|nil Time remaining in death animation
+---@field stun_time number|nil Time remaining in stun effect
+---@field slow_time number|nil Time remaining in slow effect
+---@field slow_factor number|nil Speed multiplier during slow effect
 local player = {
     pos = pos.new(0, 0),
     tile_id = nil,
@@ -34,11 +38,33 @@ local player = {
     tile_size = nil,
     last_direction = pos.new(1, 0), -- Default facing right
     cooldown = 0,                   -- Initialize cooldown to 0
-    armorclass = 0                  -- Base armor class
+    armorclass = 0,                 -- Base armor class
+    stun_time = nil,                -- Time remaining in stun effect
+    slow_time = nil,                -- Time remaining in slow effect
+    slow_factor = 0.5               -- Speed multiplier during slow effect
 }
 
 function player.on_hit(weapon)
     dmg.on_hit(player, weapon)
+
+    -- Handle web effects
+    if weapon.web then
+        -- Apply stun
+        player.stun_time = 0.2
+        -- Apply slow
+        player.slow_time = 0.5
+        -- Spawn web decal
+        DI.decals.spawn("web", player.pos)
+    end
+
+    -- Handle melee effects
+    if weapon.melee then
+        -- Spawn dust particles at attack location
+        p.spawn({
+            pos = player.pos, -- Position is already centered
+            kind = "dust"
+        })
+    end
 end
 
 ---@param opts? {reset: boolean} Options for loading (default: {reset = true})
@@ -48,8 +74,6 @@ function player.load(opts)
     if opts.reset then
         -- Reset all player state
         local start = DI.dungeon.get_player_start_position()
-        print("Player setup:", start)
-        print("Player position:", start.pos)
 
         player.pos = start.pos
         player.tile = start.tile
@@ -105,6 +129,23 @@ function player.update(dt)
         return
     end
 
+    -- Handle stun time
+    if player.stun_time and player.stun_time > 0 then
+        player.stun_time = player.stun_time - dt
+        if player.stun_time <= 0 then
+            player.stun_time = nil
+        end
+        return
+    end
+
+    -- Handle slow time
+    if player.slow_time and player.slow_time > 0 then
+        player.slow_time = player.slow_time - dt
+        if player.slow_time <= 0 then
+            player.slow_time = nil
+        end
+    end
+
     -- Get movement input
     local input = m.get_input()
 
@@ -119,6 +160,11 @@ function player.update(dt)
     -- Normalize diagonal movement for the initial movement attempt
     if input.x ~= 0 and input.y ~= 0 then
         input = input * 0.7071 -- 1/sqrt(2), maintains consistent speed diagonally
+    end
+
+    -- Apply slow effect if active
+    if player.slow_time then
+        input = input * player.slow_factor
     end
 
     -- Handle movement
@@ -142,7 +188,7 @@ function player.update(dt)
     )
 
     -- Check tile position changes
-    p.check_tile_position_change(player, current_tile)
+    pf.check_tile_position_change(player, current_tile)
 
     -- Handle sonic damage
     dmg.handle_sonic_damage(player, dt)
