@@ -12,6 +12,57 @@ local collision = {
 _game = _game or {}
 _game.collision = collision
 
+---Check if a tile exists and is walkable at the given coordinates
+---@param x number The x coordinate
+---@param y number The y coordinate
+---@return boolean walkable Whether the tile exists and is walkable
+local function is_walkable_at(x, y)
+    if y < 1 or y > collision.map.height or x < 1 or x > collision.map.width then
+        return false
+    end
+    local tile = collision.map.layers[1].data[y][x]
+    return tile and collision.walkable_tiles[tile.gid] or false
+end
+
+---Find tiles that should be in the overlap layer (non-walkable tiles with walkable tiles nearby)
+---@return table[] Array of {x: number, y: number, tile: table} entries
+function collision.find_overlap_layer_tiles()
+    local overlapping_tiles = {}
+    
+    -- Directions to check for walkable tiles (relative to current tile)
+    local directions = {
+        {dx = 0, dy = -1},  -- above
+        {dx = -1, dy = 0},  -- left
+        {dx = 1, dy = 0},   -- right
+        {dx = -1, dy = -1}, -- left-up
+        {dx = 1, dy = -1},  -- right-up
+    }
+    
+    for y = 1, collision.map.height do
+        for x = 1, collision.map.width do
+            local tile = collision.map.layers[1].data[y][x]
+            if tile and not collision.walkable_tiles[tile.gid] then
+                -- First check if tile below is NOT walkable (exclusion rule)
+                if not is_walkable_at(x, y + 1) then
+                    -- Then check all neighbor directions
+                    for _, dir in ipairs(directions) do
+                        if is_walkable_at(x + dir.dx, y + dir.dy) then
+                            table.insert(overlapping_tiles, {
+                                x = x,
+                                y = y,
+                                tile = tile
+                            })
+                            -- Break inner loop once we find any walkable neighbor
+                            break
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return overlapping_tiles
+end
+
 ---Initialize the collision system
 ---@param opts? {reset: boolean} Options for loading (default: {reset = true})
 function collision.load(opts)
@@ -22,6 +73,10 @@ function collision.load(opts)
         collision.walkable_tiles = {}
         collision.map = _game.dungeon.map
         collision.process_walkable_tiles()
+
+        -- Create overlap layer with found tiles
+        local overlapping_tiles = collision.find_overlap_layer_tiles()
+        _game.dungeon.make_overlap_layer(overlapping_tiles)
     end
 end
 
@@ -109,67 +164,6 @@ function collision.find_walkable_around(tile_x, tile_y)
     end
 
     return walkable_tiles
-end
-
----Check a single offset position for overlapping tiles
----@param pos_x number The entity's x position in tile space
----@param pos_y number The entity's y position in tile space
----@param offset table The offset to check {dx: number, dy: number}
----@return table|nil The tile data and screen position if found, nil otherwise
-local function check_offset_position(pos_x, pos_y, offset)
-    local tile_x = pos_x + offset.dx
-    local tile_y = pos_y + offset.dy
-
-    -- If this is a non-walkable tile (wall), add it to the result
-    if not collision.is_walkable_tile(tile_x, tile_y) then
-        local tile = collision.map.layers[1].data[tile_y][tile_x]
-        if tile then
-            -- Calculate screen position
-            local screen_x = math.floor((tile_x - 1) * collision.map.tilewidth) - 0.5
-            local screen_y = math.floor((tile_y - 1) * collision.map.tileheight) - 0.5
-            return { tile = tile, screen_x = screen_x, screen_y = screen_y }
-        end
-    end
-    return nil
-end
-
----Find tiles that should appear above the given positions
----@param positions pos[] List of positions to check
----@return table[] List of {tile, screen_x, screen_y} tuples
-function collision.find_overlapping_tiles(positions)
-    local result = {}
-
-    -- List of (dx,dy) offsets to check
-    local offsets = {
-        { dx = -1, dy = 0 },
-        { dx = -1, dy = 1 },
-        { dx = 0,  dy = 1 },
-        { dx = 1,  dy = 1 }
-    }
-
-    for _, pos in ipairs(positions) do
-        local pos_x = math.floor(pos.x)
-        local pos_y = math.floor(pos.y)
-
-        -- Check each offset
-        for _, offset in ipairs(offsets) do
-            local tile_data = check_offset_position(pos_x, pos_y, offset)
-            if tile_data then
-                table.insert(result, tile_data)
-            end
-        end
-    end
-
-    return result
-end
-
----Draw tiles that should appear above entities
----@param tiles table[] List of {tile, screen_x, screen_y} tuples
-function collision.draw_overlapping_tiles(tiles)
-    for _, data in ipairs(tiles) do
-        local tileset = collision.map.tilesets[data.tile.tileset]
-        love.graphics.draw(tileset.image, data.tile.quad, data.screen_x, data.screen_y)
-    end
 end
 
 return collision 

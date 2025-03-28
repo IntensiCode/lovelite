@@ -94,7 +94,9 @@ function _game.draw()
     local translation = _game.camera.translation()
     love.graphics.translate(translation.x, translation.y)
 
-    _game.dungeon.map:draw(translation.x, translation.y)
+    -- First phase: Draw base map
+    _game.dungeon.draw_map(translation.x, translation.y)
+
     if _game.debug.enabled then
         _game.pathfinder.draw()
     end
@@ -108,10 +110,8 @@ function _game.draw()
     _game.enemies.draw()
     _game.projectiles.draw()
 
-    -- Find and draw all overlapping tiles
-    local positions = _game.find_overlappable_positions()
-    local overlapping_tiles = _game.collision.find_overlapping_tiles(positions)
-    _game.collision.draw_overlapping_tiles(overlapping_tiles)
+    -- Second phase: Draw overlaps
+    _game.dungeon.draw_overlaps(translation.x, translation.y)
 
     -- Draw particles above the redrawn wall tiles
     _game.particles.draw()

@@ -3,7 +3,9 @@ local pos = require("src.base.pos")
 local t = require("src.base.table")
 
 -- Constants
+local BASE_LAYER_ID = 1
 local OBJECTS_LAYER_ID = 2
+local OVERLAP_LAYER_ID = 3
 
 ---@class Dungeon
 ---@field map table The STI map object
@@ -174,24 +176,70 @@ function dungeon.load(opts)
     end
 end
 
----Convert world coordinates to grid coordinates
----@param world_pos pos World position
----@return number, number grid_x, grid_y Grid coordinates
-function dungeon.world_to_grid(world_pos)
-    local grid_x = math.floor(world_pos.x / dungeon.map.tilewidth)
-    local grid_y = math.floor(world_pos.y / dungeon.map.tileheight)
-    return grid_x, grid_y
+---Create a new layer for overlapping tiles
+---@param overlapping_tiles table[] Array of {x: number, y: number, tile: table} entries
+function dungeon.make_overlap_layer(overlapping_tiles)
+    -- Create a new layer with the same dimensions as the map
+    local overlap_layer = {
+        name = 3,
+        type = "tilelayer",
+        width = dungeon.map.width,
+        height = dungeon.map.height,
+        data = {},
+        visible = true,
+        opacity = 1,
+        properties = {},
+        x = 0,
+        y = 0,
+        offsetx = 0,
+        offsety = 0,
+        encoding = "lua",
+        compression = nil
+    }
+
+    -- Initialize the data array with empty tiles (GID 0)
+    for i = 1, dungeon.map.width * dungeon.map.height do
+        overlap_layer.data[i] = 0
+    end
+
+    -- Place overlapping tiles in the new layer
+    for _, tile_data in ipairs(overlapping_tiles) do
+        local index = (tile_data.y - 1) * dungeon.map.width + tile_data.x
+        overlap_layer.data[index] = tile_data.tile.gid
+    end
+
+    -- Initialize the layer using STI's setLayer function
+    dungeon.map:setLayer(overlap_layer)
+    dungeon.overlap_layer = overlap_layer
+
+    -- Force STI to create sprite batches for this layer
+    dungeon.map:setSpriteBatches(overlap_layer)
 end
 
----Convert grid coordinates to world coordinates
----@param grid_x number Grid X coordinate
----@param grid_y number Grid Y coordinate
----@return pos world_pos World position
-function dungeon.grid_to_world(grid_x, grid_y)
-    return pos.new(
-        grid_x * dungeon.map.tilewidth + dungeon.map.tilewidth / 2,
-        grid_y * dungeon.map.tileheight + dungeon.map.tileheight / 2
-    )
+---Draw the base map layer
+---@param translation_x number Camera translation X
+---@param translation_y number Camera translation Y
+function dungeon.draw_map(translation_x, translation_y)
+    -- Show only base layer
+    dungeon.map.layers[BASE_LAYER_ID].visible = true
+    dungeon.map.layers[OBJECTS_LAYER_ID].visible = false
+    dungeon.map.layers[OVERLAP_LAYER_ID].visible = false
+
+    -- Draw the map
+    dungeon.map:draw(translation_x, translation_y)
+end
+
+---Draw the overlap layer
+---@param translation_x number Camera translation X
+---@param translation_y number Camera translation Y
+function dungeon.draw_overlaps(translation_x, translation_y)
+    -- Show only overlap layer
+    dungeon.map.layers[BASE_LAYER_ID].visible = false
+    dungeon.map.layers[OBJECTS_LAYER_ID].visible = false
+    dungeon.map.layers[OVERLAP_LAYER_ID].visible = true
+
+    -- Draw the map
+    dungeon.map:draw(translation_x, translation_y)
 end
 
 -- Add dungeon to global game variable when loaded
