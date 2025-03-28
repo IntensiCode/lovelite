@@ -1,3 +1,5 @@
+local lg = love.graphics
+
 local debug = {
     enabled = true
 }
@@ -36,24 +38,29 @@ end
 ---Draw red dots above all entity positions
 function debug.draw_entity_positions()
     -- Set debug font if available
-    local default_font = love.graphics.getFont()
-    love.graphics.setFont(DI.font.tiny)
+    local default_font = lg.getFont()
+    lg.setFont(DI.font.tiny)
 
     local tile_size = DI.dungeon.tile_size
 
+    -- Draw debug dots for all projectiles
+    lg.setColor(1, 0, 0, 1) -- Red dot
+    for _, it in ipairs(DI.projectiles.active) do
+        local p = DI.dungeon.grid_to_screen(it.pos)
+        lg.circle("fill", p.x, p.y, 3)
+    end
+
     -- Draw enemy position dots in red first
-    love.graphics.setColor(1, 0, 0, 0.5) -- Red with 25% opacity
-    for _, enemy in ipairs(DI.enemies.items) do
-        local enemy_screen_x = (enemy.pos.x - 1) * tile_size
-        local enemy_screen_y = (enemy.pos.y - 1) * tile_size
-        love.graphics.circle("fill", enemy_screen_x, enemy_screen_y, 3)
+    lg.setColor(1, 0, 0, 0.5) -- Red with 25% opacity
+    for _, it in ipairs(DI.enemies.items) do
+        local p = DI.dungeon.grid_to_screen(it.pos)
+        lg.circle("fill", p.x, p.y, 3)
     end
 
     -- Draw player position dot in dark blue
-    love.graphics.setColor(0, 0, 0.8, 0.5) -- Dark blue with 25% opacity
-    local player_screen_x = (DI.player.pos.x - 1) * tile_size
-    local player_screen_y = (DI.player.pos.y - 1) * tile_size
-    love.graphics.circle("fill", player_screen_x, player_screen_y, 3)
+    lg.setColor(0, 0, 0.8, 0.5) -- Dark blue with 25% opacity
+    local p = DI.dungeon.grid_to_screen(DI.player.pos)
+    lg.circle("fill", p.x, p.y, 3)
 
     -- Draw player position text with background
     local pos_text = string.format("%.2f, %.2f", DI.player.pos.x, DI.player.pos.y)
@@ -62,35 +69,35 @@ function debug.draw_entity_positions()
     local padding = 1
 
     -- Draw background for player position text (below player)
-    love.graphics.setColor(0, 0, 0, 0.7)
-    love.graphics.rectangle("fill",
-        player_screen_x - text_width / 2 - padding,
-        player_screen_y + tile_size / 2 + padding, -- Position below player sprite
+    lg.setColor(0, 0, 0, 0.7)
+    lg.rectangle("fill",
+        p.x - text_width / 2 - padding,
+        p.y + tile_size / 2 + padding, -- Position below player sprite
         text_width + padding * 2,
         line_height + padding * 2
     )
 
     -- Draw player position text
-    love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.print(pos_text,
-        player_screen_x - text_width / 2,
-        player_screen_y + tile_size / 2 + padding * 2 -- Position below player sprite
+    lg.setColor(1, 1, 1, 1)
+    lg.print(pos_text,
+        p.x - text_width / 2,
+        p.y + tile_size / 2 + padding * 2 -- Position below player sprite
     )
 
     -- Restore default font
-    love.graphics.setFont(default_font)
+    lg.setFont(default_font)
 end
 
 function debug.draw()
     if not debug.enabled then return end
 
     -- Store current graphics state
-    love.graphics.push()
-    love.graphics.origin() -- Reset transformations
+    lg.push()
+    lg.origin() -- Reset transformations
 
     -- Set debug font if available
-    local default_font = love.graphics.getFont()
-    love.graphics.setFont(DI.font.tiny)
+    local default_font = lg.getFont()
+    lg.setFont(DI.font.tiny)
 
     -- Calculate text dimensions for background
     local info = {
@@ -108,8 +115,8 @@ function debug.draw()
     end
 
     -- Draw semi-transparent black background
-    love.graphics.setColor(0, 0, 0, 0.7)
-    love.graphics.rectangle("fill",
+    lg.setColor(0, 0, 0, 0.7)
+    lg.rectangle("fill",
         0, -- Snap to left edge
         0, -- Snap to top edge
         max_width + padding * 2,
@@ -117,16 +124,16 @@ function debug.draw()
     )
 
     -- Draw debug text in white
-    love.graphics.setColor(1, 1, 1, 1)
+    lg.setColor(1, 1, 1, 1)
     for i, text in ipairs(info) do
-        love.graphics.print(text, padding, padding + (i - 1) * line_height)
+        lg.print(text, padding, padding + (i - 1) * line_height)
     end
 
     -- Restore default font
-    love.graphics.setFont(default_font)
+    lg.setFont(default_font)
 
     -- Restore previous graphics state
-    love.graphics.pop()
+    lg.pop()
 end
 
 function debug.print_map_tiles()
