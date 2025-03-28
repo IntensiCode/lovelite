@@ -66,4 +66,16 @@ function t.dump(name, table, indent)
     end
 end
 
+---Transform each element of a table using a function
+---@param t table The input table
+---@param f fun(any):any The transformation function
+---@return table The new table with transformed elements
+function table.map(t, f)
+    local result = {}
+    for i, v in ipairs(t) do
+        result[i] = f(v)
+    end
+    return result
+end
+
 return t 
