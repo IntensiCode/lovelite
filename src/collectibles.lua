@@ -89,8 +89,8 @@ function collectibles.draw()
 
     for _, item in ipairs(collectibles.items) do
         -- Convert tile position to screen position
-        local screen_x = (item.pos.x - 1) * _game.dungeon.map.tilewidth
-        local screen_y = (item.pos.y - 1) * _game.dungeon.map.tileheight
+        local screen_x = (item.pos.x - 1) * _game.dungeon.tile_size
+        local screen_y = (item.pos.y - 1) * _game.dungeon.tile_size
 
         -- Get tile dimensions
         local _, _, tile_width, tile_height = item.tile.quad:getViewport()

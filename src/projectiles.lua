@@ -131,8 +131,8 @@ end
 
 function projectiles.draw()
     for _, proj in ipairs(projectiles.active) do
-        local screen_x = math.floor((proj.pos.x - 1) * _game.dungeon.map.tilewidth)
-        local screen_y = math.floor((proj.pos.y - 1) * _game.dungeon.map.tileheight)
+        local screen_x = math.floor((proj.pos.x - 1) * _game.dungeon.tile_size)
+        local screen_y = math.floor((proj.pos.y - 1) * _game.dungeon.tile_size)
 
         -- Get tile dimensions
         local _, _, tile_width, tile_height = proj.weapon.tile.quad:getViewport()

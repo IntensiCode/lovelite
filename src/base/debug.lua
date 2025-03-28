@@ -41,21 +41,20 @@ function debug.draw_entity_positions()
     local default_font = love.graphics.getFont()
     love.graphics.setFont(font.tiny)
 
-    local tile_width = _game.dungeon.map.tilewidth
-    local tile_height = _game.dungeon.map.tileheight
+    local tile_size = _game.dungeon.tile_size
 
     -- Draw enemy position dots in red first
     love.graphics.setColor(1, 0, 0, 0.5) -- Red with 25% opacity
     for _, enemy in ipairs(_game.enemies.items) do
-        local enemy_screen_x = (enemy.pos.x - 1) * tile_width
-        local enemy_screen_y = (enemy.pos.y - 1) * tile_height
+        local enemy_screen_x = (enemy.pos.x - 1) * tile_size
+        local enemy_screen_y = (enemy.pos.y - 1) * tile_size
         love.graphics.circle("fill", enemy_screen_x, enemy_screen_y, 3)
     end
 
     -- Draw player position dot in dark blue
     love.graphics.setColor(0, 0, 0.8, 0.5) -- Dark blue with 25% opacity
-    local player_screen_x = (_game.player.pos.x - 1) * tile_width
-    local player_screen_y = (_game.player.pos.y - 1) * tile_height
+    local player_screen_x = (_game.player.pos.x - 1) * tile_size
+    local player_screen_y = (_game.player.pos.y - 1) * tile_size
     love.graphics.circle("fill", player_screen_x, player_screen_y, 3)
 
     -- Draw player position text with background
@@ -68,7 +67,7 @@ function debug.draw_entity_positions()
     love.graphics.setColor(0, 0, 0, 0.7)
     love.graphics.rectangle("fill",
         player_screen_x - text_width / 2 - padding,
-        player_screen_y + tile_height / 2 + padding, -- Position below player sprite
+        player_screen_y + tile_size / 2 + padding, -- Position below player sprite
         text_width + padding * 2,
         line_height + padding * 2
     )
@@ -77,7 +76,7 @@ function debug.draw_entity_positions()
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.print(pos_text,
         player_screen_x - text_width / 2,
-        player_screen_y + tile_height / 2 + padding * 2 -- Position below player sprite
+        player_screen_y + tile_size / 2 + padding * 2 -- Position below player sprite
     )
 
     -- Restore default font

@@ -137,7 +137,7 @@ function player.load(opts)
     end
 
     -- Get tile size from tileset (this is constant and only needs to be set once)
-    player.tile_size = _game.dungeon.map.tilewidth
+    player.tile_size = _game.dungeon.tile_size
 
     -- Add player to global game variable
     _game.player = player
@@ -314,8 +314,8 @@ end
 function player.draw()
     -- Convert tile position to screen position (snap to integer pixels)
     -- Subtract 1 from position to account for Lua's 1-based indexing
-    local screen_x = math.floor((player.pos.x - 1) * _game.dungeon.map.tilewidth)
-    local screen_y = math.floor((player.pos.y - 1) * _game.dungeon.map.tileheight)
+    local screen_x = math.floor((player.pos.x - 1) * _game.dungeon.tile_size)
+    local screen_y = math.floor((player.pos.y - 1) * _game.dungeon.tile_size)
 
     -- Get tile dimensions
     local _, _, tile_width, tile_height = player.tile.quad:getViewport()
@@ -380,7 +380,7 @@ function player.draw_ui()
     local bar_width = 50                         -- Width of health bars
     local bar_height = 4                         -- Height of health bars
     local bar_spacing = 4                        -- Space between bars
-    local box_size = _game.dungeon.map.tilewidth -- Use tile size for indicator boxes
+    local box_size = _game.dungeon.tile_size     -- Use tile size for indicator boxes
 
     -- Reset blend mode to default
     love.graphics.setBlendMode("alpha")

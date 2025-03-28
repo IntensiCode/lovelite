@@ -135,7 +135,7 @@ function enemies.draw()
 
     for _, enemy in ipairs(enemies.items) do
         -- Convert tile position to screen position
-        local tile_size = _game.dungeon.map.tilewidth
+        local tile_size = _game.dungeon.tile_size
         local screen_x = (enemy.pos.x - 1) * tile_size
         local screen_y = (enemy.pos.y - 1) * tile_size
 

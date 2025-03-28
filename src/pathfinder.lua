@@ -238,7 +238,7 @@ end
 function pathfinder.draw()
     if not pathfinder.dijkstra_distances then return end
 
-    local tile_size = dungeon.map.tilewidth
+    local tile_size = dungeon.tile_size
     local max_dist = 0
 
     -- Find maximum distance for color scaling

@@ -9,8 +9,8 @@ local OVERLAP_LAYER_ID = 3
 
 ---@class Dungeon
 ---@field map table The STI map object
----@field tile_center pos The center position of the current tile
 ---@field map_size pos The size of the map in tiles
+---@field tile_size integer The size of a tile in pixels (width and height are equal)
 ---@field enemies table<number, {hitpoints: number, armorclass: number, tile: table, armorclass: number, hitpoints: number, max_hitpoints: number}>
 ---@field weapons table<number, {name: string, melee: number, speed: number, initial: boolean, tile: table, cooldown: number}>
 ---@field shields table<number, {name: string, tile: table, armorclass: number, hitpoints: number, max_hitpoints: number}>
@@ -19,8 +19,8 @@ local OVERLAP_LAYER_ID = 3
 ---@field player {hitpoints: number, armorclass: number, tile: table, max_hitpoints: number, armorclass: number, hitpoints: number, speed: number, weapon: string}
 local dungeon = {
     map = nil,
-    tile_center = pos.new(0, 0),
     map_size = pos.new(0, 0),
+    tile_size = 0,
     enemies = {},
     weapons = {},
     shields = {},
@@ -161,11 +161,14 @@ function dungeon.load(opts)
         dungeon.objects_layer = nil
         dungeon.player = nil
 
-        -- Calculate tile center and map size
-        dungeon.tile_center = pos.new(dungeon.map.tilewidth / 2, dungeon.map.tileheight / 2)
+        -- Verify square tiles and set tile size
+        assert(dungeon.map.tilewidth == dungeon.map.tileheight, 
+            string.format("Tiles must be square! Width: %d, Height: %d", 
+                dungeon.map.tilewidth, dungeon.map.tileheight))
+        dungeon.tile_size = dungeon.map.tilewidth
         dungeon.map_size = pos.new(
-            dungeon.map.width * dungeon.map.tilewidth,
-            dungeon.map.height * dungeon.map.tileheight
+            dungeon.map.width * dungeon.tile_size,
+            dungeon.map.height * dungeon.tile_size
         )
 
         -- Process all tiles and their properties
@@ -240,6 +243,26 @@ function dungeon.draw_overlaps(translation_x, translation_y)
 
     -- Draw the map
     dungeon.map:draw(translation_x, translation_y)
+end
+
+---Convert world coordinates to grid coordinates
+---@param world_pos pos World position
+---@return number, number grid_x, grid_y Grid coordinates
+function dungeon.world_to_grid(world_pos)
+    local grid_x = math.floor(world_pos.x / dungeon.tile_size)
+    local grid_y = math.floor(world_pos.y / dungeon.tile_size)
+    return grid_x, grid_y
+end
+
+---Convert grid coordinates to world coordinates
+---@param grid_x number Grid X coordinate
+---@param grid_y number Grid Y coordinate
+---@return pos world_pos World position
+function dungeon.grid_to_world(grid_x, grid_y)
+    return pos.new(
+        grid_x * dungeon.tile_size + dungeon.tile_size / 2,
+        grid_y * dungeon.tile_size + dungeon.tile_size / 2
+    )
 end
 
 -- Add dungeon to global game variable when loaded
