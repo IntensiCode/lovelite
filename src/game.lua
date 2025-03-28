@@ -4,6 +4,7 @@ local dungeon = require("src.map.dungeon")
 local pathfinder = require("src.pathfinder")
 local debug = require("src.base.debug")
 local player = require("src.player")
+local player_hud = require("src.player_hud")
 local projectiles = require("src.projectiles")
 local particles = require("src.particles")
 local collectibles = require("src.collectibles")
@@ -129,7 +130,7 @@ function game.draw()
     love.graphics.setBlendMode("alpha")
 
     -- Draw UI elements
-    DI.player.draw_ui()
+    player_hud.draw()
     DI.debug.draw()
 
     -- Draw game over overlay if player is dead
