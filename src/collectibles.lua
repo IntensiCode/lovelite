@@ -136,7 +136,7 @@ function collectibles.check_collection(pos, collect_range)
 
         if distance <= collect_range then
             -- Debug print collection
-            print(string.format("\nCollectible collected at (%d, %d)! Weapon: %s",
+            log.info(string.format("Collectible collected at (%d, %d)! Weapon: %s",
                 item.pos.x, item.pos.y, item.name))
 
             -- Play pickup sound

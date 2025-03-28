@@ -12,14 +12,14 @@ function events.register(key, callback)
         events.callbacks[key] = {}
     end
     table.insert(events.callbacks[key], callback)
-    print("[events] Registered callback for event:", key)
+    log.info("[events] Registered callback for event:", key)
 end
 
 -- Send an event to all registered callbacks for the given key
 ---@param key string The event key to send
 ---@param data table The event data to send to callbacks
 function events.send(key, data)
-    -- print("[events] Sending event:", key, "with data:", data)
+    log.debug("[events] Sending event:", key, "with data:", data)
     assert(events.callbacks[key], "No callbacks registered for event: " .. key)
     
     for _, callback in ipairs(events.callbacks[key]) do

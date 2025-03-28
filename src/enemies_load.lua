@@ -34,9 +34,9 @@ function enemies_load.load(enemies, game)
                 -- Debug print error if weapon is not found
                 if not enemy.weapon then
                     if enemy.behavior ~= "apprentice" then
-                        print("WEAPON NOT FOUND")
-                        print("Weapon name:", enemy_data.weapon)
-                        print("Enemy name:", enemy.name)
+                        log.error("WEAPON NOT FOUND")
+                        log.error("Weapon name:", enemy_data.weapon)
+                        log.error("Enemy name:", enemy.name)
                         table.print_deep("enemy", enemy)
                     end
                 end
@@ -53,9 +53,9 @@ function enemies_load.load(enemies, game)
     end
 
     -- Debug print enemies
-    print("\nEnemies loaded:")
+    log.info("Enemies loaded:")
     for i, enemy in ipairs(enemies.items) do
-        print(string.format("  %d. %s at (%d, %d) with %d HP, AC %d, and resistances (F:%s I:%s L:%s)",
+        log.info(string.format("  %d. %s at (%d, %d) with %d HP, AC %d, and resistances (F:%s I:%s L:%s)",
             i, enemy.behavior or "Unknown", enemy.pos.x, enemy.pos.y, enemy.hitpoints or 0, enemy.armorclass or 0,
             enemy.resistance_fire or "N/A", enemy.resistance_ice or "N/A", enemy.resistance_lightning or "N/A"))
     end

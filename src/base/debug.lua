@@ -4,35 +4,13 @@ local debug = {
     enabled = true
 }
 
--- Helper function to print a table's contents
-local function print_table(tbl, indent)
-    indent = indent or ""
-    for k, v in pairs(tbl) do
-        if type(v) == "table" then
-            print(indent .. k .. " = {")
-            print_table(v, indent .. "  ")
-            print(indent .. "}")
-        else
-            print(indent .. k .. " = " .. tostring(v))
-        end
-    end
-end
-
 -- Helper function to dump a collection of tiles
 local function dump_tiles(kind, which)
-    print("\n" .. kind .. ":")
+    log.debug(kind .. ":")
     for gid, data in pairs(which) do
-        print(string.format("Tile ID %d:", gid))
-        print_table(data, "  ")
+        log.debug(string.format("Tile ID %d:", gid))
+        table.print_deep("Data", data, "  ")
     end
-end
-
-function debug.update(dt)
-    if not debug.enabled then return end
-
-    -- Debug print player info
-    -- print("Player object:", DI.player)
-    -- print("Player position:", DI.player.pos)
 end
 
 ---Draw red dots above all entity positions
@@ -137,15 +115,15 @@ function debug.draw()
 end
 
 function debug.print_map_tiles()
-    print("\nProcessed tiles:")
+    log.debug("Processed tiles:")
 
     dump_tiles("Enemies", DI.dungeon.enemies)
     dump_tiles("Weapons", DI.dungeon.weapons)
     dump_tiles("Shields", DI.dungeon.shields)
 
-    print("\nChest animation frames:")
+    log.debug("Chest animation frames:")
     for frame, gid in ipairs(DI.dungeon.chest_anim) do
-        print(string.format("Frame %d: Tile ID %d", frame - 1, gid))
+        log.debug(string.format("Frame %d: Tile ID %d", frame - 1, gid))
     end
 end
 
@@ -154,9 +132,9 @@ function debug.toggle()
 
     -- Also update log level when debug is toggled
     if debug.enabled then
-        log.level = "debug"
+        log.set_level(log.LEVELS.DEBUG)
     else
-        log.level = "info"
+        log.set_level(log.LEVELS.INFO)
     end
 end
 

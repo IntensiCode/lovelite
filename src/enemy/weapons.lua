@@ -50,7 +50,7 @@ local weapons = {
 
 ---Initialize weapons from map manager
 function weapons.load()
-    print("Initializing weapons")
+    log.info("Initializing weapons")
     -- Add all weapons from map manager
     for gid, weapon_props in pairs(DI.dungeon.weapons) do
         local weapon = table.clone(weapon_props)

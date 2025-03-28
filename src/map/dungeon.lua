@@ -106,7 +106,7 @@ end
 ---Process all tiles and their properties, populating the various tile type tables
 ---@return nil
 function dungeon.process_tiles()
-    print("\nProcessing tiles:")
+    log.debug("Processing tiles:")
     for gid, tile in pairs(dungeon.map.tiles) do
         local props = tile.properties
         if not props then
@@ -115,7 +115,7 @@ function dungeon.process_tiles()
 
         -- Process by kind
         if props["kind"] then
-            -- print(string.format("  Has kind: %s", props["kind"]))
+            -- log.debug(string.format("  Has kind: %s", props["kind"]))
             if props["kind"] == "enemy" then
                 dungeon.enemies[gid] = table.clone(props)
                 dungeon.enemies[gid].max_hitpoints = dungeon.enemies[gid].hitpoints
@@ -150,7 +150,7 @@ function dungeon.load(opts)
     if opts.reset then
         -- Reset all state
         dungeon.map = STI("assets/maps/level1.lua")
-        print("Map loaded:", dungeon.map.width, "x", dungeon.map.height)
+        log.info("Map loaded:", dungeon.map.width, "x", dungeon.map.height)
 
         -- Reset all entity tables
         dungeon.enemies = {}

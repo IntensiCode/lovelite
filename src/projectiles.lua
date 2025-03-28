@@ -96,7 +96,7 @@ function projectiles.spawn(data)
     local proj_dir = pos.new(data.direction.x, data.direction.y):normalized()
 
     if DI.debug.enabled then
-        print(string.format("Spawning projectile: pos=(%.2f, %.2f), dir=(%.2f, %.2f), weapon=%s",
+        log.debug(string.format("Spawning projectile: pos=(%.2f, %.2f), dir=(%.2f, %.2f), weapon=%s",
             proj_pos.x, proj_pos.y,
             proj_dir.x, proj_dir.y,
             data.weapon.name))
@@ -177,7 +177,7 @@ function projectiles.update(dt)
         if proj.pos.x < 1 or proj.pos.y < 1 or
             proj.pos.x > DI.dungeon.map.width or
             proj.pos.y > DI.dungeon.map.height then
-            print("Projectile out of bounds, removing")
+            log.debug("Projectile out of bounds, removing")
             table.remove(projectiles.active, i)
         elseif not DI.collision.is_walkable({
             x = proj.pos.x,

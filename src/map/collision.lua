@@ -122,9 +122,9 @@ function collision.is_blocked_by_entity(opts)
         local distance = (pos_data.pos - check_pos):length()
         if distance < min_distance then
             -- Debug output when collision is detected
-            print("Excluded ID:", opts.exclude_id or "none")
-            print("Blocking entity ID:", pos_data.id)
-            print("All entity IDs:", table.concat(table.map(entity_positions, function(p) return p.id end), ", "))
+            log.debug("Excluded ID:", opts.exclude_id or "none")
+            log.debug("Blocking entity ID:", pos_data.id)
+            log.debug("All entity IDs:", table.concat(table.map(entity_positions, function(p) return p.id end), ", "))
             return true
         end
     end

@@ -47,7 +47,7 @@ function combat.try_attack_player(enemy)
     else
         -- Ranged attack, get direction to player and shoot projectile
         local dir = (player_pos - enemy.pos):normalized()
-        print("Shooting projectile " .. enemy.weapon.name)
+        log.debug("Shooting projectile " .. enemy.weapon.name)
         projectiles.spawn({
             pos = enemy.pos,
             direction = dir,

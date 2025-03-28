@@ -1,5 +1,3 @@
-print("Main module started!")
-
 -- Add src directory to the Lua path
 love.filesystem.setRequirePath("src/?.lua;src/?/init.lua;" .. love.filesystem.getRequirePath())
 
@@ -7,6 +5,8 @@ love.filesystem.setRequirePath("src/?.lua;src/?/init.lua;" .. love.filesystem.ge
 require("src.base.math")
 require("src.base.table")
 require("src.base.log")
+
+log.info("Main module started!")
 
 local font = require("src.base.font")
 local screen = require("src.base.screen")
@@ -23,14 +23,16 @@ function love.load()
     parser:flag("--debug", "Enable debug mode.")
     local args = parser:parse()
 
-    -- Set log.level to debug if dev and debug flags are set
-    -- Else set to info if dev flag is set, warn otherwise
+    -- Set log.dev flag from dev arg
+    log.dev = args.dev
+
+    -- Set log level based on command line flags
     if args.dev and args.debug then
-        log.level = "debug"
+        log.set_level(log.LEVELS.DEBUG)
     elseif args.dev then
-        log.level = "info"
+        log.set_level(log.LEVELS.INFO)
     else
-        log.level = "warn"
+        log.set_level(log.LEVELS.WARN)
     end
 
     -- Set debug state based on flag
@@ -57,6 +59,12 @@ function love.draw()
 end
 
 function love.keypressed(key)
+    -- Handle global keypresses
+    if key == "d" then
+        debug.toggle()
+        return
+    end
+
     -- Forward to current screen
     local current_screen = screen.get_current()
     current_screen.keypressed(key)

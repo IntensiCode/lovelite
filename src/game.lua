@@ -89,7 +89,6 @@ function game.update(dt)
     DI.dungeon.map:update(dt)
     DI.player.update(dt)
     DI.camera.update(dt)
-    DI.debug.update(dt)
     DI.projectiles.update(dt)
     DI.particles.update(dt)
     DI.collectibles.update(dt)
@@ -189,9 +188,7 @@ function game.find_overlappable_positions()
 end
 
 function game.keypressed(key)
-    if key == "d" then
-        DI.debug.toggle()
-    elseif key == "escape" then
+    if key == "escape" then
         -- Fade out and return to title screen
         fade.on_fade_done = function()
             screen.switch_to("title")
