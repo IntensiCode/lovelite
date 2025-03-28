@@ -246,15 +246,6 @@ function dungeon.draw_overlaps(translation_x, translation_y)
     dungeon.map:draw(translation_x, translation_y)
 end
 
----Convert world coordinates to grid coordinates
----@param world_pos pos World position
----@return number, number grid_x, grid_y Grid coordinates
-function dungeon.world_to_grid(world_pos)
-    local grid_x = math.floor(world_pos.x / dungeon.tile_size)
-    local grid_y = math.floor(world_pos.y / dungeon.tile_size)
-    return grid_x, grid_y
-end
-
 ---Convert grid coordinates to world coordinates
 ---@param grid_x number Grid X coordinate
 ---@param grid_y number Grid Y coordinate
