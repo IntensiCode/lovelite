@@ -15,6 +15,7 @@ local fade = require("src.base.fade")
 local screen = require("src.base.screen")
 local font = require("src.base.font")
 local decals = require("src.decals")
+local weapons = require("src.enemy.weapons")
 
 local game = {
     blink_timer = 0,
@@ -42,11 +43,13 @@ function game.load(opts)
         DI.collision = collision
         DI.font = font
         DI.decals = decals
+        DI.weapons = weapons
         game.initialized = true
     end
 
     DI.camera.load(opts)
     DI.dungeon.load(opts)
+    DI.weapons.load()
     DI.collision.load(opts)
     DI.pathfinder.load(opts)
     DI.player.load(opts)
