@@ -7,6 +7,8 @@ local m = require("src.base.math")
 ---@field visited table<string,boolean> Recently visited positions
 ---@field visit_order string[] Order of visited position keys
 ---@field straight_steps number Number of steps taken in current direction
+---@field tiles_walked number Total tiles walked since last sleep
+---@field is_sleepy boolean Whether the spider is ready to sleep
 
 local wander = {}
 
@@ -134,15 +136,22 @@ local function update_visited_positions(enemy, position, state)
     if not state.visited[key] then
         state.visited[key] = true
         table.insert(state.visit_order, key)
-        -- Count steps in straight line
+        
+        -- Count steps in straight line and total tiles walked
         state.straight_steps = state.straight_steps + 1
+        state.tiles_walked = state.tiles_walked + 1
+        
+        -- Get sleepy after walking enough tiles
+        if state.tiles_walked >= 10 then
+            state.is_sleepy = true
+        end
 
         -- Keep only last 2 visited positions
         if #state.visit_order > 2 then
             local old_key = table.remove(state.visit_order, 1)
             state.visited[old_key] = nil
         end
-
+        
         -- Try to turn after walking straight for too long
         if state.straight_steps >= 7 then
             try_turn(enemy, state)
@@ -156,13 +165,15 @@ function wander.init(enemy)
     -- Pick initial random direction
     local directions = get_available_directions(enemy.pos, {})
     local initial_dir = directions[math.random(#directions)]
-
+    
     enemy.wander_state = {
         direction = initial_dir,
         sleep_time = nil,
         visited = {},
         visit_order = {},
-        straight_steps = 0
+        straight_steps = 0,
+        tiles_walked = 0,
+        is_sleepy = false
     }
 end
 
@@ -181,10 +192,12 @@ end
 local function sleep_or_change_direction(enemy, state)
     -- Check if in a corner
     local blocked_count = count_blocked_tiles(enemy.pos)
-    if blocked_count >= 2 then
-        -- Found a corner, start sleeping
+    if blocked_count >= 2 and state.is_sleepy then
+        -- Found a corner and spider is sleepy, start sleeping
         state.sleep_time = 10.0
         state.straight_steps = 0
+        state.tiles_walked = 0
+        state.is_sleepy = false
     else
         -- Pick new direction, avoiding recently visited tiles if possible
         local directions = get_available_directions(enemy.pos, state.visited)
