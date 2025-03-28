@@ -1,9 +1,9 @@
 local pos = require("src.base.pos")
-local damage = require("src.player.damage")
-local movement = require("src.player.movement")
-local draw = require("src.player.draw")
-local pathfinding = require("src.player.pathfinding")
-local actions = require("src.player.actions")
+local dmg = require("src.player.damage")
+local m = require("src.player.movement")
+local d = require("src.player.draw")
+local p = require("src.player.pathfinding")
+local a = require("src.player.actions")
 
 ---@class Player
 ---@field pos pos
@@ -38,7 +38,7 @@ local player = {
 }
 
 function player.on_hit(weapon)
-    damage.on_hit(player, weapon)
+    dmg.on_hit(player, weapon)
 end
 
 ---@param opts? {reset: boolean} Options for loading (default: {reset = true})
@@ -106,7 +106,7 @@ function player.update(dt)
     end
 
     -- Get movement input
-    local input = movement.get_input()
+    local input = m.get_input()
 
     -- Update last direction if moving
     if input.x ~= 0 or input.y ~= 0 then
@@ -122,7 +122,7 @@ function player.update(dt)
     end
 
     -- Handle movement
-    movement.handle(player, input, original_movement, dt)
+    m.handle(player, input, original_movement, dt)
 
     -- Update cooldown
     if player.cooldown > 0 then
@@ -130,10 +130,10 @@ function player.update(dt)
     end
 
     -- Handle shooting
-    actions.handle_shooting(player)
+    a.handle_shooting(player)
 
     -- Check for collectibles
-    actions.handle_collecting(player)
+    a.handle_collecting(player)
 
     -- Get current tile position (floored)
     local current_tile = pos.new(
@@ -142,14 +142,14 @@ function player.update(dt)
     )
 
     -- Check tile position changes
-    pathfinding.check_tile_position_change(player, current_tile)
+    p.check_tile_position_change(player, current_tile)
 
     -- Handle sonic damage
-    damage.handle_sonic_damage(player, dt)
+    dmg.handle_sonic_damage(player, dt)
 end
 
 function player.draw()
-    draw.player(player)
+    d.player(player)
 end
 
 return player
