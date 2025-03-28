@@ -9,8 +9,8 @@ local collision = {
 }
 
 -- Make collision available globally right away
-_game = _game or {}
-_game.collision = collision
+DI = DI or {}
+DI.collision = collision
 
 ---Check if a tile exists and is walkable at the given coordinates
 ---@param x number The x coordinate
@@ -71,12 +71,12 @@ function collision.load(opts)
     if opts.reset then
         -- Reset state
         collision.walkable_tiles = {}
-        collision.map = _game.dungeon.map
+        collision.map = DI.dungeon.map
         collision.process_walkable_tiles()
 
         -- Create overlap layer with found tiles
         local overlapping_tiles = collision.find_overlap_layer_tiles()
-        _game.dungeon.make_overlap_layer(overlapping_tiles)
+        DI.dungeon.make_overlap_layer(overlapping_tiles)
     end
 end
 

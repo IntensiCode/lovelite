@@ -12,11 +12,11 @@ local backoff = {}
 ---@param enemy Enemy The enemy to find a backoff tile for
 ---@return pos|nil The best backoff tile position, or nil if no walkable tiles found
 function backoff.find_best_tile(enemy)
-    local player_pos = _game.player.pos
+    local player_pos = DI.player.pos
     local current_tile_x = math.floor(enemy.pos.x + 0.5)
     local current_tile_y = math.floor(enemy.pos.y + 0.5)
 
-    local walkable_tiles = _game.collision.find_walkable_around(current_tile_x, current_tile_y)
+    local walkable_tiles = DI.collision.find_walkable_around(current_tile_x, current_tile_y)
     if #walkable_tiles == 0 then return nil end
 
     -- Create table of tiles with their distances

@@ -62,8 +62,4 @@ function font.draw_text(text, x, y, anchor, font_type)
     love.graphics.setFont(prev_font)
 end
 
--- Add font to global game variable
-_game = _game or {}
-_game.font = font
-
 return font 

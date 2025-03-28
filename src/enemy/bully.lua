@@ -1,5 +1,3 @@
-local pos = require("src.base.pos")
-local weapons = require("src.enemy.weapons")
 local movement = require("src.enemy.behaviors.movement")
 local combat = require("src.enemy.behaviors.combat")
 local pathfinding = require("src.enemy.behaviors.pathfinding")

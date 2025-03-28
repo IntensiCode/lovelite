@@ -1,5 +1,3 @@
-local pos = require("src.base.pos")
-
 ---@class Animation
 ---@field frames table Array of frame data
 ---@field frame_duration number Time between frames in seconds

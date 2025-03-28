@@ -27,20 +27,17 @@ local enemies = {
 }
 
 -- Jump animation constants
-local JUMP_DURATION = 0.5
 local JUMP_MAX_HEIGHT = 0.3 -- In tile units
-local JUMP_SPEED = 2        -- Halved from 4
 
 ---@param opts? {reset: boolean} Options for loading (default: {reset = true})
 function enemies.load(opts)
     opts = opts or { reset = true }
     if opts.reset then
-        enemies_load.load(enemies, _game)
+        enemies_load.load(enemies, DI)
     end
 
     -- Add enemies to global game variable (this is constant and only needs to be set once)
-    _game = _game or {}
-    _game.enemies = enemies
+    DI.enemies = enemies
 end
 
 ---Update enemy jump animation
@@ -84,7 +81,7 @@ function enemies.update(dt)
         end
 
         -- If player is dead, do happy jumps!
-        if _game.player.is_dead then
+        if DI.player.is_dead then
             update_happy_jump(enemy, dt)
             goto continue
         end
@@ -124,8 +121,8 @@ end
 function enemies.draw()
     -- Helper function to check if an enemy overlaps with player
     local function is_overlapping_player(pos)
-        return math.abs(pos.x - _game.player.pos.x) < 1 and
-            math.abs(pos.y - _game.player.pos.y) < 1
+        return math.abs(pos.x - DI.player.pos.x) < 1 and
+            math.abs(pos.y - DI.player.pos.y) < 1
     end
 
     -- Store original graphics state
@@ -135,7 +132,7 @@ function enemies.draw()
 
     for _, enemy in ipairs(enemies.items) do
         -- Convert tile position to screen position
-        local tile_size = _game.dungeon.tile_size
+        local tile_size = DI.dungeon.tile_size
         local screen_x = (enemy.pos.x - 1) * tile_size
         local screen_y = (enemy.pos.y - 1) * tile_size
 
@@ -159,7 +156,7 @@ function enemies.draw()
 
         -- Draw enemy centered
         love.graphics.draw(
-            _game.dungeon.map.tilesets[1].image,
+            DI.dungeon.map.tilesets[1].image,
             enemy.tile.quad,
             screen_x,
             screen_y,
@@ -226,7 +223,7 @@ function enemies.on_hit(enemy, projectile)
         enemy.hitpoints = enemy.hitpoints - actual_damage
 
         -- Play melee hit sound with volume based on damage
-        _game.sound.play("melee_hit", math.min(actual_damage / 10, 1))
+        DI.sound.play("melee_hit", math.min(actual_damage / 10, 1))
     elseif projectile.weapon.fire then
         -- Get fire resistance (default to 0 if nil) and clamp between 0 and 100
         local fire_resistance = enemy.resistance_fire or 0
@@ -239,7 +236,7 @@ function enemies.on_hit(enemy, projectile)
         enemy.hitpoints = enemy.hitpoints - actual_damage
 
         -- Play magic sound for fire damage
-        _game.sound.play("magic", math.min(actual_damage / 10, 1))
+        DI.sound.play("magic", math.min(actual_damage / 10, 1))
     elseif projectile.weapon.ice then
         -- Get ice resistance (default to 0 if nil) and clamp between 0 and 100
         local ice_resistance = enemy.resistance_ice or 0
@@ -255,7 +252,7 @@ function enemies.on_hit(enemy, projectile)
         enemy.stun_time = (enemy.stun_time or 0) + (actual_damage / 10)
 
         -- Play ice sound
-        _game.sound.play("ice", math.min(actual_damage / 10, 1))
+        DI.sound.play("ice", math.min(actual_damage / 10, 1))
     elseif projectile.weapon.lightning then
         -- Get lightning resistance (default to 0 if nil) and clamp between 0 and 100
         local lightning_resistance = enemy.resistance_lightning or 0
@@ -268,18 +265,18 @@ function enemies.on_hit(enemy, projectile)
         enemy.hitpoints = enemy.hitpoints - actual_damage
 
         -- Play magic sound for lightning damage
-        _game.sound.play("magic", math.min(actual_damage / 10, 1))
+        DI.sound.play("magic", math.min(actual_damage / 10, 1))
     end
 
     if enemy.hitpoints <= 0 then
         enemy.is_dead = true
         -- Play appropriate death sound based on enemy type
-        _game.sound.play_death(enemy.behavior)
+        DI.sound.play_death(enemy.behavior)
         -- Add appropriate decal based on enemy type
-        _game.decals.spawn(enemies.decal_kind(enemy, "pool"), enemy.pos)
+        DI.decals.spawn(enemies.decal_kind(enemy, "pool"), enemy.pos)
     else
         -- Add appropriate decal based on enemy type
-        _game.decals.spawn(enemies.decal_kind(enemy), enemy.pos)
+        DI.decals.spawn(enemies.decal_kind(enemy), enemy.pos)
     end
 end
 

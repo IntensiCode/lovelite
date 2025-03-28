@@ -31,8 +31,8 @@ function debug.update(dt)
     if not debug.enabled then return end
 
     -- Debug print player info
-    -- print("Player object:", _game.player)
-    -- print("Player position:", _game.player.pos)
+    -- print("Player object:", DI.player)
+    -- print("Player position:", DI.player.pos)
 end
 
 ---Draw red dots above all entity positions
@@ -41,11 +41,11 @@ function debug.draw_entity_positions()
     local default_font = love.graphics.getFont()
     love.graphics.setFont(font.tiny)
 
-    local tile_size = _game.dungeon.tile_size
+    local tile_size = DI.dungeon.tile_size
 
     -- Draw enemy position dots in red first
     love.graphics.setColor(1, 0, 0, 0.5) -- Red with 25% opacity
-    for _, enemy in ipairs(_game.enemies.items) do
+    for _, enemy in ipairs(DI.enemies.items) do
         local enemy_screen_x = (enemy.pos.x - 1) * tile_size
         local enemy_screen_y = (enemy.pos.y - 1) * tile_size
         love.graphics.circle("fill", enemy_screen_x, enemy_screen_y, 3)
@@ -53,12 +53,12 @@ function debug.draw_entity_positions()
 
     -- Draw player position dot in dark blue
     love.graphics.setColor(0, 0, 0.8, 0.5) -- Dark blue with 25% opacity
-    local player_screen_x = (_game.player.pos.x - 1) * tile_size
-    local player_screen_y = (_game.player.pos.y - 1) * tile_size
+    local player_screen_x = (DI.player.pos.x - 1) * tile_size
+    local player_screen_y = (DI.player.pos.y - 1) * tile_size
     love.graphics.circle("fill", player_screen_x, player_screen_y, 3)
 
     -- Draw player position text with background
-    local pos_text = string.format("%.2f, %.2f", _game.player.pos.x, _game.player.pos.y)
+    local pos_text = string.format("%.2f, %.2f", DI.player.pos.x, DI.player.pos.y)
     local text_width = font.tiny:getWidth(pos_text)
     local line_height = 9 -- 8px font height + 1px spacing
     local padding = 1
@@ -96,9 +96,9 @@ function debug.draw()
 
     -- Calculate text dimensions for background
     local info = {
-        string.format("Player: %.1f, %.1f", _game.player.pos.x, _game.player.pos.y),
-        string.format("Camera: %.1f, %.1f", _game.camera.world_pos.x, _game.camera.world_pos.y),
-        string.format("Scale: %.2f", _game.camera.scale),
+        string.format("Player: %.1f, %.1f", DI.player.pos.x, DI.player.pos.y),
+        string.format("Camera: %.1f, %.1f", DI.camera.world_pos.x, DI.camera.world_pos.y),
+        string.format("Scale: %.2f", DI.camera.scale),
         string.format("FPS: %d", love.timer.getFPS())
     }
 
@@ -134,12 +134,12 @@ end
 function debug.print_map_tiles()
     print("\nProcessed tiles:")
 
-    dump_tiles("Enemies", _game.dungeon.enemies)
-    dump_tiles("Weapons", _game.dungeon.weapons)
-    dump_tiles("Shields", _game.dungeon.shields)
+    dump_tiles("Enemies", DI.dungeon.enemies)
+    dump_tiles("Weapons", DI.dungeon.weapons)
+    dump_tiles("Shields", DI.dungeon.shields)
 
     print("\nChest animation frames:")
-    for frame, gid in ipairs(_game.dungeon.chest_anim) do
+    for frame, gid in ipairs(DI.dungeon.chest_anim) do
         print(string.format("Frame %d: Tile ID %d", frame - 1, gid))
     end
 end
@@ -147,9 +147,5 @@ end
 function debug.toggle()
     debug.enabled = not debug.enabled
 end
-
--- Add debug to global game variable when loaded
-_game = _game or {}
-_game.debug = debug
 
 return debug

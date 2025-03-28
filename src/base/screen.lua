@@ -32,8 +32,4 @@ function screen.switch_to(name, should_reset)
     screen.current = name
 end
 
--- Add screen to global game variable
-_game = _game or {}
-_game.screen = screen
-
 return screen

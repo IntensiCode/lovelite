@@ -211,8 +211,4 @@ function pos:normalized()
     return pos.new(self.x / length, self.y / length)
 end
 
--- Add pos to global game variable when loaded
-_game = _game or {}
-_game.pos = pos
-
 return pos 

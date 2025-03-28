@@ -27,9 +27,9 @@ function pathfinder.load(opts)
 
         -- Initialize pathfinder with map dimensions and walkable function
         pathfinder.init(
-            _game.dungeon.map.width,
-            _game.dungeon.map.height,
-            _game.collision.is_walkable_tile
+            DI.dungeon.map.width,
+            DI.dungeon.map.height,
+            DI.collision.is_walkable_tile
         )
     end
 end

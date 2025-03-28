@@ -1,5 +1,3 @@
-local pos = require("src.base.pos")
-
 ---@class Enemy
 ---@field pos pos
 ---@field speed number
@@ -19,7 +17,7 @@ local function try_slide_movement(pos, direction, speed, dt)
         pos.x + direction.x * speed * dt,
         pos.y
     )
-    if direction.x ~= 0 and _game.collision.is_walkable(horizontal_pos.x, horizontal_pos.y) then
+    if direction.x ~= 0 and DI.collision.is_walkable(horizontal_pos.x, horizontal_pos.y) then
         return horizontal_pos
     end
 
@@ -28,7 +26,7 @@ local function try_slide_movement(pos, direction, speed, dt)
         pos.x,
         pos.y + direction.y * speed * dt
     )
-    if direction.y ~= 0 and _game.collision.is_walkable(vertical_pos.x, vertical_pos.y) then
+    if direction.y ~= 0 and DI.collision.is_walkable(vertical_pos.x, vertical_pos.y) then
         return vertical_pos
     end
 
@@ -50,7 +48,7 @@ function movement.move_towards_target(enemy, target, dt)
 
         -- Try full movement first
         local new_pos = enemy.pos + direction * enemy.speed * dt
-        if _game.collision.is_walkable(new_pos.x, new_pos.y) then
+        if DI.collision.is_walkable(new_pos.x, new_pos.y) then
             enemy.pos = new_pos
         else
             -- If full movement blocked, try sliding along walls

@@ -256,8 +256,4 @@ function dungeon.grid_to_screen(grid_pos)
     )
 end
 
--- Add dungeon to global game variable when loaded
-_game = _game or {}
-_game.dungeon = dungeon
-
 return dungeon 

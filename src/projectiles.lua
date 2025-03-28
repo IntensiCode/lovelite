@@ -24,9 +24,9 @@ local projectiles = {
 function projectiles.spawn(pos, direction, weapon, owner)
     -- Play appropriate swoosh sound based on weapon type
     if weapon.melee then
-        _game.sound.play("melee_swoosh", 0.7)
+        DI.sound.play("melee_swoosh", 0.7)
     else
-        _game.sound.play("magic_swoosh", 0.8)
+        DI.sound.play("magic_swoosh", 0.8)
     end
 
     -- Ensure we have pos objects
@@ -82,7 +82,7 @@ function projectiles.handle_enemy_hit(proj, nearby_enemies)
     end
 
     -- Hit the closest enemy
-    _game.enemies.on_hit(closest_enemy, proj)
+    DI.enemies.on_hit(closest_enemy, proj)
 
     -- Spawn hit particles
     projectiles.spawn_hit_particles(proj)
@@ -104,21 +104,21 @@ function projectiles.update(dt)
 
         -- Check if outside map bounds
         if proj.pos.x < 1 or proj.pos.y < 1 or
-            proj.pos.x > _game.dungeon.map.width or
-            proj.pos.y > _game.dungeon.map.height then
+            proj.pos.x > DI.dungeon.map.width or
+            proj.pos.y > DI.dungeon.map.height then
             table.remove(projectiles.active, i)
         else
             -- Check for enemy collisions
-            local nearby_enemies = _game.enemies.find_enemies_close_to(proj.pos)
+            local nearby_enemies = DI.enemies.find_enemies_close_to(proj.pos)
             if #nearby_enemies > 0 then
                 projectiles.handle_enemy_hit(proj, nearby_enemies)
                 table.remove(projectiles.active, i)
-            elseif not _game.collision.is_walkable(proj.pos.x, proj.pos.y, pos.new(0.25, 0.1)) then
+            elseif not DI.collision.is_walkable(proj.pos.x, proj.pos.y, pos.new(0.25, 0.1)) then
                 -- Play appropriate wall hit sound
                 if proj.weapon.melee then
-                    _game.sound.play("melee_wall_hit", 0.8)
+                    DI.sound.play("melee_wall_hit", 0.8)
                 else
-                    _game.sound.play("magic_wall_hit", 0.7)
+                    DI.sound.play("magic_wall_hit", 0.7)
                 end
                 projectiles.spawn_hit_particles(proj)
                 table.remove(projectiles.active, i)
@@ -131,7 +131,7 @@ end
 
 function projectiles.draw()
     for _, proj in ipairs(projectiles.active) do
-        local screen_pos = _game.dungeon.grid_to_screen(proj.pos)
+        local screen_pos = DI.dungeon.grid_to_screen(proj.pos)
 
         -- Get tile dimensions
         local _, _, tile_width, tile_height = proj.weapon.tile.quad:getViewport()
@@ -144,7 +144,7 @@ function projectiles.draw()
         if proj.weapon.melee then
             -- Draw projectile centered and rotated
             love.graphics.draw(
-                _game.dungeon.map.tilesets[1].image,
+                DI.dungeon.map.tilesets[1].image,
                 proj.weapon.tile.quad,
                 screen_pos.x,
                 screen_pos.y,

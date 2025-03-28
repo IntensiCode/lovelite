@@ -43,7 +43,7 @@ local function create_spot(data)
     math.randomseed(seed)
 
     -- Convert spread to tile units
-    local spread = decals.spread / _game.dungeon.tile_size
+    local spread = decals.spread / DI.dungeon.tile_size
 
     -- Random positions within spread area
     local offset_x = math.random(-spread, spread)
@@ -148,7 +148,7 @@ end
 
 function decals.draw()
     for _, decal in ipairs(decals.active) do
-        local screen_pos = _game.dungeon.grid_to_screen(decal.pos)
+        local screen_pos = DI.dungeon.grid_to_screen(decal.pos)
         love.graphics.setColor(unpack(decal.color))
         love.graphics.circle("fill", screen_pos.x, screen_pos.y, decal.radius)
     end
@@ -162,9 +162,5 @@ function decals.load(opts)
         decals.active = {}
     end
 end
-
--- Add decals to global game variable
-_game = _game or {}
-_game.decals = decals
 
 return decals

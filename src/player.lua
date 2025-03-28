@@ -52,10 +52,10 @@ function player.on_hit(weapon)
         player.hitpoints = player.hitpoints - actual_damage
 
         -- Play hit sound with volume based on damage
-        _game.sound.play("player_hit", math.min(actual_damage / 20, 1))
+        DI.sound.play("player_hit", math.min(actual_damage / 20, 1))
 
         -- Add small blood spots when hit
-        _game.decals.spawn("blood", player.pos)
+        DI.decals.spawn("blood", player.pos)
     elseif weapon.sonic or weapon.strongsonic then
         -- Sonic weapons apply damage over time
         -- Store the damage and duration in a table if not exists
@@ -78,13 +78,13 @@ function player.on_hit(weapon)
         player.death_time = 0.5
 
         -- Clear pathfinding data when player dies
-        _game.pathfinder.clear()
+        DI.pathfinder.clear()
 
         -- Play dramatic death sound
-        _game.sound.play("player_death", 1.0)
+        DI.sound.play("player_death", 1.0)
 
         -- Add blood pool when player dies
-        _game.decals.spawn("blood_pool", player.pos)
+        DI.decals.spawn("blood_pool", player.pos)
     end
 end
 
@@ -94,7 +94,7 @@ function player.load(opts)
 
     if opts.reset then
         -- Reset all player state
-        local start = _game.dungeon.get_player_start_position()
+        local start = DI.dungeon.get_player_start_position()
         print("Player setup:", start)
         print("Player position:", start.pos)
 
@@ -102,11 +102,11 @@ function player.load(opts)
         player.tile = start.tile
         player.tile_id = start.tile.id
 
-        local setup = _game.dungeon.player
+        local setup = DI.dungeon.player
         player.speed = setup.speed
         player.armorclass = setup.armorclass
         -- Set lower hitpoints in debug mode
-        if _game.debug.enabled then
+        if DI.debug.enabled then
             player.hitpoints = 5
         else
             player.hitpoints = setup.hitpoints
@@ -127,7 +127,7 @@ function player.load(opts)
 
         -- Assign initial weapon if specified in dungeon setup
         if setup.weapon then
-            for _, weapon in pairs(_game.dungeon.weapons) do
+            for _, weapon in pairs(DI.dungeon.weapons) do
                 if weapon.name == setup.weapon then
                     player.weapon = weapon
                     break
@@ -137,10 +137,10 @@ function player.load(opts)
     end
 
     -- Get tile size from tileset (this is constant and only needs to be set once)
-    player.tile_size = _game.dungeon.tile_size
+    player.tile_size = DI.dungeon.tile_size
 
     -- Add player to global game variable
-    _game.player = player
+    DI.player = player
 end
 
 ---@param movement pos The normalized movement vector
@@ -151,7 +151,7 @@ function player.handle_movement(movement, original_movement, dt)
     local new_pos = player.pos + movement * (player.speed * dt)
 
     -- Try full movement first
-    if _game.collision.is_walkable(new_pos.x, new_pos.y) then
+    if DI.collision.is_walkable(new_pos.x, new_pos.y) then
         player.pos = new_pos
     else
         -- If full movement blocked, try sliding along walls using original (non-normalized) movement
@@ -159,13 +159,13 @@ function player.handle_movement(movement, original_movement, dt)
         local slide_y = pos.new(player.pos.x, player.pos.y + original_movement.y * (player.speed * dt))
 
         -- Try horizontal movement
-        if original_movement.x ~= 0 and _game.collision.is_walkable(slide_x.x, slide_x.y) then
+        if original_movement.x ~= 0 and DI.collision.is_walkable(slide_x.x, slide_x.y) then
             player.pos = slide_x
             return
         end
 
         -- Try vertical movement
-        if original_movement.y ~= 0 and _game.collision.is_walkable(slide_y.x, slide_y.y) then
+        if original_movement.y ~= 0 and DI.collision.is_walkable(slide_y.x, slide_y.y) then
             player.pos = slide_y
             return
         end
@@ -216,7 +216,7 @@ end
 
 ---Handle collection of items (weapons, shields, etc.)
 function player.handle_collection()
-    local collected = _game.collectibles.check_collection(player.pos)
+    local collected = DI.collectibles.check_collection(player.pos)
     if not collected then
         return
     elseif collected.weapon then
@@ -314,7 +314,7 @@ end
 function player.draw()
     -- Convert tile position to screen position (snap to integer pixels)
     -- Subtract 1 from position to account for Lua's 1-based indexing
-    local screen_pos = _game.dungeon.grid_to_screen(player.pos)
+    local screen_pos = DI.dungeon.grid_to_screen(player.pos)
 
     -- Get tile dimensions
     local _, _, tile_width, tile_height = player.tile.quad:getViewport()
@@ -327,7 +327,7 @@ function player.draw()
 
     -- Draw blood spots if dead
     if player.is_dead then
-        -- _game.decals.spawn("blood", pos.new(screen_x, screen_y))
+        -- DI.decals.spawn("blood", pos.new(screen_x, screen_y))
 
         if not player.death_time or player.death_time <= 0 then
             return -- Don't draw player sprite if dead
@@ -337,7 +337,7 @@ function player.draw()
     if player.tile and player.tile.quad then
         -- Draw sprite centered on player position
         love.graphics.draw(
-            _game.dungeon.map.tilesets[1].image,
+            DI.dungeon.map.tilesets[1].image,
             player.tile.quad,
             screen_pos.x,
             screen_pos.y,
@@ -353,7 +353,7 @@ function player.draw()
     if player.shield then
         -- Draw shield centered on player position with rotation
         love.graphics.draw(
-            _game.dungeon.map.tilesets[1].image,
+            DI.dungeon.map.tilesets[1].image,
             player.shield.tile.quad,
             screen_pos.x - tile_width,
             screen_pos.y - tile_height / 3
@@ -364,7 +364,7 @@ function player.draw()
     if player.weapon then
         -- Draw weapon centered on player position with rotation
         love.graphics.draw(
-            _game.dungeon.map.tilesets[1].image,
+            DI.dungeon.map.tilesets[1].image,
             player.weapon.tile.quad,
             screen_pos.x + tile_width / 2,
             screen_pos.y - tile_height * 2 / 3,
@@ -379,7 +379,7 @@ function player.draw_ui()
     local bar_width = 50                         -- Width of health bars
     local bar_height = 4                         -- Height of health bars
     local bar_spacing = 4                        -- Space between bars
-    local box_size = _game.dungeon.tile_size     -- Use tile size for indicator boxes
+    local box_size = DI.dungeon.tile_size     -- Use tile size for indicator boxes
 
     -- Reset blend mode to default
     love.graphics.setBlendMode("alpha")
@@ -390,7 +390,7 @@ function player.draw_ui()
         love.graphics.setColor(0, 0, 0, 0.7)
         love.graphics.rectangle("fill",
             box_padding,
-            _game.camera.height - box_size - box_padding,
+            DI.camera.height - box_size - box_padding,
             box_size,
             box_size
         )
@@ -399,17 +399,17 @@ function player.draw_ui()
         love.graphics.setLineWidth(1)
         love.graphics.rectangle("line",
             box_padding,
-            _game.camera.height - box_size - box_padding,
+            DI.camera.height - box_size - box_padding,
             box_size,
             box_size
         )
         -- Draw weapon
         love.graphics.setColor(1, 1, 1, 1)
         love.graphics.draw(
-            _game.dungeon.map.tilesets[1].image,
+            DI.dungeon.map.tilesets[1].image,
             player.weapon.tile.quad,
             box_padding,
-            _game.camera.height - box_size - box_padding
+            DI.camera.height - box_size - box_padding
         )
     end
 
@@ -417,7 +417,7 @@ function player.draw_ui()
     love.graphics.setColor(0, 0, 0, 0.7)
     love.graphics.rectangle("fill",
         box_padding * 2 + box_size,
-        _game.camera.height - box_size - box_padding,
+        DI.camera.height - box_size - box_padding,
         box_size,
         box_size
     )
@@ -426,7 +426,7 @@ function player.draw_ui()
     love.graphics.setLineWidth(1)
     love.graphics.rectangle("line",
         box_padding * 2 + box_size,
-        _game.camera.height - box_size - box_padding,
+        DI.camera.height - box_size - box_padding,
         box_size,
         box_size
     )
@@ -434,16 +434,16 @@ function player.draw_ui()
     if player.shield then
         love.graphics.setColor(1, 1, 1, 1)
         love.graphics.draw(
-            _game.dungeon.map.tilesets[1].image,
+            DI.dungeon.map.tilesets[1].image,
             player.shield.tile.quad,
             box_padding * 2 + box_size,
-            _game.camera.height - box_size - box_padding
+            DI.camera.height - box_size - box_padding
         )
     end
 
     -- Position for health bars (to the right of weapon/shield boxes)
     local bars_x = padding * 3 + box_size * 2
-    local bars_y = _game.camera.height - bar_height - bar_spacing * 1.5 - padding
+    local bars_y = DI.camera.height - bar_height - bar_spacing * 1.5 - padding
 
     -- Set line width for health bars
     love.graphics.setLineWidth(1)
@@ -497,11 +497,11 @@ function player.update_pathfinder(current_tile)
     if not current_tile then return end
 
     -- Get map dimensions from dungeon
-    local map_width = _game.dungeon.map.width
-    local map_height = _game.dungeon.map.height
+    local map_width = DI.dungeon.map.width
+    local map_height = DI.dungeon.map.height
 
     -- Calculate Dijkstra distances from current tile position
-    _game.pathfinder.calculate_dijkstra_distances(
+    DI.pathfinder.calculate_dijkstra_distances(
         current_tile.x,
         current_tile.y,
         map_width,

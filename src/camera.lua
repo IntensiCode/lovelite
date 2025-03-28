@@ -59,24 +59,24 @@ function camera.load(opts)
         camera.zoom = 1
 
         -- Initialize camera position to player's starting position
-        assert(_game.player ~= nil, "Player must exist before camera is loaded")
-        assert(_game.player.pos ~= nil, "Player must have a position before camera is loaded")
-        camera.world_pos = _game.player.pos
+        assert(DI.player ~= nil, "Player must exist before camera is loaded")
+        assert(DI.player.pos ~= nil, "Player must have a position before camera is loaded")
+        camera.world_pos = DI.player.pos
     end
 end
 
 function camera.update(dt)
     -- Safety check for player and position
-    assert(_game.player ~= nil, "Player must exist for camera update")
-    assert(_game.player.pos ~= nil, "Player must have a position for camera update")
+    assert(DI.player ~= nil, "Player must exist for camera update")
+    assert(DI.player.pos ~= nil, "Player must have a position for camera update")
 
     -- Get map dimensions in tiles
-    local map_width = _game.dungeon.map.width
-    local map_height = _game.dungeon.map.height
+    local map_width = DI.dungeon.map.width
+    local map_height = DI.dungeon.map.height
     local virtual_width, virtual_height = camera.getDimensions()
 
     -- Calculate camera position to center on player
-    camera.world_pos = _game.player.pos
+    camera.world_pos = DI.player.pos
 end
 
 function camera.updateScaling()
@@ -136,13 +136,9 @@ end
 function camera.translation()
     -- Convert player position (in tiles) to pixels and center the view
     return pos.new(
-        -(camera.world_pos.x * _game.dungeon.tile_size) + (camera.width / 2),
-        -(camera.world_pos.y * _game.dungeon.tile_size) + (camera.height / 2)
+        -(camera.world_pos.x * DI.dungeon.tile_size) + (camera.width / 2),
+        -(camera.world_pos.y * DI.dungeon.tile_size) + (camera.height / 2)
     )
 end
-
--- Add camera to global game variable when loaded
-_game = _game or {}
-_game.camera = camera
 
 return camera

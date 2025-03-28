@@ -21,16 +21,16 @@ function collectibles.load(opts)
         collectibles.items = {}
 
         -- Get the Objects layer
-        local objects_layer = _game.dungeon.get_objects_layer()
+        local objects_layer = DI.dungeon.get_objects_layer()
 
         -- Process each tile in the Objects layer
         for y = 1, objects_layer.height do
             for x = 1, objects_layer.width do
-                local tile = _game.dungeon.get_objects_tile(x, y)
+                local tile = DI.dungeon.get_objects_tile(x, y)
                 if tile and tile.properties then
                     if tile.properties["kind"] == "weapon" then
                         -- Get the weapon reference from dungeon
-                        local weapon = _game.dungeon.weapons[tile.gid]
+                        local weapon = DI.dungeon.weapons[tile.gid]
                         if weapon then
                             -- Create a collectible for this weapon tile
                             table.insert(collectibles.items, {
@@ -44,7 +44,7 @@ function collectibles.load(opts)
                         end
                     elseif tile.properties["kind"] == "shield" then
                         -- Get the shield reference from dungeon
-                        local shield = _game.dungeon.shields[tile.gid]
+                        local shield = DI.dungeon.shields[tile.gid]
                         if shield then
                             -- Create a collectible for this shield tile
                             table.insert(collectibles.items, {
@@ -63,8 +63,8 @@ function collectibles.load(opts)
     end
 
     -- Add collectibles to global game variable when loaded (this is constant and only needs to be set once)
-    _game = _game or {}
-    _game.collectibles = collectibles
+    DI = DI or {}
+    DI.collectibles = collectibles
 end
 
 function collectibles.update(dt)
@@ -78,8 +78,8 @@ end
 function collectibles.draw()
     -- Helper function to check if an item overlaps with player
     local function is_overlapping_player(pos)
-        return math.abs(pos.x - _game.player.pos.x) < 1 and
-            math.abs(pos.y - _game.player.pos.y) < 1
+        return math.abs(pos.x - DI.player.pos.x) < 1 and
+            math.abs(pos.y - DI.player.pos.y) < 1
     end
 
     -- Store original graphics state
@@ -89,7 +89,7 @@ function collectibles.draw()
 
     for _, item in ipairs(collectibles.items) do
         -- Convert tile position to screen position
-        local screen_pos = _game.dungeon.grid_to_screen(item.pos)
+        local screen_pos = DI.dungeon.grid_to_screen(item.pos)
 
         -- Get tile dimensions
         local _, _, tile_width, tile_height = item.tile.quad:getViewport()
@@ -107,7 +107,7 @@ function collectibles.draw()
 
         -- Draw collectible centered with hover offset
         love.graphics.draw(
-            _game.dungeon.map.tilesets[1].image,
+            DI.dungeon.map.tilesets[1].image,
             item.tile.quad,
             screen_pos.x,
             screen_pos.y + item.hover_offset,
@@ -140,7 +140,7 @@ function collectibles.check_collection(pos, collect_range)
                 item.pos.x, item.pos.y, item.name))
 
             -- Play pickup sound
-            _game.sound.play("pickup")
+            DI.sound.play("pickup")
 
             -- Remove and return the collected item
             local collected = table.remove(collectibles.items, i)

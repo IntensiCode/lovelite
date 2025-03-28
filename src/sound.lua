@@ -295,8 +295,8 @@ function sound.load(opts)
     opts = opts or { reset = true }
 
     -- Add sound to global game variable (this is constant and only needs to be set once)
-    _game = _game or {}
-    _game.sound = sound
+    DI = DI or {}
+    DI.sound = sound
 
     -- Sound effects are resources that only need to be loaded once
     -- They don't represent game state that needs to be reset

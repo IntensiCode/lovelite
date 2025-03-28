@@ -1,4 +1,3 @@
-local pos = require("src.base.pos")
 local animation = require("src.particles.animation")
 local constants = require("src.base.constants")
 

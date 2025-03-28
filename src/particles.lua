@@ -1,5 +1,4 @@
 local LightningParticle = require("src.particles.lightning")
-local pos = require("src.base.pos")
 local DustParticle = require("src.particles.dust")
 local FireParticle = require("src.particles.fire")
 local IceParticle = require("src.particles.ice")
@@ -25,7 +24,7 @@ local particles = {
 ---@param data.count? number Optional count of particles to spawn (defaults to magic_count or dust_particle_count)
 function particles.spawn(data)
     -- Convert tile space position to screen space
-    local screen_pos = _game.dungeon.grid_to_screen(data.pos)
+    local screen_pos = DI.dungeon.grid_to_screen(data.pos)
 
     -- Use provided count or default based on particle type
     local count = data.count or (data.kind == "dust" and constants.dust_particle_count or constants.magic_count)
@@ -80,10 +79,6 @@ function particles.draw()
     end
     love.graphics.setColor(1, 1, 1, 1)
 end
-
--- Add particles to global game variable when loaded
-_game = _game or {}
-_game.particles = particles
 
 -- Register for particle spawn events
 events.register("particles.spawn", function(data)
