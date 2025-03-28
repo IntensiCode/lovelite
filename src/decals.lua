@@ -148,10 +148,9 @@ end
 
 function decals.draw()
     for _, decal in ipairs(decals.active) do
-        local screen_x = math.floor((decal.pos.x - 1) * _game.dungeon.tile_size)
-        local screen_y = math.floor((decal.pos.y - 1) * _game.dungeon.tile_size)
+        local screen_pos = _game.dungeon.grid_to_screen(decal.pos)
         love.graphics.setColor(unpack(decal.color))
-        love.graphics.circle("fill", screen_x, screen_y, decal.radius)
+        love.graphics.circle("fill", screen_pos.x, screen_pos.y, decal.radius)
     end
     love.graphics.setColor(1, 1, 1, 1) -- Reset color
 end

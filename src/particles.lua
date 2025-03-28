@@ -25,10 +25,7 @@ local particles = {
 ---@param data.count? number Optional count of particles to spawn (defaults to magic_count or dust_particle_count)
 function particles.spawn(data)
     -- Convert tile space position to screen space
-    local screen_pos = pos.new(
-        (data.pos.x - 1) * _game.dungeon.tile_size,
-        (data.pos.y - 1) * _game.dungeon.tile_size
-    )
+    local screen_pos = _game.dungeon.grid_to_screen(data.pos)
 
     -- Use provided count or default based on particle type
     local count = data.count or (data.kind == "dust" and constants.dust_particle_count or constants.magic_count)

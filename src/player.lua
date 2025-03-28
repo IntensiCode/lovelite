@@ -314,8 +314,7 @@ end
 function player.draw()
     -- Convert tile position to screen position (snap to integer pixels)
     -- Subtract 1 from position to account for Lua's 1-based indexing
-    local screen_x = math.floor((player.pos.x - 1) * _game.dungeon.tile_size)
-    local screen_y = math.floor((player.pos.y - 1) * _game.dungeon.tile_size)
+    local screen_pos = _game.dungeon.grid_to_screen(player.pos)
 
     -- Get tile dimensions
     local _, _, tile_width, tile_height = player.tile.quad:getViewport()
@@ -340,8 +339,8 @@ function player.draw()
         love.graphics.draw(
             _game.dungeon.map.tilesets[1].image,
             player.tile.quad,
-            screen_x,
-            screen_y,
+            screen_pos.x,
+            screen_pos.y,
             0,              -- rotation
             1,              -- scale x
             scale_y,        -- scale y (squeeze down when dead)
@@ -356,8 +355,8 @@ function player.draw()
         love.graphics.draw(
             _game.dungeon.map.tilesets[1].image,
             player.shield.tile.quad,
-            screen_x - tile_width,
-            screen_y - tile_height / 3
+            screen_pos.x - tile_width,
+            screen_pos.y - tile_height / 3
         )
     end
 
@@ -367,8 +366,8 @@ function player.draw()
         love.graphics.draw(
             _game.dungeon.map.tilesets[1].image,
             player.weapon.tile.quad,
-            screen_x + tile_width / 2,
-            screen_y - tile_height * 2 / 3,
+            screen_pos.x + tile_width / 2,
+            screen_pos.y - tile_height * 2 / 3,
             math.rad(45) -- 45 degree rotation
         )
     end

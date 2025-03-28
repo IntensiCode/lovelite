@@ -89,15 +89,14 @@ function collectibles.draw()
 
     for _, item in ipairs(collectibles.items) do
         -- Convert tile position to screen position
-        local screen_x = (item.pos.x - 1) * _game.dungeon.tile_size
-        local screen_y = (item.pos.y - 1) * _game.dungeon.tile_size
+        local screen_pos = _game.dungeon.grid_to_screen(item.pos)
 
         -- Get tile dimensions
         local _, _, tile_width, tile_height = item.tile.quad:getViewport()
 
         -- Draw a dark gray circle below as pseudo-shadow
         love.graphics.setColor(0.2, 0.2, 0.2, 0.5)
-        love.graphics.circle("fill", screen_x + tile_width / 2, screen_y + tile_height, 3)
+        love.graphics.circle("fill", screen_pos.x + tile_width / 2, screen_pos.y + tile_height, 3)
 
         -- Set transparency if this specific item overlaps player
         if is_overlapping_player(item.pos) then
@@ -110,8 +109,8 @@ function collectibles.draw()
         love.graphics.draw(
             _game.dungeon.map.tilesets[1].image,
             item.tile.quad,
-            screen_x,
-            screen_y + item.hover_offset,
+            screen_pos.x,
+            screen_pos.y + item.hover_offset,
             0,
             1, 1
         )

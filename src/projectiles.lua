@@ -131,15 +131,14 @@ end
 
 function projectiles.draw()
     for _, proj in ipairs(projectiles.active) do
-        local screen_x = math.floor((proj.pos.x - 1) * _game.dungeon.tile_size)
-        local screen_y = math.floor((proj.pos.y - 1) * _game.dungeon.tile_size)
+        local screen_pos = _game.dungeon.grid_to_screen(proj.pos)
 
         -- Get tile dimensions
         local _, _, tile_width, tile_height = proj.weapon.tile.quad:getViewport()
 
         -- Draw a dark gray circle below as pseudo-shadow
         love.graphics.setColor(0.2, 0.2, 0.2, 0.5)
-        love.graphics.circle("fill", screen_x, screen_y + tile_height / 3, 3)
+        love.graphics.circle("fill", screen_pos.x, screen_pos.y + tile_height / 3, 3)
         love.graphics.setColor(1, 1, 1, 1)
 
         if proj.weapon.melee then
@@ -147,8 +146,8 @@ function projectiles.draw()
             love.graphics.draw(
                 _game.dungeon.map.tilesets[1].image,
                 proj.weapon.tile.quad,
-                screen_x,
-                screen_y,
+                screen_pos.x,
+                screen_pos.y,
                 proj.rotation,                  -- Current rotation
                 1, 1,                           -- Scale
                 tile_width / 2, tile_height / 2 -- Center origin
@@ -173,9 +172,9 @@ function projectiles.draw()
                 color = { 0, 0.5, 1, 1 }
             end
             love.graphics.setColor(color[1], color[2], color[3], color[4])
-            love.graphics.circle("fill", screen_x, screen_y, pulse_radius)
+            love.graphics.circle("fill", screen_pos.x, screen_pos.y, pulse_radius)
             love.graphics.setColor(1, 1, 1, 1)
-            love.graphics.circle("line", screen_x, screen_y, pulse_radius)
+            love.graphics.circle("line", screen_pos.x, screen_pos.y, pulse_radius)
         end
     end
 end
