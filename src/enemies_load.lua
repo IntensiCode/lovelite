@@ -30,6 +30,17 @@ function enemies_load.load(enemies, game)
                 enemy.name = tile.properties["name"] or "Enemy"
                 enemy.is_dead = false
                 enemy.will_retreat = enemy_data.will_retreat ~= false -- Default to true unless explicitly set to false
+                -- Map weapon directly from weapons table
+                enemy.weapon = DI.weapons[enemy_data.weapon] or nil
+                -- Debug print error if weapon is not found
+                if not enemy.weapon then
+                    if enemy.behavior ~= "apprentice" then
+                        print("WEAPON NOT FOUND")
+                        print("Weapon name:", enemy_data.weapon)
+                        print("Enemy name:", enemy.name)
+                        t.dump("enemy", enemy)
+                    end
+                end
                 -- Initialize jump properties with random initial delay
                 enemy.jump_height = 0
                 enemy.jump_time = 0
