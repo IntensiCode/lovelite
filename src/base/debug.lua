@@ -151,6 +151,13 @@ end
 
 function debug.toggle()
     debug.enabled = not debug.enabled
+
+    -- Also update log level when debug is toggled
+    if debug.enabled then
+        log.level = "debug"
+    else
+        log.level = "info"
+    end
 end
 
 return debug

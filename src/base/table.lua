@@ -26,7 +26,7 @@ function table.print_keys(tbl, indent)
     end
     table.sort(keys)
     for _, k in ipairs(keys) do
-        print(indent .. k)
+        log.debug(indent .. k)
     end
 end
 
@@ -36,7 +36,7 @@ end
 ---@param indent string? The indent string
 function table.print_deep(name, tbl, indent)
     indent = indent or ""
-    print(indent .. name .. ":")
+    log.debug(indent .. name .. ":")
     indent = indent .. "  "
 
     -- Collect and sort keys
@@ -59,7 +59,7 @@ function table.print_deep(name, tbl, indent)
 
     -- Process non-tables first
     for _, k in ipairs(non_table_keys) do
-        print(indent .. k .. ": " .. tostring(tbl[k]))
+        log.debug(indent .. k .. ": " .. tostring(tbl[k]))
     end
 
     -- Then process tables
