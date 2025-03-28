@@ -23,6 +23,11 @@ local color_defs = {
         red = { 0.2, 0.3 },   -- Between 0.2 and 0.3
         green = { 0.6, 0.9 }, -- Between 0.6 and 0.9
         blue = { 0.2, 0.3 }   -- Between 0.2 and 0.3
+    },
+    web = {
+        red = { 0.7, 0.8 },   -- Light gray
+        green = { 0.7, 0.8 },
+        blue = { 0.7, 0.8 }
     }
 }
 
@@ -30,6 +35,38 @@ local decals = {
     active = {}, -- Array of active decals
     spread = 0.25 -- Safe spread distance for decals
 }
+
+---Draw a stylized spider web
+---@param x number Screen x position
+---@param y number Screen y position
+---@param size number Base size of the web
+local function draw_web(x, y, size)
+    love.graphics.setColor(0.9, 0.9, 0.9, 0.5)
+
+    -- Draw diagonal lines through the center first
+    for i = 0, 3 do
+        local angle = i * math.pi / 4
+        love.graphics.line(
+            x + math.cos(angle) * -size,
+            y + math.sin(angle) * -size,
+            x + math.cos(angle) * size,
+            y + math.sin(angle) * size
+        )
+    end
+
+    -- Draw 2 nested octagons
+    for i = 1, 2 do
+        local current_size = size * (i / 2)
+        local points = {}
+        -- Add points for all 8 vertices plus the first one again to close the shape
+        for j = 0, 8 do
+            local angle = j * math.pi / 4
+            table.insert(points, x + math.cos(angle) * current_size)
+            table.insert(points, y + math.sin(angle) * current_size)
+        end
+        love.graphics.line(points)
+    end
+end
 
 ---Create a single spot with given parameters
 ---@param data table The spot creation data
@@ -143,6 +180,13 @@ function decals.spawn(kind, pos)
             kind = "mud",
             color_def = color_defs.mud
         })
+    elseif kind == "web" then
+        -- Single web decal
+        table.insert(decals.active, {
+            pos = pos,
+            kind = "web",
+            color = { 0.7, 0.7, 0.7, 1 }
+        })
     end
 end
 
@@ -150,7 +194,11 @@ function decals.draw()
     for _, decal in ipairs(decals.active) do
         local screen_pos = DI.dungeon.grid_to_screen(decal.pos)
         love.graphics.setColor(unpack(decal.color))
-        love.graphics.circle("fill", screen_pos.x, screen_pos.y, decal.radius)
+        if decal.kind == "web" then
+            draw_web(screen_pos.x, screen_pos.y, 7) -- 8 pixels base size
+        else
+            love.graphics.circle("fill", screen_pos.x, screen_pos.y, decal.radius)
+        end
     end
     love.graphics.setColor(1, 1, 1, 1) -- Reset color
 end
