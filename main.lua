@@ -6,7 +6,7 @@ love.filesystem.setRequirePath("src/?.lua;src/?/init.lua;" .. love.filesystem.ge
 local font = require("src.base.font")
 local screen = require("src.base.screen")
 local title = require("src.title")
-local playing = require("src.playing")
+local game = require("src.game")
 local debug = require("src.base.debug")
 local argparse = require("src.libraries.argparse")
 
@@ -25,7 +25,7 @@ function love.load()
     font.load()
 
     screen.register("title", title)
-    screen.register("game", playing)
+    screen.register("game", game)
 
     -- Initialize with title screen or game screen based on dev flag
     screen.switch_to(args.dev and "game" or "title")

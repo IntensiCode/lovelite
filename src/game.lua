@@ -15,19 +15,19 @@ local screen = require("src.base.screen")
 local font = require("src.base.font")
 local decals = require("src.decals")
 
-local playing = {
+local game = {
     blink_timer = 0,
     blink_visible = true,
     initialized = false
 }
 
----Load the playing screen
+---Load the game screen
 ---@param opts? {reset: boolean} Options for loading (default: {reset = true})
-function playing.load(opts)
+function game.load(opts)
     opts = opts or { reset = true }
 
     -- Initialize components into DI if not already done
-    if not playing.initialized then
+    if not game.initialized then
         DI.camera = camera
         DI.dungeon = dungeon
         DI.pathfinder = pathfinder
@@ -41,7 +41,7 @@ function playing.load(opts)
         DI.collision = collision
         DI.font = font
         DI.decals = decals
-        playing.initialized = true
+        game.initialized = true
     end
 
     DI.camera.load(opts)
@@ -61,23 +61,23 @@ end
 
 ---Update the blink timer state
 ---@param dt number Delta time
-function playing.update_blink_timer(dt)
-    playing.blink_timer = playing.blink_timer + dt
-    if playing.blink_visible and playing.blink_timer >= 0.8 then
-        playing.blink_visible = false
-        playing.blink_timer = 0
-    elseif not playing.blink_visible and playing.blink_timer >= 0.2 then
-        playing.blink_visible = true
-        playing.blink_timer = 0
+function game.update_blink_timer(dt)
+    game.blink_timer = game.blink_timer + dt
+    if game.blink_visible and game.blink_timer >= 0.8 then
+        game.blink_visible = false
+        game.blink_timer = 0
+    elseif not game.blink_visible and game.blink_timer >= 0.2 then
+        game.blink_visible = true
+        game.blink_timer = 0
     end
 end
 
-function playing.update(dt)
+function game.update(dt)
     -- Update fade
     fade.update(dt)
 
     -- Update blink timer
-    playing.update_blink_timer(dt)
+    game.update_blink_timer(dt)
 
     DI.dungeon.map:update(dt)
     DI.player.update(dt)
@@ -89,7 +89,7 @@ function playing.update(dt)
     DI.enemies.update(dt)
 end
 
-function playing.draw()
+function game.draw()
     DI.camera.beginDraw()
 
     local translation = DI.camera.translation()
@@ -134,7 +134,7 @@ function playing.draw()
 
     -- Draw game over overlay if player is dead
     if DI.player.is_dead and (DI.player.death_time == nil or DI.player.death_time <= 0) then
-        playing.draw_game_over_overlay()
+        game.draw_game_over_overlay()
     end
 
     -- Draw fade overlay last
@@ -144,7 +144,7 @@ function playing.draw()
 end
 
 ---Draw the game over overlay
-function playing.draw_game_over_overlay()
+function game.draw_game_over_overlay()
     -- Semi-transparent black background
     love.graphics.setColor(0, 0, 0, 0.7)
     love.graphics.rectangle("fill", 0, 0, DI.camera.width, DI.camera.height)
@@ -157,7 +157,7 @@ function playing.draw_game_over_overlay()
     DI.font.draw_text("YOU DIED", DI.camera.width / 2, DI.camera.height / 2 - 60, DI.font.anchor.center)
 
     -- Draw "Press SPACE to continue" at the bottom (only when visible)
-    if playing.blink_visible then
+    if game.blink_visible then
         DI.font.draw_text("Press SPACE to continue", DI.camera.width / 2, DI.camera.height - 8,
         DI.font.anchor.bottom_center)
     end
@@ -165,7 +165,7 @@ end
 
 ---Find all positions that need wall checking
 ---@return pos[] List of positions that need wall checking
-function playing.find_overlappable_positions()
+function game.find_overlappable_positions()
     local positions = { DI.player.pos }
 
     -- Add collectible positions
@@ -181,7 +181,7 @@ function playing.find_overlappable_positions()
     return positions
 end
 
-function playing.keypressed(key)
+function game.keypressed(key)
     if key == "d" then
         DI.debug.toggle()
     elseif key == "escape" then
@@ -200,8 +200,8 @@ function playing.keypressed(key)
 end
 
 -- Handle window resize
-function playing.resize(w, h)
+function game.resize(w, h)
     DI.camera.resize(w, h)
 end
 
-return playing 
+return game 
