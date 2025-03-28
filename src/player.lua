@@ -30,8 +30,8 @@ local player = {
     shield = nil,
     tile_size = nil,
     last_direction = pos.new(1, 0), -- Default facing right
-    cooldown = 0,                       -- Initialize cooldown to 0
-    armorclass = 0                      -- Base armor class
+    cooldown = 0,                   -- Initialize cooldown to 0
+    armorclass = 0                  -- Base armor class
 }
 
 function player.on_hit(weapon)
@@ -53,6 +53,9 @@ function player.on_hit(weapon)
 
         -- Play hit sound with volume based on damage
         _game.sound.play("player_hit", math.min(actual_damage / 20, 1))
+
+        -- Add small blood spots when hit
+        _game.decals.spawn("blood", player.pos)
     elseif weapon.sonic or weapon.strongsonic then
         -- Sonic weapons apply damage over time
         -- Store the damage and duration in a table if not exists
@@ -73,10 +76,15 @@ function player.on_hit(weapon)
         player.hitpoints = 0
         player.is_dead = true
         player.death_time = 0.5
+
         -- Clear pathfinding data when player dies
         _game.pathfinder.clear()
+
         -- Play dramatic death sound
         _game.sound.play("player_death", 1.0)
+
+        -- Add blood pool when player dies
+        _game.decals.spawn("blood_pool", player.pos)
     end
 end
 
@@ -320,32 +328,7 @@ function player.draw()
 
     -- Draw blood spots if dead
     if player.is_dead then
-        -- Create random but consistent blood spots
-        math.randomseed(screen_x * screen_y) -- Use position as seed for consistency
-
-        -- Draw 5 blood spots with random properties
-        for i = 1, 5 do
-            -- Random dark red colors
-            local red = 0.6 + math.random() * 0.3 -- Between 0.6 and 0.9
-            local green = 0.0
-            local blue = 0.0
-            love.graphics.setColor(red, green, blue, 1)
-
-            -- Random positions within a small area
-            local offset_x = math.random(-8, 8)
-            local offset_y = math.random(-8, 8)
-
-            -- Random sizes
-            local spot_radius = 2 + math.random() * 3 -- Between 2 and 5 pixels
-
-            love.graphics.circle("fill",
-                screen_x + offset_x,
-                screen_y + offset_y,
-                spot_radius
-            )
-        end
-
-        love.graphics.setColor(1, 1, 1, 1) -- Reset color
+        -- _game.decals.spawn("blood", pos.new(screen_x, screen_y))
 
         if not player.death_time or player.death_time <= 0 then
             return -- Don't draw player sprite if dead
@@ -392,11 +375,11 @@ function player.draw()
 end
 
 function player.draw_ui()
-    local padding = 8                                -- Virtual pixels padding
-    local box_padding = padding / 2                  -- Half padding for indicator boxes
-    local bar_width = 50                             -- Width of health bars
-    local bar_height = 4                             -- Height of health bars
-    local bar_spacing = 4                            -- Space between bars
+    local padding = 8                            -- Virtual pixels padding
+    local box_padding = padding / 2              -- Half padding for indicator boxes
+    local bar_width = 50                         -- Width of health bars
+    local bar_height = 4                         -- Height of health bars
+    local bar_spacing = 4                        -- Space between bars
     local box_size = _game.dungeon.map.tilewidth -- Use tile size for indicator boxes
 
     -- Reset blend mode to default

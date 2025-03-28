@@ -13,6 +13,7 @@ local collision = require("src.map.collision")
 local fade = require("src.base.fade")
 local screen = require("src.base.screen")
 local font = require("src.base.font")
+local decals = require("src.decals")
 
 -- Make game a global variable
 _game = {
@@ -28,6 +29,7 @@ _game = {
     sound = sound,
     collision = collision,
     font = font,
+    decals = decals,
     blink_timer = 0,
     blink_visible = true
 }
@@ -96,6 +98,9 @@ function _game.draw()
     if _game.debug.enabled then
         _game.pathfinder.draw()
     end
+
+    -- Draw decals below everything
+    _game.decals.draw()
 
     -- Draw in correct order
     _game.player.draw()

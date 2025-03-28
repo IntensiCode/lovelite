@@ -124,12 +124,12 @@ end
 function enemies.draw()
     -- Helper function to check if an enemy overlaps with player
     local function is_overlapping_player(pos)
-        return math.abs(pos.x - _game.player.pos.x) < 1 and 
-               math.abs(pos.y - _game.player.pos.y) < 1
+        return math.abs(pos.x - _game.player.pos.x) < 1 and
+            math.abs(pos.y - _game.player.pos.y) < 1
     end
 
     -- Store original graphics state
-    local original_color = {love.graphics.getColor()}
+    local original_color = { love.graphics.getColor() }
     local original_blend_mode = love.graphics.getBlendMode()
     love.graphics.setBlendMode("alpha")
 
@@ -147,13 +147,13 @@ function enemies.draw()
             if is_overlapping_player(enemy.pos) then
                 love.graphics.setColor(0.6, 0.6, 1.0, 0.75) -- Transparent blue tint
             else
-                love.graphics.setColor(0.6, 0.6, 1.0, 1.0) -- Blue tint
+                love.graphics.setColor(0.6, 0.6, 1.0, 1.0)  -- Blue tint
             end
         else
             if is_overlapping_player(enemy.pos) then
                 love.graphics.setColor(1, 1, 1, 0.75) -- Transparent
             else
-                love.graphics.setColor(1, 1, 1, 1) -- Normal color
+                love.graphics.setColor(1, 1, 1, 1)    -- Normal color
             end
         end
 
@@ -174,12 +174,12 @@ function enemies.draw()
         if enemy.hitpoints < enemy.max_hitpoints then
             -- Health bar background
             love.graphics.setColor(0.5, 0, 0, 1)
-            love.graphics.rectangle("fill", screen_x - tile_size/2, screen_y - tile_size/2 - 5, tile_size, 2)
-            
+            love.graphics.rectangle("fill", screen_x - tile_size / 2, screen_y - tile_size / 2 - 5, tile_size, 2)
+
             -- Health bar foreground
             love.graphics.setColor(0, 1, 0, 1)
             local health_width = (enemy.hitpoints / enemy.max_hitpoints) * tile_size
-            love.graphics.rectangle("fill", screen_x - tile_size/2, screen_y - tile_size/2 - 5, health_width, 2)
+            love.graphics.rectangle("fill", screen_x - tile_size / 2, screen_y - tile_size / 2 - 5, health_width, 2)
         end
     end
 
@@ -224,15 +224,9 @@ function enemies.on_hit(enemy, projectile)
         local actual_damage = projectile.weapon.melee - damage_reduction
 
         enemy.hitpoints = enemy.hitpoints - actual_damage
-        if enemy.hitpoints <= 0 then
-            enemy.is_dead = true
-            -- Play appropriate death sound based on enemy type
-            _game.sound.play_death(enemy.behavior)
-        end
 
         -- Play melee hit sound with volume based on damage
         _game.sound.play("melee_hit", math.min(actual_damage / 10, 1))
-
     elseif projectile.weapon.fire then
         -- Get fire resistance (default to 0 if nil) and clamp between 0 and 100
         local fire_resistance = enemy.resistance_fire or 0
@@ -243,15 +237,9 @@ function enemies.on_hit(enemy, projectile)
         local actual_damage = projectile.weapon.fire - damage_reduction
 
         enemy.hitpoints = enemy.hitpoints - actual_damage
-        if enemy.hitpoints <= 0 then
-            enemy.is_dead = true
-            -- Play appropriate death sound based on enemy type
-            _game.sound.play_death(enemy.behavior)
-        end
 
         -- Play magic sound for fire damage
         _game.sound.play("magic", math.min(actual_damage / 10, 1))
-
     elseif projectile.weapon.ice then
         -- Get ice resistance (default to 0 if nil) and clamp between 0 and 100
         local ice_resistance = enemy.resistance_ice or 0
@@ -262,18 +250,12 @@ function enemies.on_hit(enemy, projectile)
         local actual_damage = projectile.weapon.ice - damage_reduction
 
         enemy.hitpoints = enemy.hitpoints - actual_damage
-        if enemy.hitpoints <= 0 then
-            enemy.is_dead = true
-            -- Play appropriate death sound based on enemy type
-            _game.sound.play_death(enemy.behavior)
-        end
 
         -- Add stun time based on damage
         enemy.stun_time = (enemy.stun_time or 0) + (actual_damage / 10)
 
         -- Play ice sound
         _game.sound.play("ice", math.min(actual_damage / 10, 1))
-
     elseif projectile.weapon.lightning then
         -- Get lightning resistance (default to 0 if nil) and clamp between 0 and 100
         local lightning_resistance = enemy.resistance_lightning or 0
@@ -284,15 +266,37 @@ function enemies.on_hit(enemy, projectile)
         local actual_damage = projectile.weapon.lightning - damage_reduction
 
         enemy.hitpoints = enemy.hitpoints - actual_damage
-        if enemy.hitpoints <= 0 then
-            enemy.is_dead = true
-            -- Play appropriate death sound based on enemy type
-            _game.sound.play_death(enemy.behavior)
-        end
 
         -- Play magic sound for lightning damage
         _game.sound.play("magic", math.min(actual_damage / 10, 1))
     end
+
+    if enemy.hitpoints <= 0 then
+        enemy.is_dead = true
+        -- Play appropriate death sound based on enemy type
+        _game.sound.play_death(enemy.behavior)
+        -- Add appropriate decal based on enemy type
+        _game.decals.spawn(enemies.decal_kind(enemy, "pool"), enemy.pos)
+    else
+        -- Add appropriate decal based on enemy type
+        _game.decals.spawn(enemies.decal_kind(enemy), enemy.pos)
+    end
+end
+
+-- Decal kind based on enemy behavior
+function enemies.decal_kind(enemy, type)
+    if enemies.is_ghost(enemy) then
+        return "slime"
+    elseif enemy.behavior == "golem" then
+        return type == "pool" and "mud_pool" or "mud"
+    else
+        return type == "pool" and "blood_pool" or "blood"
+    end
+end
+
+-- Check if enemy is a ghost (behavior == "ghost" or behavior == "babyghost")
+function enemies.is_ghost(enemy)
+    return enemy.behavior == "ghost" or enemy.behavior == "babyghost"
 end
 
 return enemies
