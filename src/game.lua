@@ -16,6 +16,7 @@ local screen = require("src.base.screen")
 local font = require("src.base.font")
 local decals = require("src.decals")
 local weapons = require("src.enemy.weapons")
+local positions = require("src.base.positions")
 
 local game = {
     blink_timer = 0,
@@ -44,6 +45,7 @@ function game.load(opts)
         DI.font = font
         DI.decals = decals
         DI.weapons = weapons
+        DI.positions = positions
         game.initialized = true
     end
 

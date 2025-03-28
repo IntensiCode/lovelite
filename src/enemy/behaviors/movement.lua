@@ -17,7 +17,10 @@ local function try_slide_movement(pos, direction, speed, dt)
         pos.x + direction.x * speed * dt,
         pos.y
     )
-    if direction.x ~= 0 and DI.collision.is_walkable(horizontal_pos.x, horizontal_pos.y) then
+    if direction.x ~= 0 and DI.collision.is_walkable({
+        x = horizontal_pos.x,
+        y = horizontal_pos.y
+    }) then
         return horizontal_pos
     end
 
@@ -26,7 +29,10 @@ local function try_slide_movement(pos, direction, speed, dt)
         pos.x,
         pos.y + direction.y * speed * dt
     )
-    if direction.y ~= 0 and DI.collision.is_walkable(vertical_pos.x, vertical_pos.y) then
+    if direction.y ~= 0 and DI.collision.is_walkable({
+        x = vertical_pos.x,
+        y = vertical_pos.y
+    }) then
         return vertical_pos
     end
 
@@ -48,16 +54,22 @@ function movement.move_towards_target(enemy, target, dt)
 
         -- Try full movement first
         local new_pos = enemy.pos + direction * enemy.speed * dt
-        if DI.collision.is_walkable(new_pos.x, new_pos.y) then
+        if DI.collision.is_walkable({
+            x = new_pos.x,
+            y = new_pos.y
+        }) then
             enemy.pos = new_pos
+            return true
         else
             -- If full movement blocked, try sliding along walls
             local slide_pos = try_slide_movement(enemy.pos, direction, enemy.speed, dt)
             if slide_pos then
                 enemy.pos = slide_pos
+                return true
             end
         end
     end
+    return false
 end
 
 ---Update happy jump movement for enemies when player is dead

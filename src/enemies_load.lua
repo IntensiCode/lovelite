@@ -46,6 +46,8 @@ function enemies_load.load(enemies, game)
                 enemy.jump_time = 0
                 enemy.next_jump_delay = math.random() * 0.5 -- Initial delay still random 0-0.5
                 enemy.jump_speed = JUMP_SPEED
+                -- Set unique ID based on behavior and index
+                enemy.id = enemy.behavior .. "_" .. #enemies.items + 1
                 table.insert(enemies.items, enemy)
             end
         end

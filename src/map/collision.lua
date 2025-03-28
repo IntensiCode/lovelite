@@ -28,16 +28,16 @@ end
 ---@return table[] Array of {x: number, y: number, tile: table} entries
 function collision.find_overlap_layer_tiles()
     local overlapping_tiles = {}
-    
+
     -- Directions to check for walkable tiles (relative to current tile)
     local directions = {
-        {dx = 0, dy = -1},  -- above
-        {dx = -1, dy = 0},  -- left
-        {dx = 1, dy = 0},   -- right
-        {dx = -1, dy = -1}, -- left-up
-        {dx = 1, dy = -1},  -- right-up
+        { dx = 0,  dy = -1 }, -- above
+        { dx = -1, dy = 0 }, -- left
+        { dx = 1,  dy = 0 }, -- right
+        { dx = -1, dy = -1 }, -- left-up
+        { dx = 1,  dy = -1 }, -- right-up
     }
-    
+
     for y = 1, collision.map.height do
         for x = 1, collision.map.width do
             local tile = collision.map.layers[1].data[y][x]
@@ -110,21 +110,64 @@ function collision.is_walkable_tile(x, y)
     return collision.walkable_tiles[tile.gid] or false
 end
 
+---Check if a position is blocked by any entity
+---@param opts {x: number, y: number, exclude_id?: string, min_distance?: number} Options for collision check
+---@return boolean blocked True if position is blocked by an entity
+function collision.is_blocked_by_entity(opts)
+    local check_pos = pos.new(opts.x, opts.y)
+    local entity_positions = DI.positions.get_all_except(opts.exclude_id)
+    local min_distance = opts.min_distance or 0.9
+
+    for _, pos_data in ipairs(entity_positions) do
+        local distance = (pos_data.pos - check_pos):length()
+        if distance < min_distance then
+            -- Debug output when collision is detected
+            print("Excluded ID:", opts.exclude_id or "none")
+            print("Blocking entity ID:", pos_data.id)
+            print("All entity IDs:", table.concat(table.map(entity_positions, function(p) return p.id end), ", "))
+            return true
+        end
+    end
+
+    return false
+end
+
+---Try to find a sliding path around entities
+---@param opts {from: pos, to: pos, move_dir: pos, exclude_id?: string, min_distance?: number} Options for slide check
+---@return pos|nil slide_pos Position to slide to, or nil if no valid slide found
+function collision.find_entity_slide(opts)
+    local move_normal = pos.new(-opts.move_dir.y, opts.move_dir.x):normalized()
+    local slide_check = 0.25 -- How far to check for slides
+
+    -- Check both perpendicular directions
+    for _, side in ipairs({ 1, -1 }) do
+        local test_pos = opts.to + move_normal * (slide_check * side)
+        if not collision.is_blocked_by_entity({
+                x = test_pos.x,
+                y = test_pos.y,
+                exclude_id = opts.exclude_id,
+                min_distance = opts.min_distance
+            }) then
+            return test_pos
+        end
+    end
+
+    return nil
+end
+
 ---Check if a position is walkable (with buffer zone for movement)
----@param x number The x coordinate in tile space
----@param y number The y coordinate in tile space
----@param buffer pos? The buffer zone size in tile space (default: pos(0.4, 0.2))
+---@param opts {x: number, y: number, buffer?: pos} Options for walkable check
 ---@return boolean walkable Whether the position is walkable
-function collision.is_walkable(x, y, buffer)
+function collision.is_walkable(opts)
     -- Default buffer zone in tile space
-    buffer = buffer or pos.new(0.4, 0.2)
+    local buffer = opts.buffer or pos.new(0.4, 0.2)
 
     -- Check all corners of the entity's collision box
     local points_to_check = {
-        { x = x - buffer.x, y = y - buffer.y }, -- Top left
-        { x = x + buffer.x, y = y - buffer.y }, -- Top right
-        { x = x - buffer.x, y = y + buffer.y }, -- Bottom left
-        { x = x + buffer.x, y = y + buffer.y }  -- Bottom right
+        { x = opts.x - buffer.x, y = opts.y - buffer.y }, -- Top left
+        { x = opts.x + buffer.x, y = opts.y - buffer.y }, -- Top right
+        { x = opts.x - buffer.x, y = opts.y + buffer.y }, -- Bottom left
+        { x = opts.x + buffer.x, y = opts.y + buffer.y }  -- Bottom right
     }
 
     for _, point in ipairs(points_to_check) do
@@ -145,25 +188,25 @@ end
 function collision.find_walkable_around(tile_x, tile_y)
     local walkable_tiles = {}
     local directions = {
-        {dx = -1, dy = 0},  -- left
-        {dx = 1, dy = 0},   -- right
-        {dx = 0, dy = -1},  -- up
-        {dx = 0, dy = 1},   -- down
-        {dx = -1, dy = -1}, -- up-left
-        {dx = 1, dy = -1},  -- up-right
-        {dx = -1, dy = 1},  -- down-left
-        {dx = 1, dy = 1}    -- down-right
+        { dx = -1, dy = 0 }, -- left
+        { dx = 1,  dy = 0 }, -- right
+        { dx = 0,  dy = -1 }, -- up
+        { dx = 0,  dy = 1 }, -- down
+        { dx = -1, dy = -1 }, -- up-left
+        { dx = 1,  dy = -1 }, -- up-right
+        { dx = -1, dy = 1 }, -- down-left
+        { dx = 1,  dy = 1 } -- down-right
     }
 
     for _, dir in ipairs(directions) do
         local check_x = tile_x + dir.dx
         local check_y = tile_y + dir.dy
         if collision.is_walkable_tile(check_x, check_y) then
-            table.insert(walkable_tiles, {x = check_x, y = check_y})
+            table.insert(walkable_tiles, { x = check_x, y = check_y })
         end
     end
 
     return walkable_tiles
 end
 
-return collision 
+return collision

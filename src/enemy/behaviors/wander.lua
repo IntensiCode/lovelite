@@ -10,6 +10,9 @@ local m = require("src.base.math")
 ---@field tiles_walked number Total tiles walked since last sleep
 ---@field is_sleepy boolean Whether the spider is ready to sleep
 
+---@class Enemy
+---@field wander_state WanderState
+
 local wander = {}
 
 ---Convert a position to a string key for visited tracking
@@ -35,7 +38,10 @@ local function count_blocked_tiles(center)
 
     for dir_name, dir in pairs(directions) do
         local check_pos = center + dir
-        if not DI.collision.is_walkable(check_pos.x, check_pos.y) then
+        if not DI.collision.is_walkable({
+            x = check_pos.x,
+            y = check_pos.y
+        }) then
             count = count + 1
             blocked[dir_name] = true
         end
@@ -59,7 +65,10 @@ local function get_available_directions(center, visited)
 
     for _, dir in ipairs(possible) do
         local check_pos = center + dir
-        if DI.collision.is_walkable(check_pos.x, check_pos.y) and not visited[pos_key(check_pos)] then
+        if DI.collision.is_walkable({
+            x = check_pos.x,
+            y = check_pos.y
+        }) and not visited[pos_key(check_pos)] then
             table.insert(directions, dir)
         end
     end
@@ -68,7 +77,10 @@ local function get_available_directions(center, visited)
     if #directions == 0 then
         for _, dir in ipairs(possible) do
             local check_pos = center + dir
-            if DI.collision.is_walkable(check_pos.x, check_pos.y) then
+            if DI.collision.is_walkable({
+                x = check_pos.x,
+                y = check_pos.y
+            }) then
                 table.insert(directions, dir)
             end
         end
@@ -113,7 +125,10 @@ local function try_turn(enemy, state)
     -- Check which turns are possible
     for _, dir in ipairs(turn_dirs) do
         local check_pos = enemy.pos + dir
-        if DI.collision.is_walkable(check_pos.x, check_pos.y) then
+        if DI.collision.is_walkable({
+            x = check_pos.x,
+            y = check_pos.y
+        }) then
             table.insert(available_turns, dir)
         end
     end
@@ -225,7 +240,10 @@ function wander.update(enemy, dt)
 
     -- Try to move in current direction
     local new_pos = enemy.pos + state.direction * enemy.speed * dt
-    local walkable = DI.collision.is_walkable(new_pos.x, new_pos.y)
+    local walkable = DI.collision.is_walkable({
+        x = new_pos.x,
+        y = new_pos.y
+    })
     if walkable then
         update_visited_positions(enemy, new_pos, state)
     else

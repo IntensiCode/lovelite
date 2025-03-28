@@ -24,6 +24,7 @@ local p = require("src.particles")
 ---@field stun_time number|nil Time remaining in stun effect
 ---@field slow_time number|nil Time remaining in slow effect
 ---@field slow_factor number|nil Speed multiplier during slow effect
+---@field position_provider_registered boolean
 local player = {
     pos = pos.new(0, 0),
     tile_id = nil,
@@ -41,7 +42,8 @@ local player = {
     armorclass = 0,                 -- Base armor class
     stun_time = nil,                -- Time remaining in stun effect
     slow_time = nil,                -- Time remaining in slow effect
-    slow_factor = 0.5               -- Speed multiplier during slow effect
+    slow_factor = 0.5,              -- Speed multiplier during slow effect
+    position_provider_registered = false
 }
 
 function player.on_hit(weapon)
@@ -116,8 +118,16 @@ function player.load(opts)
     -- Get tile size from tileset (this is constant and only needs to be set once)
     player.tile_size = DI.dungeon.tile_size
 
-    -- Add player to global game variable
-    DI.player = player
+    -- Register position provider if not already registered
+    if not player.position_provider_registered then
+        DI.positions.add_provider(function()
+            return {{
+                id = "player",
+                pos = player.pos
+            }}
+        end)
+        player.position_provider_registered = true
+    end
 end
 
 function player.update(dt)
@@ -154,21 +164,8 @@ function player.update(dt)
         player.last_direction = input:normalized()
     end
 
-    -- Store original movement for wall sliding
-    local original_movement = pos.new(input.x, input.y)
-
-    -- Normalize diagonal movement for the initial movement attempt
-    if input.x ~= 0 and input.y ~= 0 then
-        input = input * 0.7071 -- 1/sqrt(2), maintains consistent speed diagonally
-    end
-
-    -- Apply slow effect if active
-    if player.slow_time then
-        input = input * player.slow_factor
-    end
-
     -- Handle movement
-    m.handle(player, input, original_movement, dt)
+    m.handle(player, input, dt)
 
     -- Update cooldown
     if player.cooldown > 0 then

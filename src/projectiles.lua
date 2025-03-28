@@ -180,7 +180,11 @@ function projectiles.update(dt)
             proj.pos.y > DI.dungeon.map.height then
             print("Projectile out of bounds, removing")
             table.remove(projectiles.active, i)
-        elseif not DI.collision.is_walkable(proj.pos.x, proj.pos.y, pos.new(0.25, 0.1)) then
+        elseif not DI.collision.is_walkable({
+            x = proj.pos.x,
+            y = proj.pos.y,
+            buffer = pos.new(0.25, 0.1)
+        }) then
             -- Play appropriate wall hit sound
             if proj.weapon.melee then
                 DI.sound.play("melee_wall_hit", 0.8)

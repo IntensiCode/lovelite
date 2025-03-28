@@ -7,12 +7,14 @@ local spider = require("src.enemy.spider")
 local enemies_load = require("src.enemies_load")
 
 ---@class Enemy
+---@field id string The enemy's unique identifier
 ---@field pos pos
 ---@field tile table Reference to the tile from dungeon.tiles
 ---@field name string
 ---@field behavior string The enemy's behavior type (wizard, bully, etc.)
 ---@field hitpoints number The enemy's current health
 ---@field max_hitpoints number The enemy's maximum health
+---@field armorclass number The enemy's armor class
 ---@field is_dead boolean Whether the enemy is dead
 ---@field stun_time number Stun time in seconds
 ---@field backoff number|nil Time to back off after being hit
@@ -25,7 +27,8 @@ local enemies_load = require("src.enemies_load")
 ---@field weapon table? The weapon object
 
 local enemies = {
-    items = {}
+    items = {},
+    position_provider_registered = false
 }
 
 -- Jump animation constants
@@ -38,8 +41,20 @@ function enemies.load(opts)
         enemies_load.load(enemies, DI)
     end
 
-    -- Add enemies to global game variable (this is constant and only needs to be set once)
-    DI.enemies = enemies
+    -- Register position provider if not already registered
+    if not enemies.position_provider_registered then
+        DI.positions.add_provider(function()
+            local positions = {}
+            for i, enemy in ipairs(enemies.items) do
+                table.insert(positions, {
+                    id = enemy.id,
+                    pos = enemy.pos
+                })
+            end
+            return positions
+        end)
+        enemies.position_provider_registered = true
+    end
 end
 
 ---Update enemy jump animation
