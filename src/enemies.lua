@@ -3,6 +3,7 @@ local events = require("src.base.events")
 local m = require("src.base.math")
 local bully = require("src.enemy.bully")
 local backoff = require("src.enemy.backoff")
+local spider = require("src.enemy.spider")
 local enemies_load = require("src.enemies_load")
 
 ---@class Enemy
@@ -21,6 +22,7 @@ local enemies_load = require("src.enemies_load")
 ---@field jump_time number Time elapsed in current jump
 ---@field next_jump_delay number Time until next jump starts
 ---@field jump_speed number Speed of the jump animation
+---@field weapon table? The weapon object
 
 local enemies = {
     items = {}
@@ -112,6 +114,8 @@ function enemies.update(dt)
         -- Call enemy behavior based on type
         if enemy.behavior == "bully" then
             bully.update(enemy, dt)
+        elseif enemy.behavior == "spider" then
+            spider.update(enemy, dt)
         end
 
         ::continue::
