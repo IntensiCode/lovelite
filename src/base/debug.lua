@@ -2,8 +2,6 @@ local debug = {
     enabled = true
 }
 
-local font = require("src.base.font")
-
 -- Helper function to print a table's contents
 local function print_table(tbl, indent)
     indent = indent or ""
@@ -39,7 +37,7 @@ end
 function debug.draw_entity_positions()
     -- Set debug font if available
     local default_font = love.graphics.getFont()
-    love.graphics.setFont(font.tiny)
+    love.graphics.setFont(DI.font.tiny)
 
     local tile_size = DI.dungeon.tile_size
 
@@ -59,7 +57,7 @@ function debug.draw_entity_positions()
 
     -- Draw player position text with background
     local pos_text = string.format("%.2f, %.2f", DI.player.pos.x, DI.player.pos.y)
-    local text_width = font.tiny:getWidth(pos_text)
+    local text_width = DI.font.tiny:getWidth(pos_text)
     local line_height = 9 -- 8px font height + 1px spacing
     local padding = 1
 
@@ -92,7 +90,7 @@ function debug.draw()
 
     -- Set debug font if available
     local default_font = love.graphics.getFont()
-    love.graphics.setFont(font.tiny)
+    love.graphics.setFont(DI.font.tiny)
 
     -- Calculate text dimensions for background
     local info = {
@@ -106,7 +104,7 @@ function debug.draw()
     local padding = 1
     local max_width = 0
     for _, text in ipairs(info) do
-        max_width = math.max(max_width, font.tiny:getWidth(text))
+        max_width = math.max(max_width, DI.font.tiny:getWidth(text))
     end
 
     -- Draw semi-transparent black background
