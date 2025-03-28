@@ -1,4 +1,4 @@
-local events = require("src.base.events")
+local projectiles = require("src.projectiles")
 
 local actions = {}
 
@@ -17,12 +17,13 @@ function actions.handle_shooting(player)
         return
     end
 
-    -- Set cooldown and spawn projectile via event
+    -- Set cooldown and spawn projectile
     player.cooldown = player.weapon.cooldown
-    events.send("projectile.spawn", {
+    projectiles.spawn({
         pos = player.pos,
         direction = player.last_direction,
-        weapon = player.weapon
+        weapon = player.weapon,
+        owner = "player"
     })
 end
 
