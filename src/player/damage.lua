@@ -1,5 +1,3 @@
-local m = require("src.base.math")
-
 local damage = {}
 
 function damage.on_hit(player, weapon)
@@ -11,7 +9,7 @@ function damage.on_hit(player, weapon)
     if weapon.melee then
         -- Get armor class (default to 0 if nil) and clamp between 0 and 100
         local armor_class = player.armorclass or 0
-        armor_class = m.clamp(armor_class, 0, 100)
+        armor_class = math.clamp(armor_class, 0, 100)
 
         -- Calculate damage reduction based on armor class percentage
         local damage_reduction = weapon.melee * (armor_class / 100)

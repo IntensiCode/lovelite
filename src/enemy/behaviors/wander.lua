@@ -1,5 +1,4 @@
 local pos = require("src.base.pos")
-local m = require("src.base.math")
 
 ---@class WanderState
 ---@field direction pos Current movement direction
@@ -19,7 +18,7 @@ local wander = {}
 ---@param p pos The position to convert
 ---@return string key The string key for the position
 local function pos_key(p)
-    return string.format("%.0f,%.0f", m.round(p.x), m.round(p.y))
+    return string.format("%.0f,%.0f", math.round(p.x), math.round(p.y))
 end
 
 ---Count number of non-walkable tiles around a position

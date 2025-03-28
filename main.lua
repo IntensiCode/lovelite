@@ -10,6 +10,9 @@ local game = require("src.game")
 local debug = require("src.base.debug")
 local argparse = require("src.libraries.argparse")
 
+-- Extend math library once for the entire game
+require("src.base.math")
+
 function love.load()
     -- Parse command line arguments
     local parser = argparse("love-test", "A roguelike game.")

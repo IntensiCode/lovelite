@@ -1,6 +1,5 @@
 local pos = require("src.base.pos")
 local events = require("src.base.events")
-local m = require("src.base.math")
 local bully = require("src.enemy.bully")
 local backoff = require("src.enemy.backoff")
 local spider = require("src.enemy.spider")
@@ -233,7 +232,7 @@ function enemies.on_hit(enemy, projectile)
     if projectile.weapon.melee then
         -- Get armor class (default to 0 if nil) and clamp between 0 and 100
         local armor_class = enemy.armorclass or 0
-        armor_class = m.clamp(armor_class, 0, 100)
+        armor_class = math.clamp(armor_class, 0, 100)
 
         -- Calculate damage reduction based on armor class percentage
         local damage_reduction = projectile.weapon.melee * (armor_class / 100)
@@ -246,7 +245,7 @@ function enemies.on_hit(enemy, projectile)
     elseif projectile.weapon.fire then
         -- Get fire resistance (default to 0 if nil) and clamp between 0 and 100
         local fire_resistance = enemy.resistance_fire or 0
-        fire_resistance = m.clamp(fire_resistance, 0, 100)
+        fire_resistance = math.clamp(fire_resistance, 0, 100)
 
         -- Calculate damage reduction based on fire resistance percentage
         local damage_reduction = projectile.weapon.fire * (fire_resistance / 100)
@@ -259,7 +258,7 @@ function enemies.on_hit(enemy, projectile)
     elseif projectile.weapon.ice then
         -- Get ice resistance (default to 0 if nil) and clamp between 0 and 100
         local ice_resistance = enemy.resistance_ice or 0
-        ice_resistance = m.clamp(ice_resistance, 0, 100)
+        ice_resistance = math.clamp(ice_resistance, 0, 100)
 
         -- Calculate damage reduction based on ice resistance percentage
         local damage_reduction = projectile.weapon.ice * (ice_resistance / 100)
@@ -275,7 +274,7 @@ function enemies.on_hit(enemy, projectile)
     elseif projectile.weapon.lightning then
         -- Get lightning resistance (default to 0 if nil) and clamp between 0 and 100
         local lightning_resistance = enemy.resistance_lightning or 0
-        lightning_resistance = m.clamp(lightning_resistance, 0, 100)
+        lightning_resistance = math.clamp(lightning_resistance, 0, 100)
 
         -- Calculate damage reduction based on lightning resistance percentage
         local damage_reduction = projectile.weapon.lightning * (lightning_resistance / 100)

@@ -1,7 +1,6 @@
 local STI = require("src.libraries.sti.init")
 local pos = require("src.base.pos")
 local t = require("src.base.table")
-local m = require("src.base.math")
 
 -- Constants
 local BASE_LAYER_ID = 1
@@ -251,8 +250,8 @@ end
 ---@return pos screen_pos Screen coordinates (0-based)
 function dungeon.grid_to_screen(grid_pos)
     return pos.new(
-        m.round((grid_pos.x - 1) * dungeon.tile_size),
-        m.round((grid_pos.y - 1) * dungeon.tile_size)
+        math.round((grid_pos.x - 1) * dungeon.tile_size),
+        math.round((grid_pos.y - 1) * dungeon.tile_size)
     )
 end
 
