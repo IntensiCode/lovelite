@@ -56,7 +56,8 @@ function game.load(opts)
     DI.collectibles.load(opts)
     DI.enemies.load(opts)
     DI.sound.load(opts)
-    DI.font.load() -- Load fonts before using them
+    DI.font.load()
+    DI.decals.load()
 
     -- Start with fade in
     fade.on_fade_done = nil
