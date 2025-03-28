@@ -1,5 +1,5 @@
-local events = require("src.base.events")
-local weapons = require("src.enemy.weapons")
+local projectiles = require("src.projectiles")
+local t = require("src.base.table")
 
 ---@class Enemy
 ---@field pos pos
@@ -12,7 +12,11 @@ local combat = {}
 ---Initialize enemy combat state
 ---@param enemy Enemy The enemy to initialize
 function combat.init(enemy)
-    enemy.weapon = weapons.fist
+    -- TODO: Apprentice
+    if not enemy.weapon then
+        t.dump("enemy", enemy)
+        assert(enemy.weapon, "Enemy must have a weapon set")
+    end
     enemy.cooldown = 0
 end
 
@@ -26,24 +30,36 @@ function combat.try_attack_player(enemy)
 
     local player_pos = DI.player.pos
     local distance_to_player = (player_pos - enemy.pos):length()
-    -- Attack range of 1.5 tiles
-    if distance_to_player <= 0.9 then
-        -- Only attack if weapon cooldown has elapsed
-        if enemy.cooldown <= 0 then
-            -- Spawn dust particles at attack location
-            events.send("particles.spawn", {
-                pos = DI.player.pos,  -- Position is already centered
-                kind = "dust"
-            })
 
-            -- Deal damage to player
-            DI.player.on_hit(enemy.weapon)
-
-            -- Reset cooldown and start backoff period
-            enemy.cooldown = enemy.weapon.cooldown
-            enemy.backoff = 1
-        end
+    -- Return early if player is out of range
+    if distance_to_player > enemy.weapon.range then
+        return
     end
+
+    -- Return early if on cooldown
+    if enemy.cooldown > 0 then
+        return
+    end
+
+    if enemy.weapon.melee then
+        -- Melee attack, deal damage to player and back off
+        DI.player.on_hit(enemy.weapon)
+        enemy.backoff = 1
+    else
+        -- Ranged attack, get direction to player and shoot projectile
+        local dir = (player_pos - enemy.pos):normalized()
+        print("Shooting projectile " .. enemy.weapon.name)
+        projectiles.spawn({
+            pos = enemy.pos,
+            direction = dir,
+            weapon = enemy.weapon,
+            owner = "enemy"
+        })
+        enemy.backoff = 2
+    end
+
+    -- Reset cooldown
+    enemy.cooldown = enemy.weapon.cooldown
 end
 
 ---Update enemy combat state
@@ -57,10 +73,10 @@ function combat.update(enemy, dt)
     -- Update cooldown
     if enemy.cooldown > 0 then
         enemy.cooldown = enemy.cooldown - dt
-        return  -- Don't move while on cooldown
+        return -- Don't move while on cooldown
     end
 
     combat.try_attack_player(enemy)
 end
 
-return combat 
+return combat
