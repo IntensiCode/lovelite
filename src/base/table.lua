@@ -15,6 +15,19 @@ function t.clone(table)
     return copy
 end
 
+-- Print keys, sorted by name
+function t.print_keys(table, indent)
+    indent = indent or ""
+    local keys = {}
+    for k in pairs(table) do
+        _G.table.insert(keys, k)
+    end
+    _G.table.sort(keys)
+    for _, k in ipairs(keys) do
+        print(indent .. k)
+    end
+end
+
 -- Deep dump a table
 ---@param name string The name of the table to dump
 ---@param table table The table to dump
