@@ -70,8 +70,8 @@ end
 
 function camera.update(_)
     -- Safety check for player and position
-    assert(DI.player ~= nil, "Player must exist for camera update")
-    assert(DI.player.pos ~= nil, "Player must have a position for camera update")
+    log.assert(DI.player ~= nil, "Player must exist for camera update")
+    log.assert(DI.player.pos ~= nil, "Player must have a position for camera update")
 
     -- Calculate camera position to center on player
     camera.world_pos = DI.player.pos

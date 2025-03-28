@@ -39,7 +39,7 @@ function particles.spawn(data)
         elseif data.kind == "dust" then
             particle = DustParticle.spawn(screen_pos, data.direction)
         end
-        assert(particle, "Failed to spawn particle: " .. data.kind)
+        log.assert(particle, "Failed to spawn particle: " .. data.kind)
         table.insert(particles.active, particle)
     end
 end

@@ -20,7 +20,7 @@ end
 ---@param data table The event data to send to callbacks
 function events.send(key, data)
     -- log.debug("[events] Sending event:", key, "with data:", data)
-    assert(events.callbacks[key], "No callbacks registered for event: " .. key)
+    log.assert(events.callbacks[key], "No callbacks registered for event: " .. key)
     
     for _, callback in ipairs(events.callbacks[key]) do
         callback(data)

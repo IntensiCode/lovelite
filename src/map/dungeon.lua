@@ -58,7 +58,7 @@ function dungeon.find_player_tile_id()
             found_tile_id = gid
         end
     end
-    assert(found_tile_id ~= nil,
+    log.assert(found_tile_id ~= nil,
         "No player tile found in map! Make sure there is a tile with property 'kind' set to 'player'")
     return found_tile_id
 end
@@ -69,7 +69,7 @@ end
 ---@field tile table
 ---@return TileLocation|nil
 function dungeon.find_tile_by_id(tile_id)
-    assert(dungeon.map ~= nil,
+    log.assert(dungeon.map ~= nil,
         "Map not loaded! This should never happen as we verify the map exists before calling this function.")
 
     local objects_layer = dungeon.get_objects_layer()
@@ -94,7 +94,7 @@ end
 ---@return PlayerSetup
 function dungeon.get_player_start_position()
     local location = dungeon.find_tile_by_id(dungeon.find_player_tile_id())
-    assert(location ~= nil, "Player tile not found in map! This should never happen as we verified the tile exists.")
+    log.assert(location ~= nil, "Player tile not found in map! This should never happen as we verified the tile exists.")
 
     -- Add 0.5 to center the player in the tile
     return {
@@ -161,7 +161,7 @@ function dungeon.load(opts)
         dungeon.player = nil
 
         -- Verify square tiles and set tile size
-        assert(dungeon.map.tilewidth == dungeon.map.tileheight, 
+        log.assert(dungeon.map.tilewidth == dungeon.map.tileheight, 
             string.format("Tiles must be square! Width: %d, Height: %d", 
                 dungeon.map.tilewidth, dungeon.map.tileheight))
         dungeon.tile_size = dungeon.map.tilewidth

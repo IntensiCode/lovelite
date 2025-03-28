@@ -144,7 +144,7 @@ end
 ---@param end_y number Ending Y coordinate
 ---@return table|nil path The path as a list of {x, y} coordinates, or nil if no path found
 function pathfinder.find_path(start_x, start_y, end_x, end_y)
-    assert(pathfinder.dijkstra_distances, "Dijkstra distances not calculated")
+    log.assert(pathfinder.dijkstra_distances, "Dijkstra distances not calculated")
 
     local width = #pathfinder.grid[1]
     local path = {}
@@ -227,7 +227,7 @@ end
 ---@param width number Grid width
 ---@return number|nil distance The distance to the start point, or nil if not reachable
 function pathfinder.get_distance_to_start(x, y, width)
-    assert(pathfinder.dijkstra_distances, "Dijkstra distances not calculated")
+    log.assert(pathfinder.dijkstra_distances, "Dijkstra distances not calculated")
 
     -- Convert coordinates to node index
     local node_index = (y - 1) * width + x

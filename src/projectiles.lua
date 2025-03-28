@@ -128,7 +128,7 @@ function projectiles.spawn_hit_particles(proj)
         kind = "dust"
     else
         table.print_deep("proj", proj)
-        assert(kind, "No kind found for projectile: " .. proj.weapon.name)
+        log.assert(kind, "No kind found for projectile: " .. proj.weapon.name)
     end
     particles.spawn({
         pos = proj.pos,
@@ -215,7 +215,7 @@ function projectiles.update(dt)
             end
         else
             table.print_deep("proj", proj)
-            assert(false, "Unsupported projectile")
+            log.assert(false, "Unsupported projectile")
         end
     end
 end

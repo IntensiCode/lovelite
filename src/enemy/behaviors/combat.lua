@@ -14,7 +14,7 @@ function combat.init(enemy)
     -- TODO: Apprentice
     if not enemy.weapon then
         table.print_deep("enemy", enemy)
-        assert(enemy.weapon, "Enemy must have a weapon set")
+        log.assert(enemy.weapon, "Enemy must have a weapon set")
     end
     enemy.cooldown = 0
 end

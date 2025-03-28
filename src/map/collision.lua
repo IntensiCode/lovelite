@@ -82,7 +82,7 @@ end
 
 ---Process walkable tiles from the map
 function collision.process_walkable_tiles()
-    assert(collision.map, "Map must be loaded before processing walkable tiles")
+    log.assert(collision.map, "Map must be loaded before processing walkable tiles")
     collision.walkable_tiles = {}
     for gid, tile in pairs(collision.map.tiles) do
         local props = tile.properties
