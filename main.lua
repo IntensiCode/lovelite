@@ -4,11 +4,13 @@ require("src.base.di")
 require("src.base.math")
 require("src.base.log")
 require("src.base.table")
+require("src.base.list")
 
 local function init_di(debug_mode)
     log.info("Initializing DI system")
 
     DI.lg = love.graphics
+    DI.camera = require("src.camera")
     DI.font = require("src.base.font")
     DI.fade = require("src.base.fade")
     DI.screen = require("src.base.screen")
@@ -22,18 +24,13 @@ local function init_di(debug_mode)
     DI.debug.enabled = debug_mode
 end
 
-local function setup_global_shortcuts()
-    DI.keys.add("`", function() DI.debug_console:toggle() end, nil, "Toggle debug console")
-end
-
 local function init_game(dev_mode)
     log.info("Initializing game in " .. (dev_mode and "dev" or "prod") .. " mode")
 
+    DI.camera.load()
     DI.font.load()
     DI.keys.load()
     DI.screen.load()
-
-    setup_global_shortcuts()
 
     DI.screen.register("title", DI.title)
     DI.screen.register("game", DI.game)
@@ -47,6 +44,9 @@ local function parse_args()
     parser:flag("--dev", "Start in development mode (skip title screen).")
     parser:flag("--debug", "Enable debug mode.")
     parser:flag("--test", "Run tests instead of the game.")
+    parser:option("--screenshot", "Take a screenshot after specified seconds and save to test.png.")
+        :args("?")
+        :convert(tonumber)
     return parser:parse()
 end
 
@@ -78,4 +78,11 @@ function love.load()
 
     init_di(args.debug)
     init_game(args.dev)
+
+    -- Set up screenshot timer if requested
+    if args.screenshot then
+        local screenshot = require("src.base.screenshot")
+        local delay = tonumber(args.screenshot) or 1
+        screenshot.schedule(delay, "test.png")
+    end
 end

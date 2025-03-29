@@ -107,6 +107,11 @@ function debug.draw()
         lg.print(text, padding, padding + (i - 1) * line_height)
     end
 
+    -- Draw fog of war debug visualization if available
+    if DI.fog_of_war and DI.fog_of_war.debug_draw then
+        DI.fog_of_war.debug_draw()
+    end
+
     -- Restore default font
     lg.setFont(default_font)
 

@@ -28,6 +28,7 @@ alwaysApply: true
 5. [Testing](mdc:#testing)
    - [Test Structure](mdc:#test-structure)
    - [Assertions](mdc:#assertions)
+   - [Module Reloading](mdc:#module-reloading)
    - [Running Tests](mdc:#running-tests)
 
 ## Code Organization
@@ -157,6 +158,27 @@ These principles should guide all future test development and should be used to 
 - Keep the number of asserts per test case small
 - Whenever reasonable, use a single assert per test case
 - If multiple asserts are used, they should be tightly coupled and testing related aspects of the same behavior
+
+### Module Reloading
+
+- Use module reloading in tests when it's reasonable and applicable for the system under test
+- Implement module reloading in the setUp method like this:
+  ```lua
+  local module_name = "src.base.module"
+  local module = require(module_name)
+  
+  function TestModule:setUp()
+      -- Reload the module for each test to ensure clean state
+      package.loaded[module_name] = nil
+      module = require(module_name)
+  end
+  ```
+- Module reloading ensures test isolation by providing a fresh module state for each test
+- Don't use module reloading when:
+  - The module has expensive initialization that doesn't affect test state
+  - The module is read-only and stateless
+  - Tests intentionally rely on shared state
+- When using module reloading, add a tearDown method to clean up any remaining state
 
 ### Running Tests
 

@@ -55,7 +55,7 @@ function enemies_load.load(enemies, game)
     -- Debug print enemies
     log.info("Enemies loaded:")
     for i, enemy in ipairs(enemies.items) do
-        log.info(string.format("  %d. %s at (%d, %d) with %d HP, AC %d, and resistances (F:%s I:%s L:%s)",
+        log.debug(string.format("  %d. %s at (%d, %d) with %d HP, AC %d, and resistances (F:%s I:%s L:%s)",
             i, enemy.behavior or "Unknown", enemy.pos.x, enemy.pos.y, enemy.hitpoints or 0, enemy.armorclass or 0,
             enemy.resistance_fire or "N/A", enemy.resistance_ice or "N/A", enemy.resistance_lightning or "N/A"))
     end

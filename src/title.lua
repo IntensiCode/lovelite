@@ -65,6 +65,9 @@ end
 
 -- Load assets
 function title.load()
+    -- Initialize camera
+    DI.camera.load({ reset = true })
+
     -- Load title screen images
     title.background = DI.lg.newImage("assets/title_background.png")
     title.logo = DI.lg.newImage("assets/title_logo.png")
@@ -72,9 +75,6 @@ function title.load()
 
     -- Create shader
     title.fire_shader = DI.lg.newShader(FIRE_SHADER)
-
-    -- Initialize camera
-    DI.camera.load()
 
     -- Initialize time for flame animation
     title.time = 0

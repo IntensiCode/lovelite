@@ -1,27 +1,35 @@
 local screen = {
-    current = nil,       -- Will be set in init
-    screens = {},        -- Table to store screen modules
-    initialized = {},    -- Track which screens have been initialized
-    block_update = false -- Flag to block updates
+    current = nil,        -- Will be set in init
+    screens = {},         -- Table to store screen modules
+    initialized = {},     -- Track which screens have been initialized
+    block_update = false, -- Flag to block updates
+    overlays = {}         -- List of overlay modules that can have update/draw functions
 }
+
+local function overlays_each(method_name, ...)
+    local args = { ... }
+    list.each(screen.overlays, function(overlay)
+        local method = overlay[method_name]
+        if method then
+            method(unpack(args))
+        end
+    end)
+end
 
 function screen.load()
     love.update = function(dt)
-        -- Skip update if blocked (e.g., by console)
-        if screen.block_update then return end
-
-        local current_screen = screen.get_current()
-        current_screen.update(dt)
+        if not screen.block_update then
+            screen.get_current().update(dt)
+        end
+        overlays_each("update", dt)
     end
-
     love.draw = function()
-        local current_screen = screen.get_current()
-        current_screen.draw()
+        screen.get_current().draw()
+        overlays_each("draw")
     end
-
     love.resize = function(w, h)
-        local current_screen = screen.get_current()
-        current_screen.resize(w, h)
+        screen.get_current().resize(w, h)
+        overlays_each("resize", w, h)
     end
 end
 
@@ -36,6 +44,18 @@ end
 ---@return table The current screen module
 function screen.get_current()
     return screen.screens[screen.current]
+end
+
+---Add an overlay module to the screen system
+---@param overlay table The overlay module (can have update, draw, resize functions)
+function screen.add_overlay(overlay)
+    list.add(screen.overlays, overlay)
+end
+
+---Remove an overlay from the screen system
+---@param overlay table The overlay module to remove
+function screen.remove_overlay(overlay)
+    list.remove_item(screen.overlays, overlay)
 end
 
 ---Switch to a different screen

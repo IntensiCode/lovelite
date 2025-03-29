@@ -209,4 +209,50 @@ function collision.find_walkable_around(tile_x, tile_y)
     return walkable_tiles
 end
 
+---Check if a tile is a wall (non-walkable tile that separates walkable from non-walkable areas)
+---This differentiates walls from other non-walkable tiles like rooftops
+---@param x integer The tile x coordinate
+---@param y integer The tile y coordinate
+---@return boolean is_wall Whether the tile at (x,y) is a wall
+function collision.is_wall_tile(x, y)
+    -- Check map boundaries
+    if x < 1 or x > collision.map.width or y < 1 or y > collision.map.height then
+        return false
+    end
+    
+    -- If the tile is walkable, it's not a wall
+    if collision.is_walkable_tile(x, y) then
+        return false
+    end
+    
+    -- Check if it's at the edge of the map (these are typically walls)
+    if x == 1 or x == collision.map.width or y == 1 or y == collision.map.height then
+        return true
+    end
+    
+    -- Check if this non-walkable tile is adjacent to any walkable tile
+    -- If it is, then it's likely a wall (boundary between walkable and non-walkable)
+    local directions = {
+        { dx = -1, dy = 0 }, -- left
+        { dx = 1,  dy = 0 }, -- right
+        { dx = 0,  dy = -1 }, -- up
+        { dx = 0,  dy = 1 }, -- down
+        { dx = -1, dy = -1 }, -- up-left
+        { dx = 1,  dy = -1 }, -- up-right
+        { dx = -1, dy = 1 }, -- down-left
+        { dx = 1,  dy = 1 } -- down-right
+    }
+    
+    for _, dir in ipairs(directions) do
+        local check_x = x + dir.dx
+        local check_y = y + dir.dy
+        if collision.is_walkable_tile(check_x, check_y) then
+            return true -- It's adjacent to a walkable tile, likely a wall
+        end
+    end
+    
+    -- It's a non-walkable tile not adjacent to any walkable tile - likely a rooftop
+    return false
+end
+
 return collision
