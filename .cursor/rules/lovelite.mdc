@@ -1,0 +1,166 @@
+---
+description: Comprehensive development guidelines for the LoveLite project
+globs: 
+alwaysApply: true
+---
+
+# LoveLite Development Guidelines
+
+## Table of Contents
+
+1. [Code Organization](mdc:#code-organization)
+   - [Adding New Functionality](mdc:#adding-new-functionality)
+   - [Function Structure](mdc:#function-structure)
+   - [Comments](mdc:#comments)
+2. [Lua OOP Style](mdc:#lua-oop-style)
+   - [Method Definitions](mdc:#method-definitions)
+   - [Method Calls](mdc:#method-calls)
+   - [Consistency](mdc:#consistency)
+3. [Paths and Module Structure](mdc:#paths-and-module-structure)
+   - [Module Paths](mdc:#module-paths)
+   - [Library Paths](mdc:#library-paths)
+   - [Constants](mdc:#constants)
+   - [Map Paths](mdc:#map-paths)
+4. [Refactoring](mdc:#refactoring)
+   - [Principles](mdc:#principles)
+   - [Function Modifications](mdc:#function-modifications)
+   - [File Management](mdc:#file-management)
+5. [Testing](mdc:#testing)
+   - [Test Structure](mdc:#test-structure)
+   - [Assertions](mdc:#assertions)
+   - [Running Tests](mdc:#running-tests)
+
+## Code Organization
+
+### Adding New Functionality
+
+- Always consider adding new files for new functionality, unless functionality clearly belongs in an existing file
+- If making a code change is unnecessarily complex, always consider refactoring first
+- If a significant refactor is the sensible choice, suggest this to the user and complete it before implementing new features
+- Minor refactorings should be done in concert with the requested changes
+
+### Function Structure
+
+- When adding functionality to an existing file, prefer adding new functions rather than extending existing ones
+- Only modify existing functions when it's clearly better to insert code directly into them
+- Keep functions focused on a single responsibility
+- Don't nest too deep! Consider 5 levels of nesting a really hard limit. But Try to stick to max 3 levels for the majority of code. If more levels required, write sub functions!
+
+### Comments
+
+- Add comments sparingly
+- Never add a comment if it reads mostly the same as the code line it precedes or the function name it is associated with
+- Comments should provide additional context or explanation not obvious from the code itself
+
+## Lua OOP Style
+
+### Method Definitions
+
+- Always use the colon syntax (`function object:method()`) for methods that operate on an object
+- Use `self` as the parameter name for object references within methods
+- Only use dot syntax (`function object.function()`) for static functions that don't need object state
+
+### Method Calls
+
+- Use colon syntax (`object:method()`) when calling methods on objects
+- Use dot syntax (`object.property`) for accessing properties
+- When passing closures, store `self` in a local variable first to avoid losing the object reference
+
+### Consistency
+
+- Maintain consistent OOP style throughout modules
+- Use local helper functions for utility code that doesn't operate on object state
+- When refactoring, convert all methods in a module to follow the same pattern
+
+## Paths and Module Structure
+
+### Module Paths
+
+- Local modules must be required using the `src.` prefix (e.g., `require("src.base.pos")`)
+
+### Library Paths
+
+- STI library path must be `src/libraries/sti.init`
+- This is the correct path that was previously fixed and should not be changed to `libs.sti` or any other variation
+
+### Constants
+
+- Game constants should be defined in their respective modules
+- Shared constants should be defined in `src.base.constants`
+
+### Map Paths
+
+- Map file path must be `assets/maps/level1.lua`
+- This is the correct path that was previously fixed and should not be changed to `test_map.lua` or any other variation
+
+## Refactoring
+
+### Principles
+
+- Refactorings should never change behavior. The functionality of the code must remain exactly the same before and after a refactoring
+- The purpose of refactoring is to improve code structure, readability, or maintainability, not to modify what the code does
+- Always try to minimize the git diff
+
+### Function Modifications
+
+- When adding or modifying functions:
+  - Add type annotations for all parameters and return values
+  - Update all callsites to match the new type signatures
+  - Use descriptive type names (e.g., `PlayerSetup` instead of just `table`)
+  - Make sure to use snake_case instead of camelCase and update callsites appropriately
+  - If possible, add new code in new functions and call them instead of adding code to existing functions
+
+### File Management
+
+- Always prefer moving a file instead of deleting and creating new, even if the moved file needs to be modified after moving
+- Always prefer copy-paste or cut-paste for existing functionality over deleting and rewriting similar functionality
+- This approach helps maintain history and minimize differences in git
+
+## Testing
+
+### Test Structure
+
+- When adding functionality, add unit test coverage
+- See the existing src/test folder for how LuaUnit is used and how to write tests
+- Stick to small, focused test cases following the arrange/act/assert pattern when adding new tests
+- For new and changed tests, switch to snake_case for the testnames
+- Clear AAA Structure: Every test must follow the Arrange-Act-Assert pattern with explicit comments separating each phase for better readability.
+- Single Assertion Per Test: Tests should generally have only one assertion to ensure they're testing exactly one behavior. This makes it easier to understand what failed when a test breaks.
+- Break Down Complex Tests: Instead of having one large test with multiple assertions testing different behaviors, create multiple smaller tests each with a focused scope.
+- Descriptive Test Names: Use detailed test names that clearly describe the specific behavior being tested rather than general feature areas.
+
+These principles should guide all future test development and should be used to refactor existing tests that don't follow these guidelines.
+
+### Examples of Proper Test Structure
+
+```
+   function TestModule:testFieldOfViewDarkensAreasOutsideView()
+       -- Arrange
+       local center1 = pos.new(3, 3)
+       local center2 = pos.new(8, 8)
+       -- Set up initial visibility at center1
+       self.fog_of_war.field_of_view_mode = false
+       self.fow_reveal.reveal_around(self.fog_of_war, center1)
+       
+       -- Act
+       self.fog_of_war.field_of_view_mode = true
+       self.fow_reveal.reveal_around(self.fog_of_war, center2)
+       
+       -- Assert
+       lu.assertNotEquals(self.fog_of_war.grid[center1.y][center1.x], 4, 
+                         "Point outside field of view should be darkened")
+   end
+```
+
+### Assertions
+
+- Keep the number of asserts per test case small
+- Whenever reasonable, use a single assert per test case
+- If multiple asserts are used, they should be tightly coupled and testing related aspects of the same behavior
+
+### Running Tests
+
+- To run tests use `love . --test --debug`
+- If you cannot determine why tests fail, focus on making the test case as readable as possible
+- Unreadable tests are worth nothing and can be replaced with clearer alternatives 
+- If you encounter more than 3 failures in a row, stop and let me intervene
