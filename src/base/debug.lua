@@ -138,4 +138,12 @@ function debug.toggle()
     end
 end
 
+-- Add a command to the registry
+---@param name string Command name
+---@param handler function Command handler function
+---@param help string Optional help text
+function debug.add_command(name, handler, help)
+    DI.debug_commands.add_command(name, handler, help)
+end
+
 return debug

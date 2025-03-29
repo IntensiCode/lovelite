@@ -1,51 +1,80 @@
--- Import modules
-local camera = require("src.camera")
-local dungeon = require("src.map.dungeon")
-local pathfinder = require("src.pathfinder")
-local debug = require("src.base.debug")
-local player = require("src.player")
-local player_hud = require("src.player_hud")
-local projectiles = require("src.projectiles")
-local particles = require("src.particles")
-local collectibles = require("src.collectibles")
-local enemies = require("src.enemies")
-local sound = require("src.sound")
-local collision = require("src.map.collision")
-local fade = require("src.base.fade")
-local screen = require("src.base.screen")
-local font = require("src.base.font")
-local decals = require("src.decals")
-local weapons = require("src.enemy.weapons")
-local positions = require("src.base.positions")
-
 local game = {
     blink_timer = 0,
     blink_visible = true,
-    initialized = false
+    initialized = false,
+    space_shortcut_registered = false -- Flag to track if space shortcut is registered
 }
 
----Load the game screen
+function game.exit_to_title()
+    DI.fade.on_fade_done = function()
+        DI.screen.switch_to("title")
+    end
+    DI.fade.reset("fade_out", 0.2)
+end
+
+function game.register_shortcuts()
+    DI.keys.add_shortcut("escape", {
+        callback = function() game.exit_to_title() end,
+        description = "Exit to title screen",
+        scope = "game"
+    })
+
+    DI.keys.add_shortcut("kp0", {
+        callback = function() DI.debug.toggle() end,
+        description = "Toggle debug overlay",
+        scope = "game"
+    })
+end
+
+-- Set space shortcut for exiting when player is dead
+function game.set_space_for_exit(enabled)
+    if enabled and not game.space_shortcut_registered then
+        DI.keys.add_shortcut("space", {
+            callback = function() game.exit_to_title() end,
+            description = "Continue when dead",
+            scope = "game"
+        })
+        game.space_shortcut_registered = true
+    elseif not enabled and game.space_shortcut_registered then
+        DI.keys.remove_shortcut_by_key("space")
+        game.space_shortcut_registered = false
+    end
+end
+
+function game.unregister_shortcuts()
+    DI.keys.remove_shortcuts_by_scope("game")
+    game.space_shortcut_registered = false
+end
+
+function game.attach()
+    game.register_shortcuts()
+end
+
+function game.detach()
+    game.unregister_shortcuts()
+end
+
 ---@param opts? {reset: boolean} Options for loading (default: {reset = true})
 function game.load(opts)
     opts = opts or { reset = true }
 
-    -- Initialize components into DI if not already done
     if not game.initialized then
-        DI.camera = camera
-        DI.dungeon = dungeon
-        DI.pathfinder = pathfinder
-        DI.debug = debug
-        DI.player = player
-        DI.projectiles = projectiles
-        DI.particles = particles
-        DI.collectibles = collectibles
-        DI.enemies = enemies
-        DI.sound = sound
-        DI.collision = collision
-        DI.font = font
-        DI.decals = decals
-        DI.weapons = weapons
-        DI.positions = positions
+        DI.camera = require("src.camera")
+        DI.dungeon = require("src.map.dungeon")
+        DI.fade = require("src.base.fade")
+        DI.pathfinder = require("src.pathfinder")
+        DI.player = require("src.player")
+        DI.projectiles = require("src.projectiles")
+        DI.particles = require("src.particles")
+        DI.collectibles = require("src.collectibles")
+        DI.enemies = require("src.enemies")
+        DI.sound = require("src.sound")
+        DI.collision = require("src.map.collision")
+        DI.decals = require("src.decals")
+        DI.weapons = require("src.enemy.weapons")
+        DI.positions = require("src.base.positions")
+        DI.player_hud = require("src.player_hud")
+
         game.initialized = true
     end
 
@@ -58,12 +87,12 @@ function game.load(opts)
     DI.collectibles.load(opts)
     DI.enemies.load(opts)
     DI.sound.load(opts)
-    DI.font.load()
     DI.decals.load()
 
-    -- Start with fade in
-    fade.on_fade_done = nil
-    fade.reset("fade_in", 0.2)
+    DI.fade.on_fade_done = nil
+    DI.fade.reset("fade_in", 0.2)
+
+    game.update_blink_timer(0)
 end
 
 ---Update the blink timer state
@@ -79,12 +108,20 @@ function game.update_blink_timer(dt)
     end
 end
 
+local function update_space_key()
+    local is_player_dead = DI.player.is_dead and (DI.player.death_time == nil or DI.player.death_time <= 0)
+    game.set_space_for_exit(is_player_dead)
+end
+
 function game.update(dt)
     -- Update fade
-    fade.update(dt)
+    DI.fade.update(dt)
 
     -- Update blink timer
     game.update_blink_timer(dt)
+
+    -- Update space key based on player state
+    update_space_key()
 
     DI.dungeon.map:update(dt)
     DI.player.update(dt)
@@ -135,8 +172,9 @@ function game.draw()
     love.graphics.setBlendMode("alpha")
 
     -- Draw UI elements
-    player_hud.draw()
+    DI.player_hud.draw()
     DI.debug.draw()
+    DI.debug_console:draw()
 
     -- Draw game over overlay if player is dead
     if DI.player.is_dead and (DI.player.death_time == nil or DI.player.death_time <= 0) then
@@ -144,7 +182,7 @@ function game.draw()
     end
 
     -- Draw fade overlay last
-    fade.draw(DI.camera.width, DI.camera.height)
+    DI.fade.draw(DI.camera.width, DI.camera.height)
 
     DI.camera.endDraw()
 end
@@ -165,7 +203,7 @@ function game.draw_game_over_overlay()
     -- Draw "Press SPACE to continue" at the bottom (only when visible)
     if game.blink_visible then
         DI.font.draw_text("Press SPACE to continue", DI.camera.width / 2, DI.camera.height - 8,
-        DI.font.anchor.bottom_center)
+            DI.font.anchor.bottom_center)
     end
 end
 
@@ -187,25 +225,9 @@ function game.find_overlappable_positions()
     return positions
 end
 
-function game.keypressed(key)
-    if key == "escape" then
-        -- Fade out and return to title screen
-        fade.on_fade_done = function()
-            screen.switch_to("title")
-        end
-        fade.reset("fade_out", 0.2)
-    elseif key == "space" and DI.player.is_dead and (DI.player.death_time == nil or DI.player.death_time <= 0) then
-        -- Fade out and return to title screen when dead
-        fade.on_fade_done = function()
-            screen.switch_to("title")
-        end
-        fade.reset("fade_out", 0.2)
-    end
-end
-
 -- Handle window resize
 function game.resize(w, h)
     DI.camera.resize(w, h)
 end
 
-return game 
+return game
