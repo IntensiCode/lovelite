@@ -78,4 +78,15 @@ function table.map(tbl, f)
         result[i] = f(v)
     end
     return result
+end
+
+--- Count the number of key-value pairs in a table
+---@param t table The table to count
+---@return number The number of entries in the table
+function table.count(t)
+    local count = 0
+    for _ in pairs(t) do
+        count = count + 1
+    end
+    return count
 end 
