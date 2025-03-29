@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Rule 1: If making a code change is unnecessarily complex, always consider refactoring first. If a significant refactor is the sensible choice, suggest this to the user and do this first. If minor refactorings are sensible, do them in concert with the requested changes.
+
+Rule 2: Always consider adding new files for new functionality, unless functionality clearly belongs into an existing file.
+
+Rule 3: When adding functionality into a file because it belongs there according to Rule 2, always prefer adding functionality in a new function instead of making existing functions longer, unless it is clearly better to insert code into an existing function.
