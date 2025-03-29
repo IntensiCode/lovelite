@@ -21,13 +21,17 @@ function love.load()
     parser:argument("game_folder", "Game folder. Usually just the '.'.")
     parser:flag("--dev", "Start in development mode (skip title screen).")
     parser:flag("--debug", "Enable debug mode.")
+    parser:flag("--test", "Run tests instead of the game.")
     local args = parser:parse()
 
     -- Set log.dev flag from dev arg
     log.dev = args.dev
 
     -- Set log level based on command line flags
-    if args.dev and args.debug then
+    if args.test then
+        -- Always show at least INFO level for tests
+        log.set_level(args.debug and log.LEVELS.DEBUG or log.LEVELS.INFO)
+    elseif args.dev and args.debug then
         log.set_level(log.LEVELS.DEBUG)
     elseif args.dev then
         log.set_level(log.LEVELS.INFO)
@@ -37,6 +41,14 @@ function love.load()
 
     -- Set debug state based on flag
     debug.enabled = args.debug
+
+    -- If in test mode, run the tests and quit
+    if args.test then
+        local test_runner = require("src.test.run_tests_love")
+        local success = test_runner.run()
+        love.event.quit(success and 0 or 1)
+        return
+    end
 
     -- Load global resources first
     font.load()
