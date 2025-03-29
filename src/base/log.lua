@@ -1,4 +1,5 @@
 -- Simple logging system
+local ansi = require("src.base.ansi")
 
 -- Log levels
 local LOG_LEVELS = {
@@ -9,29 +10,12 @@ local LOG_LEVELS = {
     DEBUG = 4
 }
 
--- ANSI color codes
-local COLORS = {
-    RESET = "\27[0m",
-    RED = "\27[31m",
-    ORANGE = "\27[33m",
-    WHITE = "\27[37m",
-    GRAY = "\27[90m",
-    BOLD = "\27[1m"
-}
-
--- Determine if we're running in a terminal that supports colors
-local function supports_colors()
-    -- Most LÖVE console outputs and terminals support colors
-    -- You could add additional checks here for specific platforms if needed
-    return true
-end
-
 -- Create log namespace
 log = {
     dev = false,
     level = LOG_LEVELS.INFO, -- Default log level is INFO
     LEVELS = LOG_LEVELS,
-    use_colors = supports_colors()
+    use_colors = ansi.supports_colors()
 }
 
 -- Helper function to format log messages
@@ -55,15 +39,15 @@ local function get_level_color(level)
     if not log.use_colors then
         return "", ""
     end
-    
+
     if level == "ERROR" then
-        return COLORS.BOLD .. COLORS.RED, COLORS.RESET
+        return ansi.BOLD .. ansi.RED, ansi.RESET
     elseif level == "WARN" then
-        return COLORS.ORANGE, COLORS.RESET
+        return ansi.ORANGE, ansi.RESET
     elseif level == "INFO" then
-        return COLORS.WHITE, COLORS.RESET
+        return ansi.GREEN, ansi.RESET
     elseif level == "DEBUG" then
-        return COLORS.GRAY, COLORS.RESET
+        return ansi.GRAY, ansi.RESET
     else
         return "", ""
     end
@@ -114,7 +98,7 @@ end
 
 -- Enable or disable colors
 function log.set_colors(enabled)
-    log.use_colors = enabled and supports_colors()
+    log.use_colors = enabled and ansi.supports_colors()
 end
 
 -- Conditional assertion based on dev mode
