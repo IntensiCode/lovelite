@@ -48,10 +48,12 @@ end
 
 function game.attach()
     game.register_shortcuts()
+    DI.fog_of_war.attach()
 end
 
 function game.detach()
     game.unregister_shortcuts()
+    DI.fog_of_war.detach()
 end
 
 ---@param opts? {reset: boolean} Options for loading (default: {reset = true})
@@ -73,6 +75,7 @@ function game.load(opts)
         DI.decals = require("src.decals")
         DI.weapons = require("src.enemy.weapons")
         DI.positions = require("src.base.positions")
+        DI.fog_of_war = require("src.map.fog_of_war")
         DI.player_hud = require("src.player_hud")
 
         game.initialized = true
@@ -88,6 +91,8 @@ function game.load(opts)
     DI.enemies.load(opts)
     DI.sound.load(opts)
     DI.decals.load()
+
+    DI.fog_of_war.load(opts)
 
     DI.fade.on_fade_done = nil
     DI.fade.reset("fade_in", 0.2)
@@ -130,6 +135,7 @@ function game.update(dt)
     DI.particles.update(dt)
     DI.collectibles.update(dt)
     DI.enemies.update(dt)
+    DI.fog_of_war.update(dt)
 end
 
 function game.draw()
@@ -159,6 +165,9 @@ function game.draw()
 
     -- Draw particles above the redrawn wall tiles
     DI.particles.draw()
+
+    -- Draw fog of war on top of everything except UI
+    DI.fog_of_war.draw(translation.x, translation.y)
 
     -- Draw debug positions in world space
     if DI.debug.enabled then
