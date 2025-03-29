@@ -9,11 +9,29 @@ local LOG_LEVELS = {
     DEBUG = 4
 }
 
+-- ANSI color codes
+local COLORS = {
+    RESET = "\27[0m",
+    RED = "\27[31m",
+    ORANGE = "\27[33m",
+    WHITE = "\27[37m",
+    GRAY = "\27[90m",
+    BOLD = "\27[1m"
+}
+
+-- Determine if we're running in a terminal that supports colors
+local function supports_colors()
+    -- Most LÖVE console outputs and terminals support colors
+    -- You could add additional checks here for specific platforms if needed
+    return true
+end
+
 -- Create log namespace
 log = {
     dev = false,
     level = LOG_LEVELS.INFO, -- Default log level is INFO
-    LEVELS = LOG_LEVELS
+    LEVELS = LOG_LEVELS,
+    use_colors = supports_colors()
 }
 
 -- Helper function to format log messages
@@ -32,31 +50,54 @@ local function format_message(level, ...)
     return string.format("[%s] [%s] %s", timestamp, level, message)
 end
 
+-- Get color for log level
+local function get_level_color(level)
+    if not log.use_colors then
+        return "", ""
+    end
+    
+    if level == "ERROR" then
+        return COLORS.BOLD .. COLORS.RED, COLORS.RESET
+    elseif level == "WARN" then
+        return COLORS.ORANGE, COLORS.RESET
+    elseif level == "INFO" then
+        return COLORS.WHITE, COLORS.RESET
+    elseif level == "DEBUG" then
+        return COLORS.GRAY, COLORS.RESET
+    else
+        return "", ""
+    end
+end
+
 -- Error level logging
 function log.error(...)
     if log.level >= LOG_LEVELS.ERROR then
-        print(format_message("ERROR", ...))
+        local color_start, color_end = get_level_color("ERROR")
+        print(color_start .. format_message("ERROR", ...) .. color_end)
     end
 end
 
 -- Warning level logging
 function log.warn(...)
     if log.level >= LOG_LEVELS.WARN then
-        print(format_message("WARN", ...))
+        local color_start, color_end = get_level_color("WARN")
+        print(color_start .. format_message("WARN", ...) .. color_end)
     end
 end
 
 -- Info level logging
 function log.info(...)
     if log.level >= LOG_LEVELS.INFO then
-        print(format_message("INFO", ...))
+        local color_start, color_end = get_level_color("INFO")
+        print(color_start .. format_message("INFO", ...) .. color_end)
     end
 end
 
 -- Debug level logging
 function log.debug(...)
     if log.level >= LOG_LEVELS.DEBUG then
-        print(format_message("DEBUG", ...))
+        local color_start, color_end = get_level_color("DEBUG")
+        print(color_start .. format_message("DEBUG", ...) .. color_end)
     end
 end
 
@@ -69,6 +110,11 @@ function log.set_level(level)
     else
         log.error("Invalid log level:", level)
     end
+end
+
+-- Enable or disable colors
+function log.set_colors(enabled)
+    log.use_colors = enabled and supports_colors()
 end
 
 -- Conditional assertion based on dev mode
