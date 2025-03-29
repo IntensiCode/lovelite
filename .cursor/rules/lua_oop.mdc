@@ -1,0 +1,21 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Lua OOP Style
+
+## Method Definitions
+- Always use the colon syntax (`function object:method()`) for methods that operate on an object
+- Use `self` as the parameter name for object references within methods
+- Only use dot syntax (`function object.function()`) for static functions that don't need object state
+
+## Method Calls
+- Use colon syntax (`object:method()`) when calling methods on objects
+- Use dot syntax (`object.property`) for accessing properties
+- When passing closures, store `self` in a local variable first to avoid losing the object reference
+
+## Consistency
+- Maintain consistent OOP style throughout modules
+- Use local helper functions for utility code that doesn't operate on object state
+- When refactoring, convert all methods in a module to follow the same pattern

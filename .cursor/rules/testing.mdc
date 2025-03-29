@@ -1,0 +1,16 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+When adding functionality, add unit test coverage.
+
+See the existing src/test folder on how LuaUnit is used and how to write tests.
+
+Stick to small, focused test cases following the arrange/act/assert pattern when adding new tests.
+
+Keep the number of asserts per test case small. Whenever reasonable a single assert should be used. Either way, asserts should be tighly coupled if more than one is used in a test case.
+
+If you cannot figure out why tests fail, feel free to replace them. Focus on making the test case as readable as possible. Unreadable tests are worth nothing.
+
+To run tests use "love . --test --debug".
