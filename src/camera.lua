@@ -134,8 +134,8 @@ end
 function camera.translation()
     -- Convert player position (in tiles) to pixels and center the view
     return pos.new(
-        -(camera.world_pos.x * DI.dungeon.tile_size) + (camera.width / 2),
-        -(camera.world_pos.y * DI.dungeon.tile_size) + (camera.height / 2)
+        math.floor(-(camera.world_pos.x * DI.dungeon.tile_size) + (camera.width / 2)),
+        math.floor(-(camera.world_pos.y * DI.dungeon.tile_size) + (camera.height / 2))
     )
 end
 
