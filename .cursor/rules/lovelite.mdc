@@ -122,7 +122,9 @@ alwaysApply: true
 ### Test Structure
 
 - When adding functionality, add unit test coverage
-- See the existing src/test folder for how LuaUnit is used and how to write tests
+- All tests are located in the top-level `test/` directory
+- Test files should be named with the `test_` prefix (e.g., `test_screen.lua`, `test_pos.lua`)
+- See the test directory for how LuaUnit is used and how to write tests
 - Stick to small, focused test cases following the arrange/act/assert pattern when adding new tests
 - For new and changed tests, switch to snake_case for the testnames
 - Clear AAA Structure: Every test must follow the Arrange-Act-Assert pattern with explicit comments separating each phase for better readability.
@@ -182,7 +184,9 @@ These principles should guide all future test development and should be used to 
 
 ### Running Tests
 
-- To run tests use `love . --test --debug`
+- To run tests use `love . --test` (add `--debug` for more verbose output)
+- The test runner is located at the project root in `test.lua` (never invoked directly, always only through `love . --test [--debug]` which executes `main.lua` which uses `test.lua`)
+- Tests can be run from any LÖVE environment
 - If you cannot determine why tests fail, focus on making the test case as readable as possible
 - Unreadable tests are worth nothing and can be replaced with clearer alternatives 
 - If you encounter more than 3 failures in a row, stop and let me intervene

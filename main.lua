@@ -70,7 +70,7 @@ function love.load()
     -- If in test mode, run the tests and quit
     if args.test then
         log.dev = true -- To make log.assert fail
-        local test_runner = require("src.test.run_tests_love")
+        local test_runner = require("test")
         local success = test_runner.run()
         love.event.quit(success and 0 or 1)
         return

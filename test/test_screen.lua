@@ -1,5 +1,5 @@
 --- Tests for the screen overlay system
---- @module screen_test
+--- @module test_screen
 
 local lu = require("src.libraries.luaunit")
 local screen_module = "src.base.screen"
