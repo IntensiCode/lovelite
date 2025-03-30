@@ -43,13 +43,16 @@ local function parse_args()
     parser:argument("game_folder", "Game folder. Usually just the '.'.")
     parser:flag("--dev", "Start in development mode (skip title screen).")
     parser:flag("--debug", "Enable debug mode.")
-    parser:option("--test",
-        "Run tests instead of the game. Optionally specify one or more test files separated by commas (e.g., --test=test_pos,test_keys).")
+    parser:option("--test", [[Run tests instead of the game.
+Optionally specify one or more test files separated by
+commas (e.g., --test=test_pos,test_keys).
+Omit the test/ prefix and the .lua suffix for
+filenames.]])
         :args("?")
     parser:option("--screenshot", "Take a screenshot after specified seconds and save to test.png.")
         :args("?")
         :convert(tonumber)
-    return parser:parse()
+    return parser
 end
 
 local function set_log_level(args)
@@ -64,21 +67,28 @@ local function set_log_level(args)
     end
 end
 
-local function run_tests_and_quit(args)
-    log.dev = true     -- To make log.assert fail
+local function run_tests_and_quit(args, parser)
+    log.dev = true -- To make log.assert fail
     local test_runner = require("test")
     local test_files = test_runner.parse_test_option(args.test)
+    if (test_files == nil) then
+        log.error("Invalid test option arguments\n")
+        print(parser:get_help())
+        love.event.quit(1)
+        return
+    end
     local success = test_runner.run(test_files)
     love.event.quit(success and 0 or 1)
 end
 
 function love.load()
-    local args = parse_args()
+    local parser = parse_args()
+    local args = parser:parse()
     set_log_level(args)
     log.dev = args.dev
 
     if args.test then
-        run_tests_and_quit(args)
+        run_tests_and_quit(args, parser)
         return
     end
 
