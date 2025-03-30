@@ -47,6 +47,38 @@ local function try_move_towards(current_pos, target_pos, speed, dt)
     return false, nil
 end
 
+---Try to slide along walls when movement is blocked
+---@param current_pos pos Current position
+---@param move_dir pos Movement direction
+---@param speed number Movement speed
+---@param dt number Delta time
+---@return pos|nil New position if slide successful, nil otherwise
+local function try_slide_along_walls(current_pos, move_dir, speed, dt)
+    -- Try moving horizontally if we have horizontal input
+    if move_dir.x ~= 0 then
+        local horizontal_pos = pos.new(
+            current_pos.x + move_dir.x * speed * dt,
+            current_pos.y
+        )
+        if is_position_walkable_for_player(horizontal_pos) then
+            return horizontal_pos
+        end
+    end
+
+    -- Try moving vertically if we have vertical input
+    if move_dir.y ~= 0 then
+        local vertical_pos = pos.new(
+            current_pos.x,
+            current_pos.y + move_dir.y * speed * dt
+        )
+        if is_position_walkable_for_player(vertical_pos) then
+            return vertical_pos
+        end
+    end
+
+    return nil
+end
+
 ---Try to slide around entities
 ---@param player table The player object
 ---@param target_pos pos The target position
@@ -73,7 +105,7 @@ local function try_slide_around_entities(player, target_pos, move_dir, speed, dt
     return false
 end
 
----Handle player movement with entity collision and sliding
+---Handle player movement with wall and entity collision and sliding
 ---@param player table The player object
 ---@param input pos The input movement vector
 ---@param dt number Delta time in seconds
@@ -91,10 +123,23 @@ function movement.handle(player, input, dt)
     -- Try direct movement first
     if can_walk_to(target_pos) then
         player.pos = target_pos
-    else
-        -- Try sliding around entities
-        try_slide_around_entities(player, target_pos, move_dir, speed, dt)
+        return
     end
+    
+    -- If direct movement fails, try sliding along walls first
+    local wall_slide_pos = try_slide_along_walls(player.pos, move_dir, speed, dt)
+    if wall_slide_pos and not DI.collision.is_blocked_by_entity({
+        x = wall_slide_pos.x,
+        y = wall_slide_pos.y,
+        exclude_id = "player",
+        min_distance = 0.9
+    }) then
+        player.pos = wall_slide_pos
+        return
+    end
+
+    -- If wall sliding fails, try sliding around entities
+    try_slide_around_entities(player, target_pos, move_dir, speed, dt)
 end
 
 ---@return pos The movement vector from keyboard input
