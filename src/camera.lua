@@ -91,7 +91,7 @@ end
 
 function camera.beginDraw()
     love.graphics.setCanvas(camera.canvas)
-    love.graphics.clear(0.1, 0.1, 0.1, 1)
+    love.graphics.clear(0, 0, 0, 1)
 end
 
 function camera.endDraw()
