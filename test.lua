@@ -149,39 +149,6 @@ function runner.run_test_method(test_class, method_name, method, results, file_p
     return success
 end
 
--- Run all tests in a test class
-function runner.run_test_class(class_name, class_obj, test_class_to_file, executed_files, results)
-    -- Get the file name for this test class
-    local file_name = test_class_to_file[class_name]
-
-    -- Create full file path
-    local full_file_path = "test/" .. file_name
-
-    -- Load file content to find line numbers
-    local file_content = runner.get_file_content(full_file_path)
-
-    -- Log the file name if we haven't executed it yet
-    if file_name and not executed_files[file_name] then
-        log.info("Running tests from: " .. full_file_path)
-        executed_files[file_name] = true
-        results.current_file = file_name
-    end
-
-    -- Store the class name for better error reporting
-    class_obj._NAME = class_name
-
-    -- Run all test methods in this class
-    for method_name, method in pairs(class_obj) do
-        if type(method) == "function" and method_name:match("^test") then
-            local line_number = nil
-            if file_content then
-                line_number = runner.find_method_line_number(file_content, method_name)
-            end
-            runner.run_test_method(class_obj, method_name, method, results, full_file_path, line_number)
-        end
-    end
-end
-
 -- Execute all test classes and methods
 function runner.execute_tests(test_class_to_file)
     -- Test results storage
@@ -195,11 +162,53 @@ function runner.execute_tests(test_class_to_file)
 
     -- Track which files have been executed
     local executed_files = {}
+    
+    -- Track which test classes have been executed
+    local executed_classes = {}
+    
+    -- Track which test methods have been executed (to prevent duplicates)
+    local executed_methods = {}
 
     -- Find and run all test classes
     for class_name, class_obj in pairs(_G) do
-        if type(class_obj) == "table" and class_name:match("^Test") then
-            runner.run_test_class(class_name, class_obj, test_class_to_file, executed_files, results)
+        if type(class_obj) == "table" and class_name:match("^Test") and not executed_classes[class_name] then
+            -- Store the class name for better error reporting
+            class_obj._NAME = class_name
+            
+            -- Get the file name for this test class
+            local file_name = test_class_to_file[class_name]
+
+            -- Create full file path
+            local full_file_path = "test/" .. file_name
+
+            -- Load file content to find line numbers
+            local file_content = runner.get_file_content(full_file_path)
+
+            -- Log the file name if we haven't executed it yet
+            if file_name and not executed_files[file_name] then
+                log.info("Running tests from: " .. full_file_path)
+                executed_files[file_name] = true
+                results.current_file = file_name
+            end
+            
+            -- Run all test methods in this class
+            for method_name, method in pairs(class_obj) do
+                -- Generate a unique key for this test method
+                local method_key = class_name .. "." .. method_name
+                
+                if type(method) == "function" and method_name:match("^test") and not executed_methods[method_key] then
+                    local line_number = nil
+                    if file_content then
+                        line_number = runner.find_method_line_number(file_content, method_name)
+                    end
+                    runner.run_test_method(class_obj, method_name, method, results, full_file_path, line_number)
+                    
+                    -- Mark this test as run to prevent duplicates
+                    executed_methods[method_key] = true
+                end
+            end
+            
+            executed_classes[class_name] = true
         end
     end
 

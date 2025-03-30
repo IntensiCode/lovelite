@@ -115,7 +115,7 @@ function TestFowRayMarch:testCalculateVisibilityLevel()
     end
 end
 
-function TestFowRayMarch:testIsValidPosition()
+function TestFowRayMarch:test_ray_march_position_validation()
     -- Arrange
     local valid_cases = {
         {x = 1, y = 1},   -- Top-left corner
@@ -261,7 +261,7 @@ function TestFowRayMarch:testLShapedWalls()
                    "Point beyond horizontal wall should be invisible")
 end
 
-function TestFowRayMarch:testHideRooftopsFlag()
+function TestFowRayMarch:test_rooftop_visibility_handling()
     -- Arrange
     local center = pos.new(5, 5)
     
