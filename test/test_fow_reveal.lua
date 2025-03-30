@@ -52,11 +52,6 @@ function TestFowReveal:setUp()
     
     -- Setup mock collision system for testing
     self.original_is_walkable_tile = nil
-    if DI and DI.collision then
-        self.original_is_walkable_tile = DI.collision.is_walkable_tile
-    end
-    
-    -- Default mock makes all tiles walkable
     DI = DI or {}
     DI.collision = DI.collision or {}
     DI.collision.is_walkable_tile = function(x, y) return true end

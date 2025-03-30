@@ -142,6 +142,13 @@ function dungeon.process_tiles()
     end
 end
 
+---Identify full wall tiles (horizontal non-walkable stripes)
+---@return table<string, boolean> Map of "x,y" coordinates to full wall status
+function dungeon.identify_full_wall_tiles()
+    -- Use the walls module if available
+    return DI.walls.identify_full_wall_tiles()
+end
+
 ---Load and initialize the map, processing all tiles and their properties
 ---@param opts? {reset: boolean} Options for loading (default: {reset = true})
 function dungeon.load(opts)
@@ -161,8 +168,8 @@ function dungeon.load(opts)
         dungeon.player = nil
 
         -- Verify square tiles and set tile size
-        log.assert(dungeon.map.tilewidth == dungeon.map.tileheight, 
-            string.format("Tiles must be square! Width: %d, Height: %d", 
+        log.assert(dungeon.map.tilewidth == dungeon.map.tileheight,
+            string.format("Tiles must be square! Width: %d, Height: %d",
                 dungeon.map.tilewidth, dungeon.map.tileheight))
         dungeon.tile_size = dungeon.map.tilewidth
         dungeon.map_size = pos.new(
@@ -176,6 +183,12 @@ function dungeon.load(opts)
         -- Hide the Objects layer
         dungeon.map.layers[OBJECTS_LAYER_ID].visible = false
     end
+end
+
+---Initialize the full wall detection after collision system is loaded
+function dungeon.post_collision_init()
+    -- Identify full wall tiles using the walls module
+    DI.walls.identify_full_wall_tiles()
 end
 
 ---Create a new layer for overlapping tiles
@@ -254,4 +267,4 @@ function dungeon.grid_to_screen(grid_pos)
     )
 end
 
-return dungeon 
+return dungeon

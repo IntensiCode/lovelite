@@ -39,9 +39,6 @@ function TestFowFov:setUp()
     
     -- Setup mock collision system for testing
     self.original_is_walkable_tile = nil
-    if DI and DI.collision then
-        self.original_is_walkable_tile = DI.collision.is_walkable_tile
-    end
     
     -- Default mock makes all tiles walkable
     DI = DI or {}

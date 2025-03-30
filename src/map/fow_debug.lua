@@ -130,8 +130,6 @@ end
 ---Register debug commands
 ---@param fog_of_war table The main fog of war module
 function fow_debug.register_commands(fog_of_war)
-    if not DI or not DI.debug then return end
-    
     DI.debug.add_command("fog_reveal_all", function()
         fog_of_war.reveal_all()
         return "Revealed entire map"

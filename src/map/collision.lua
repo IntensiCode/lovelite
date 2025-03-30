@@ -8,10 +8,6 @@ local collision = {
     map = nil
 }
 
--- Make collision available globally right away
-DI = DI or {}
-DI.collision = collision
-
 ---Check if a tile exists and is walkable at the given coordinates
 ---@param x number The x coordinate
 ---@param y number The y coordinate
@@ -32,8 +28,8 @@ function collision.find_overlap_layer_tiles()
     -- Directions to check for walkable tiles (relative to current tile)
     local directions = {
         { dx = 0,  dy = -1 }, -- above
-        { dx = -1, dy = 0 }, -- left
-        { dx = 1,  dy = 0 }, -- right
+        { dx = -1, dy = 0 },  -- left
+        { dx = 1,  dy = 0 },  -- right
         { dx = -1, dy = -1 }, -- left-up
         { dx = 1,  dy = -1 }, -- right-up
     }
@@ -77,6 +73,9 @@ function collision.load(opts)
         -- Create overlap layer with found tiles
         local overlapping_tiles = collision.find_overlap_layer_tiles()
         DI.dungeon.make_overlap_layer(overlapping_tiles)
+
+        -- Initialize full wall detection after collision system is loaded
+        DI.dungeon.identify_full_wall_tiles()
     end
 end
 
@@ -188,14 +187,14 @@ end
 function collision.find_walkable_around(tile_x, tile_y)
     local walkable_tiles = {}
     local directions = {
-        { dx = -1, dy = 0 }, -- left
-        { dx = 1,  dy = 0 }, -- right
+        { dx = -1, dy = 0 },  -- left
+        { dx = 1,  dy = 0 },  -- right
         { dx = 0,  dy = -1 }, -- up
-        { dx = 0,  dy = 1 }, -- down
+        { dx = 0,  dy = 1 },  -- down
         { dx = -1, dy = -1 }, -- up-left
         { dx = 1,  dy = -1 }, -- up-right
-        { dx = -1, dy = 1 }, -- down-left
-        { dx = 1,  dy = 1 } -- down-right
+        { dx = -1, dy = 1 },  -- down-left
+        { dx = 1,  dy = 1 }   -- down-right
     }
 
     for _, dir in ipairs(directions) do
@@ -219,30 +218,30 @@ function collision.is_wall_tile(x, y)
     if x < 1 or x > collision.map.width or y < 1 or y > collision.map.height then
         return false
     end
-    
+
     -- If the tile is walkable, it's not a wall
     if collision.is_walkable_tile(x, y) then
         return false
     end
-    
+
     -- Check if it's at the edge of the map (these are typically walls)
     if x == 1 or x == collision.map.width or y == 1 or y == collision.map.height then
         return true
     end
-    
+
     -- Check if this non-walkable tile is adjacent to any walkable tile
     -- If it is, then it's likely a wall (boundary between walkable and non-walkable)
     local directions = {
-        { dx = -1, dy = 0 }, -- left
-        { dx = 1,  dy = 0 }, -- right
+        { dx = -1, dy = 0 },  -- left
+        { dx = 1,  dy = 0 },  -- right
         { dx = 0,  dy = -1 }, -- up
-        { dx = 0,  dy = 1 }, -- down
+        { dx = 0,  dy = 1 },  -- down
         { dx = -1, dy = -1 }, -- up-left
         { dx = 1,  dy = -1 }, -- up-right
-        { dx = -1, dy = 1 }, -- down-left
-        { dx = 1,  dy = 1 } -- down-right
+        { dx = -1, dy = 1 },  -- down-left
+        { dx = 1,  dy = 1 }   -- down-right
     }
-    
+
     for _, dir in ipairs(directions) do
         local check_x = x + dir.dx
         local check_y = y + dir.dy
@@ -250,9 +249,18 @@ function collision.is_wall_tile(x, y)
             return true -- It's adjacent to a walkable tile, likely a wall
         end
     end
-    
+
     -- It's a non-walkable tile not adjacent to any walkable tile - likely a rooftop
     return false
+end
+
+---Check if a tile is a full wall tile (part of a horizontal wall stripe)
+---@param x integer The tile x coordinate
+---@param y integer The tile y coordinate
+---@return boolean is_full_wall Whether the tile at (x,y) is a full wall
+function collision.is_full_wall_tile(x, y)
+    -- Delegate to the walls module
+    return DI.walls and DI.walls.check_full_wall(x, y) or false
 end
 
 return collision

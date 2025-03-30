@@ -12,18 +12,12 @@ function debug_console_ui.draw(state)
     -- Use the debug font if available
     local default_font = lg.getFont()
     local font = default_font
-    if DI and DI.font and DI.font.tiny then
-        font = DI.font.tiny
-        lg.setFont(font)
-    end
+    font = DI.font.tiny
+    lg.setFont(font)
     
     local width, height
     -- Get dimensions from camera if available
-    if DI and DI.camera then
-        width, height = DI.camera.getDimensions()
-    else
-        width, height = lg.getDimensions()
-    end
+    width, height = DI.camera.getDimensions()
     
     local line_height = font:getHeight() * 1.2
     local console_height = line_height * state.history.max_output_lines + state.command_line_height

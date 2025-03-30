@@ -17,8 +17,8 @@ local ray_paths = nil
 ---@param y number Y coordinate to check
 ---@return boolean is_valid Whether the position is within bounds
 function fow_ray_march.is_valid_position(fog_of_war, x, y)
-    return x >= 1 and x <= fog_of_war.size.x and 
-           y >= 1 and y <= fog_of_war.size.y
+    return x >= 1 and x <= fog_of_war.size.x and
+        y >= 1 and y <= fog_of_war.size.y
 end
 
 ---Calculate visibility level based on distance from player
@@ -30,7 +30,7 @@ function fow_ray_march.calculate_visibility_level(fog_of_war, distance)
     if math.abs(distance - 4.0) < 0.001 and fog_of_war._is_test_case then
         return 3
     end
-    
+
     if distance <= fog_of_war.inner_radius then
         -- Fully visible zone
         return 4
@@ -44,7 +44,7 @@ function fow_ray_march.calculate_visibility_level(fog_of_war, distance)
         -- Heavy fog zone (100% of transition zone)
         return 1
     end
-    
+
     -- Beyond outer radius
     return 0
 end
@@ -57,16 +57,16 @@ end
 ---@return table points Array of {x,y} points along the line
 local function bresenham_line(x0, y0, x1, y1)
     local points = {}
-    
+
     local dx = math.abs(x1 - x0)
     local dy = math.abs(y1 - y0)
     local sx = x0 < x1 and 1 or -1
     local sy = y0 < y1 and 1 or -1
     local err = dx - dy
-    
+
     local x, y = x0, y0
-    table.insert(points, {x = x, y = y})
-    
+    table.insert(points, { x = x, y = y })
+
     while x ~= x1 or y ~= y1 do
         local e2 = 2 * err
         if e2 > -dy then
@@ -77,10 +77,10 @@ local function bresenham_line(x0, y0, x1, y1)
             err = err + dx
             y = y + sy
         end
-        
-        table.insert(points, {x = x, y = y})
+
+        table.insert(points, { x = x, y = y })
     end
-    
+
     return points
 end
 
@@ -91,36 +91,36 @@ local function generate_ray_paths(radius)
     if ray_paths then
         return ray_paths
     end
-    
+
     ray_paths = {}
-    
+
     -- Center point (origin of all rays)
     local center_x, center_y = 0, 0
-    
+
     -- Generate paths to every tile at the edge of our radius
     -- This ensures we hit all possible tiles
     for angle = 0, 359, 1 do
         local rad = math.rad(angle)
         local target_x = math.floor(center_x + math.cos(rad) * radius + 0.5)
         local target_y = math.floor(center_y + math.sin(rad) * radius + 0.5)
-        
-        -- Generate path from center to this point 
+
+        -- Generate path from center to this point
         local path = bresenham_line(center_x, center_y, target_x, target_y)
-        
+
         local key = target_x .. "," .. target_y
         ray_paths[key] = path
     end
-    
+
     -- Ensure key horizontal, vertical and diagonal rays needed for tests
     local key_rays = {
-        {x = 1, y = 0},
-        {x = 2, y = 0},
-        {x = 0, y = 1},
-        {x = 0, y = 2},
-        {x = 1, y = 1},
-        {x = 2, y = 2},
+        { x = 1, y = 0 },
+        { x = 2, y = 0 },
+        { x = 0, y = 1 },
+        { x = 0, y = 2 },
+        { x = 1, y = 1 },
+        { x = 2, y = 2 },
     }
-    
+
     for _, ray in ipairs(key_rays) do
         local key = ray.x .. "," .. ray.y
         if not ray_paths[key] then
@@ -128,7 +128,7 @@ local function generate_ray_paths(radius)
             ray_paths[key] = path
         end
     end
-    
+
     return ray_paths
 end
 
@@ -137,17 +137,34 @@ end
 ---@param y number Tile y coordinate
 ---@return boolean is_wall Whether the tile is a wall
 local function is_wall(x, y)
-    if not DI or not DI.collision then
-        return false
-    end
-    
     if DI.collision.is_wall_tile then
         return DI.collision.is_wall_tile(x, y)
     elseif DI.collision.is_walkable_tile then
         return not DI.collision.is_walkable_tile(x, y)
     end
-    
+
     return false
+end
+
+---Checks if a tile is a full wall (part of a horizontal wall stripe)
+---@param x number Tile x coordinate
+---@param y number Tile y coordinate
+---@return boolean is_full_wall Whether the tile is a full wall
+local function is_full_wall(x, y)
+    return DI.collision.is_full_wall_tile(x, y)
+end
+
+---Determine if a ray is going upward (decreasing Y)
+---@param ray table The ray points
+---@return boolean is_upward True if the ray is going upward
+local function is_upward_ray(ray)
+    if #ray < 2 then
+        return false
+    end
+
+    -- For test purposes, use a consistent definition of "upward"
+    -- Ray is going upward if the Y coordinate decreases
+    return ray[2].y < ray[1].y
 end
 
 ---Process a single ray
@@ -161,39 +178,64 @@ end
 local function process_ray(fog_of_war, tile_x, tile_y, ray, visible, shadowed)
     local changed = false
     local past_wall = false
-    
+    local steps_beyond_wall = 0
+    local last_wall_was_full = false
+
+    -- Check if this is an upward ray
+    local upward = is_upward_ray(ray)
+
     for i, point in ipairs(ray) do
         local world_x = tile_x + point.x
         local world_y = tile_y + point.y
-        
+
         -- Skip if out of bounds
         if not fow_ray_march.is_valid_position(fog_of_war, world_x, world_y) then
             break
         end
-        
+
         -- For test tracking - flag this tile as visited
-        if DI and DI.collision and DI.collision.is_walkable_tile then
-            DI.collision.is_walkable_tile(world_x, world_y)
-        end
-        
+        DI.collision.is_walkable_tile(world_x, world_y)
+
         -- Mark tile as processed
         visible[world_y][world_x] = true
-        
+
         -- Check if the tile is a wall
         local is_wall_tile = is_wall(world_x, world_y)
-        
+
         if past_wall then
-            -- This point is beyond a wall, mark it as shadowed
-            shadowed[world_y][world_x] = true
-        elseif not past_wall then
+            -- This point is beyond a wall
+            -- Only allow visibility beyond if looking up at a full wall
+            if upward and last_wall_was_full and steps_beyond_wall < 1 then
+                -- Still visible with normal visibility rules for upward rays at full walls
+                steps_beyond_wall = steps_beyond_wall + 1
+
+                -- Calculate distance from origin
+                local dx = world_x - tile_x
+                local dy = world_y - tile_y
+                local distance = math.sqrt(dx * dx + dy * dy)
+
+                -- Calculate visibility based on distance
+                local visibility = fow_ray_march.calculate_visibility_level(fog_of_war, distance)
+
+                -- Update visibility if higher
+                if visibility > (fog_of_war.grid[world_y][world_x] or 0) then
+                    fog_of_war.grid[world_y][world_x] = visibility
+                    fow_memory.update(fog_of_war, world_x, world_y, visibility)
+                    changed = true
+                end
+            else
+                -- This point is fully shadowed
+                shadowed[world_y][world_x] = true
+            end
+        else
             -- Calculate distance from origin
             local dx = world_x - tile_x
             local dy = world_y - tile_y
             local distance = math.sqrt(dx * dx + dy * dy)
-            
+
             -- Calculate visibility based on distance
             local visibility = fow_ray_march.calculate_visibility_level(fog_of_war, distance)
-            
+
             -- Update visibility if higher
             if visibility > (fog_of_war.grid[world_y][world_x] or 0) then
                 fog_of_war.grid[world_y][world_x] = visibility
@@ -201,13 +243,15 @@ local function process_ray(fog_of_war, tile_x, tile_y, ray, visible, shadowed)
                 changed = true
             end
         end
-        
+
         -- If we hit a wall, mark all future points as past wall
         if is_wall_tile then
             past_wall = true
+            -- Check if this is a full wall
+            last_wall_was_full = is_full_wall(world_x, world_y)
         end
     end
-    
+
     return changed
 end
 
@@ -218,19 +262,19 @@ end
 ---@return boolean changed Whether any tile visibility changed
 local function apply_visibility_rules(fog_of_war, visible, shadowed)
     local changed = false
-    
+
     -- Make shadowed areas completely dark
     for y = 1, fog_of_war.size.y do
         for x = 1, fog_of_war.size.x do
             if shadowed[y][x] then
                 if fog_of_war.grid[y][x] ~= 0 then
-                    fog_of_war.grid[y][x] = 0  -- Completely dark
+                    fog_of_war.grid[y][x] = 0 -- Completely dark
                     changed = true
                 end
             end
         end
     end
-    
+
     return changed
 end
 
@@ -240,23 +284,23 @@ end
 ---@return boolean changed Whether any tiles were updated
 function fow_ray_march.cast_rays(fog_of_war, center_pos)
     local changed = false
-    
+
     -- Convert to tile coordinates
     local tile_x = math.floor(center_pos.x)
     local tile_y = math.floor(center_pos.y)
-    
+
     -- Get precomputed ray paths
     local paths = generate_ray_paths(fog_of_war.outer_radius)
-    
+
     -- Initialize tracking grids
     local visible = {}
     local shadowed = {}
-    
+
     for y = 1, fog_of_war.size.y do
         visible[y] = {}
         shadowed[y] = {}
     end
-    
+
     -- Ensure center tile is always visible
     if fow_ray_march.is_valid_position(fog_of_war, tile_x, tile_y) then
         visible[tile_y][tile_x] = true
@@ -264,7 +308,7 @@ function fow_ray_march.cast_rays(fog_of_war, center_pos)
         fow_memory.update(fog_of_war, tile_x, tile_y, 4)
         changed = true
     end
-    
+
     -- Cast rays in all directions within outer radius
     for ray_key, ray in pairs(paths) do
         local ray_changed = process_ray(fog_of_war, tile_x, tile_y, ray, visible, shadowed)
@@ -272,14 +316,14 @@ function fow_ray_march.cast_rays(fog_of_war, center_pos)
             changed = true
         end
     end
-    
+
     -- Apply final visibility rules
     local rules_changed = apply_visibility_rules(fog_of_war, visible, shadowed)
     if rules_changed then
         changed = true
     end
-    
+
     return changed
 end
 
-return fow_ray_march 
+return fow_ray_march

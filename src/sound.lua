@@ -294,10 +294,6 @@ local sound_cache = {}
 function sound.load(opts)
     opts = opts or { reset = true }
 
-    -- Add sound to global game variable (this is constant and only needs to be set once)
-    DI = DI or {}
-    DI.sound = sound
-
     -- Sound effects are resources that only need to be loaded once
     -- They don't represent game state that needs to be reset
     if sound_cache.melee_hit then return end

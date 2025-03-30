@@ -61,10 +61,6 @@ function collectibles.load(opts)
             end
         end
     end
-
-    -- Add collectibles to global game variable when loaded (this is constant and only needs to be set once)
-    DI = DI or {}
-    DI.collectibles = collectibles
 end
 
 function collectibles.update(dt)

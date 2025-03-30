@@ -83,6 +83,7 @@ function game.load(opts)
         DI.positions = require("src.base.positions")
         DI.fog_of_war = require("src.map.fog_of_war")
         DI.player_hud = require("src.player_hud")
+        DI.walls = require("src.map.walls")
 
         game.initialized = true
     end
