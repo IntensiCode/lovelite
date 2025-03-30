@@ -1,0 +1,117 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# LoveLite Testing Guidelines
+
+## Running Tests
+
+- To run tests use `love . --test` (add `--debug` for more verbose output)
+- Run a single test file using `love . --test <basename>` (i.e. `love . --test test_keys`)
+- Run multiple test files using `love . --tst <basename>,<basename>,...`
+- Note that we cannot run single test cases for the time being
+- The test runner is located at the project root in `test.lua` (never invoked directly, always only through `love . --test [--debug]` which executes `main.lua` which uses `test.lua`)
+- Tests can be run from any LÖVE environment
+- If you cannot determine why tests fail, focus on making the test case as readable as possible
+- Unreadable tests are worth nothing and can be replaced with clearer alternatives 
+- If you encounter more than 3 failures in a row, stop and let me intervene
+
+## Test Naming
+
+- **Use snake_case for all test names**:
+  - Correct: `test_player_movement`, `test_collision_detection`
+  - Incorrect: `testPlayerMovement`, `TestCollisionDetection`
+- Test method names should start with `test_` prefix
+- Use descriptive names that clearly explain what the test is verifying
+- Examples:
+  ```lua
+  -- Good: Descriptive name in snake_case
+  function TestModule:test_player_takes_damage_when_hit_by_enemy()
+  
+  -- Bad: Camel case instead of snake_case
+  function TestModule:testPlayerTakesDamageWhenHitByEnemy()
+  
+  -- Bad: Not descriptive enough
+  function TestModule:test_damage()
+  ```
+
+## Test Structure
+
+- All tests are located in the top-level `test/` directory
+- Test files should be named with the `test_` prefix (e.g., `test_screen.lua`, `test_pos.lua`)
+- Follow the Arrange-Act-Assert pattern with explicit comments:
+  ```lua
+  function TestModule:test_something_happens()
+      -- Arrange
+      local input = setup_test_data()
+      
+      -- Act
+      local result = module.do_something(input)
+      
+      -- Assert
+      lu.assertEquals(result, expected_value, "Message explaining the assertion")
+  end
+  ```
+- Single Assertion Per Test: Tests should generally have only one assertion to ensure they're testing exactly one behavior
+- Break Down Complex Tests: Instead of having one large test with multiple assertions testing different behaviors, create multiple smaller tests each with a focused scope
+- When adding functionality, add unit test coverage
+- All tests are located in the top-level `test/` directory
+- Test files should be named with the `test_` prefix (e.g., `test_screen.lua`, `test_pos.lua`)
+- See the test directory for how LuaUnit is used and how to write tests
+- Stick to small, focused test cases following the arrange/act/assert pattern when adding new tests
+- For new and changed tests, switch to snake_case for the testnames
+- Clear AAA Structure: Every test must follow the Arrange-Act-Assert pattern with explicit comments separating each phase for better readability.
+- Single Assertion Per Test: Tests should generally have only one assertion to ensure they're testing exactly one behavior. This makes it easier to understand what failed when a test breaks.
+- Break Down Complex Tests: Instead of having one large test with multiple assertions testing different behaviors, create multiple smaller tests each with a focused scope.
+- Descriptive Test Names: Use detailed test names that clearly describe the specific behavior being tested rather than general feature areas.
+
+These principles should guide all future test development and should be used to refactor existing tests that don't follow these guidelines.
+
+## Examples of Proper Test Structure
+
+```
+   function TestModule:testFieldOfViewDarkensAreasOutsideView()
+       -- Arrange
+       local center1 = pos.new(3, 3)
+       local center2 = pos.new(8, 8)
+       -- Set up initial visibility at center1
+       self.fog_of_war.field_of_view_mode = false
+       self.fow_reveal.reveal_around(self.fog_of_war, center1)
+       
+       -- Act
+       self.fog_of_war.field_of_view_mode = true
+       self.fow_reveal.reveal_around(self.fog_of_war, center2)
+       
+       -- Assert
+       lu.assertNotEquals(self.fog_of_war.grid[center1.y][center1.x], 4, 
+                         "Point outside field of view should be darkened")
+   end
+```
+
+## Assertions
+
+- Keep the number of asserts per test case small
+- Whenever reasonable, use a single assert per test case
+- If multiple asserts are used, they should be tightly coupled and testing related aspects of the same behavior
+
+## Module Reloading
+
+- Use module reloading in tests when it's reasonable and applicable for the system under test
+- Implement module reloading in the setUp method like this:
+  ```lua
+  local module_name = "src.base.module"
+  local module = require(module_name)
+  
+  function TestModule:setUp()
+      -- Reload the module for each test to ensure clean state
+      package.loaded[module_name] = nil
+      module = require(module_name)
+  end
+  ```
+- Module reloading ensures test isolation by providing a fresh module state for each test
+- Don't use module reloading when:
+  - The module has expensive initialization that doesn't affect test state
+  - The module is read-only and stateless
+  - Tests intentionally rely on shared state
+- When using module reloading, add a tearDown method to clean up any remaining state
