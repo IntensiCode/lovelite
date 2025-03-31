@@ -52,6 +52,9 @@ filenames.]])
     parser:option("--screenshot", "Take a screenshot after specified seconds and save to test.png.")
         :args("?")
         :convert(tonumber)
+    parser:option("--auto-quit", "Quit the game after specified seconds.")
+        :args(1) -- Require exactly one argument
+        :convert(tonumber)
     return parser
 end
 
@@ -100,5 +103,13 @@ function love.load()
         local screenshot = require("src.base.screenshot")
         local delay = tonumber(args.screenshot) or 1
         screenshot.schedule(delay, "test.png")
+    end
+
+    -- Set up auto-quit timer if requested
+    if args.auto_quit then
+        local auto_quit = require("src.base.auto_quit")
+        local delay = tonumber(args.auto_quit)
+        -- The auto_quit module handles invalid delay checks
+        auto_quit.schedule(delay)
     end
 end
