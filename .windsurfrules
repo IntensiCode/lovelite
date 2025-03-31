@@ -1,0 +1,156 @@
+---
+description: LoveLite Rules for LLM Consumption
+globs: ["*.lua", "test/**/*.lua", "src/**/*.lua"]
+alwaysApply: true
+---
+
+# LoveLite Testing Guidelines
+
+## Test Commands
+```lua
+love . --test         # Run all tests
+love . --test --debug # Verbose output
+love . --test <name>  # Run single test file
+love . --test a,b,c   # Run multiple test files
+```
+Note: Omit `test/` path prefix and `.lua` extension when specifying test files.
+
+Note: Running single test cases is not supported.
+
+## Naming Rules
+1. MUST use snake_case for all test names
+2. MUST prefix test methods with `test_`
+3. MUST use descriptive names explaining behavior
+4. MUST name test files with `test_` prefix
+5. MUST use snake_case for modified test cases
+
+## Structure Rules
+1. MUST place tests in `test/` directory
+2. MUST follow Arrange-Act-Assert (AAA) pattern
+3. MUST use single assertion per test when possible
+4. MUST break complex tests into smaller focused tests
+5. MUST add tests for new functionality
+6. MUST use helper functions to keep test case size as small as possible
+
+## Code Pattern
+```lua
+function TestModule:test_<behavior_description>()
+    -- Arrange
+    local input = setup_test_data()
+    
+    -- Act
+    local result = do_something(input)
+    
+    -- Assert
+    lu.assertEquals(result, expected, "Clear error message")
+end
+```
+
+## Module Reloading Pattern
+```lua
+function TestModule:setUp()
+    package.loaded[module_name] = nil
+    module = require(module_name)
+end
+
+function TestModule:tearDown()
+    package.loaded[module_name] = nil
+end
+```
+
+## Error Handling
+1. STOP after 3 consecutive test failures
+2. FOCUS on test readability when debugging
+3. PREFER clear error messages in assertions
+
+## Best Practices
+1. KEEP tests small and focused
+2. USE explicit AAA comments
+3. WRITE descriptive test names
+4. DOCUMENT test dependencies
+5. RELOAD modules for test isolation
+6. AVOID module reloading for:
+   - Expensive initialization
+   - Read-only/stateless modules
+   - Shared state tests
+
+# LoveLite Coding Guidelines
+
+## File Structure Rules
+1. MUST use `src/` for all source code
+2. MUST use `src/libraries/sti.init` for STI library
+3. MUST use `assets/maps/level1.lua` for map file
+4. MUST use `src.base.constants` for shared constants
+
+## Code Organization Rules
+1. MUST create new files for new functionality unless it clearly belongs in existing file
+2. MUST consider refactoring before complex changes
+3. MUST keep nesting depth ≤ 3 levels (hard limit: 5)
+4. MUST keep functions focused on single responsibility
+5. MUST use local helper functions for utilities
+6. MUST keep functions short (<10 lines is good, <20 is ok, 25 hard limit - only with justification)
+7. MUST add type annotations for parameters/returns
+8. MUST add module comment for new files
+9. MUST add module comment for modified files
+10. AVOID checking for (not) DI.<something> - assume DI is always setup correctly
+11. MUST prefer adding new functions over extending existing ones
+12. MUST only modify existing functions when direct insertion is clearly better
+13. MUST store 'self' in local variable for closures to avoid losing object reference
+14. MUST consider refactoring before complex changes
+15. MUST complete significant refactors before implementing new features
+16. MUST do minor refactorings alongside requested changes
+
+## Lua OOP Patterns
+```lua
+-- MUST use for instance methods
+function object:method()
+    self:do_something()
+end
+
+-- MUST use for static methods
+function object.static_method()
+    return something
+end
+
+-- MUST use for method calls
+object:method()        -- instance methods
+object.static_method() -- static methods
+object.property       -- property access
+
+-- MUST use for closure safety
+local self = self
+callback = function() self:method() end
+```
+
+## Naming Conventions
+1. MUST use snake_case for all names
+2. MUST use descriptive type names (e.g., `PlayerSetup` not `table`)
+3. MUST use `self` for object references
+4. MUST use descriptive function names
+
+## Module Rules
+1. MUST require local modules with `src.` prefix
+   ```lua
+   require("src.base.pos")
+   ```
+2. MUST define constants in respective modules
+3. MUST use local helper functions for utilities
+
+## Refactoring Rules
+1. MUST NOT change behavior during refactoring
+2. MUST minimize git diff impact
+3. MUST move files instead of delete/create
+4. MUST use copy/cut-paste over rewriting
+5. MUST update all callsites when modifying functions
+6. MUST add type annotations for parameters/returns
+
+## Comment Rules
+1. MUST NOT add redundant comments
+2. MUST add context not obvious from code
+3. MUST be sparing with comments
+
+## Error Prevention
+1. AVOID modifying existing functions unless necessary
+2. AVOID deep nesting (>3 levels)
+3. AVOID changing fixed paths
+4. AVOID rewriting existing functionality
