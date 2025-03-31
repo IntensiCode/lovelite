@@ -123,4 +123,14 @@ function log.assert(condition, message, ...)
     return condition
 end
 
+--- Handle and log an error with stack trace
+--- @param err any The error object from xpcall
+--- @return function Error handler function for xpcall
+function log.handle_error(err)
+    local msg = tostring(err)
+    local trace = debug.traceback(nil, 2)  -- Skip this function in the trace
+    log.error("Error occurred: " .. msg .. "\nStack trace:\n" .. trace)
+    love.event.quit(1)  -- Exit with error status
+end
+
 return log
