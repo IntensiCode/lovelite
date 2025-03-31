@@ -16,20 +16,34 @@ local function overlays_each(method_name, ...)
     end)
 end
 
+--- Run a function with error catching using xpcall
+--- @param callback function The function to run safely
+local function run_catching(callback)
+    return xpcall(callback, log.handle_error)
+end
+
 function screen.load()
     love.update = function(dt)
-        if not screen.block_update then
-            screen.get_current().update(dt)
-        end
-        overlays_each("update", dt)
+        run_catching(function()
+            if not screen.block_update then
+                screen.get_current().update(dt)
+            end
+            overlays_each("update", dt)
+        end)
     end
+
     love.draw = function()
-        screen.get_current().draw()
-        overlays_each("draw")
+        run_catching(function()
+            screen.get_current().draw()
+            overlays_each("draw")
+        end)
     end
+
     love.resize = function(w, h)
-        screen.get_current().resize(w, h)
-        overlays_each("resize", w, h)
+        run_catching(function()
+            screen.get_current().resize(w, h)
+            overlays_each("resize", w, h)
+        end)
     end
 end
 
@@ -72,16 +86,22 @@ function screen.switch_to(name, should_reset)
     if screen.current and screen.screens[screen.current] then
         local current_screen = screen.screens[screen.current]
         if current_screen.detach then
-            current_screen.detach()
+            run_catching(function()
+                current_screen.detach()
+            end)
         end
     end
 
     -- Load the screen with reset flag
-    screen.screens[name].load({ reset = should_reset })
+    run_catching(function()
+        screen.screens[name].load({ reset = should_reset })
+    end)
 
     -- Attach the new screen
     if screen.screens[name].attach then
-        screen.screens[name].attach()
+        run_catching(function()
+            screen.screens[name].attach()
+        end)
     end
 
     screen.current = name
