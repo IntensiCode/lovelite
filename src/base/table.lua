@@ -1,6 +1,10 @@
 ---Table utility extensions
 ---GLOBAL DEFINITIONS - REQUIRE WITHOUT ASSIGNING TO A VARIABLE
 
+function table.deepcopy(tbl)
+    return table.clone(tbl)
+end
+
 ---Deep clone a table
 ---@param tbl table The table to clone
 ---@return table A new table with all the same values
