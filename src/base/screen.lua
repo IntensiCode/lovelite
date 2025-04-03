@@ -18,8 +18,11 @@ end
 
 --- Run a function with error catching using xpcall
 --- @param callback function The function to run safely
-local function run_catching(callback)
-    return xpcall(callback, log.handle_error)
+--- @param context string Context description of where the error occurred
+local function run_catching(callback, context)
+    return xpcall(callback, function(err)
+        log.handle_error(err, context)
+    end)
 end
 
 function screen.load()
@@ -29,21 +32,21 @@ function screen.load()
                 screen.get_current().update(dt)
             end
             overlays_each("update", dt)
-        end)
+        end, "screen update")
     end
 
     love.draw = function()
         run_catching(function()
             screen.get_current().draw()
             overlays_each("draw")
-        end)
+        end, "screen draw")
     end
 
     love.resize = function(w, h)
         run_catching(function()
             screen.get_current().resize(w, h)
             overlays_each("resize", w, h)
-        end)
+        end, "screen resize")
     end
 end
 
@@ -88,20 +91,20 @@ function screen.switch_to(name, should_reset)
         if current_screen.detach then
             run_catching(function()
                 current_screen.detach()
-            end)
+            end, "screen detach")
         end
     end
 
     -- Load the screen with reset flag
     run_catching(function()
         screen.screens[name].load({ reset = should_reset })
-    end)
+    end, "screen load")
 
     -- Attach the new screen
     if screen.screens[name].attach then
         run_catching(function()
             screen.screens[name].attach()
-        end)
+        end, "screen attach")
     end
 
     screen.current = name

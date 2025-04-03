@@ -7,7 +7,7 @@ local LOG_LEVELS = {
     ERROR = 1,
     WARN = 2,
     INFO = 3,
-    DEBUG = 4
+    DEBUG = 4,
 }
 
 -- Create log namespace
@@ -15,7 +15,7 @@ log = {
     dev = false,
     level = LOG_LEVELS.INFO, -- Default log level is INFO
     LEVELS = LOG_LEVELS,
-    use_colors = ansi.supports_colors()
+    use_colors = ansi.supports_colors(),
 }
 
 -- Helper function to format log messages
@@ -108,29 +108,56 @@ function log.assert(condition, message, ...)
     end
 
     -- Format the assert message with any additional arguments
+    local formatted_message
     if select("#", ...) > 0 then
-        message = string.format(message, ...)
+        local success, result = pcall(string.format, message, ...)
+        if success then
+            formatted_message = result
+        else
+            -- If formatting fails, concatenate arguments
+            local args = { ... }
+            for i = 1, #args do
+                args[i] = tostring(args[i])
+            end
+            formatted_message = message .. " " .. table.concat(args, " ")
+        end
+    else
+        formatted_message = message
     end
 
     -- Always log the assertion failure as an error
-    log.error("Assertion failed: " .. message)
+    log.error("Assertion failed: " .. formatted_message)
 
     -- Only throw an actual assertion in dev mode
     if log.dev then
-        assert(false, message)
+        assert(false, formatted_message)
     end
 
     return condition
 end
 
---- Handle and log an error with stack trace
---- @param err any The error object from xpcall
---- @return function Error handler function for xpcall
-function log.handle_error(err)
-    local msg = tostring(err)
-    local trace = debug.traceback(nil, 2)  -- Skip this function in the trace
-    log.error("Error occurred: " .. msg .. "\nStack trace:\n" .. trace)
-    love.event.quit(1)  -- Exit with error status
+---Handle an error with traceback filtering and appropriate actions
+---@param err any The error to handle
+---@param context string Context description of where the error occurred
+function log.handle_error(err, context)
+    -- Get the traceback
+    local traceback = debug.traceback(err)
+
+    -- Filter out [C] frames but keep [love...] and others
+    local filtered = {}
+    for line in traceback:gmatch("[^\n]+") do
+        if not line:match("%[C%]:") then
+            table.insert(filtered, line)
+        end
+    end
+
+    -- Log the filtered traceback
+    log.error("Error in " .. context .. ":\n" .. table.concat(filtered, "\n"))
+
+    -- If in dev mode and not in web, exit the game
+    if log.dev then
+        love.event.quit(1)
+    end
 end
 
 return log

@@ -1,6 +1,6 @@
 local keys = {
-    shortcuts = {},   -- Table to store all registered shortcuts
-    interceptors = {} -- Table to store input interceptors (newest first)
+    shortcuts = {}, -- Table to store all registered shortcuts
+    interceptors = {}, -- Table to store input interceptors (newest first)
 }
 
 --[[
@@ -26,13 +26,20 @@ local keys = {
 
 -- Initialize and register global keyboard callbacks
 function keys.load()
-    -- Register global LÖVE callbacks for keyboard input
     love.keypressed = function(key)
-        return keys.keypressed(key)
+        local ok, _ = xpcall(
+            function() return keys.keypressed(key) end,
+            function(err) log.handle_error(err, "keypressed handler") end
+        )
+        return ok
     end
 
     love.textinput = function(text)
-        return keys.textinput(text)
+        local ok, _ = xpcall(
+            function() return keys.textinput(text) end,
+            function(err) log.handle_error(err, "textinput handler") end
+        )
+        return ok
     end
 end
 
@@ -64,7 +71,7 @@ function keys.add(key, callback, modifiers, description, scope)
         callback = callback,
         modifiers = modifiers,
         description = description,
-        scope = scope
+        scope = scope,
     })
 end
 
@@ -83,15 +90,25 @@ function keys.add_shortcut(key, opts)
 
     -- Assert the shortcut doesn't already exist (skip in test mode)
     if keys.shortcuts[shortcut_key] then
-        log.assert(false, "Shortcut '%s' already exists! Cannot register duplicate shortcuts.",
-            shortcut_key)
+        log.assert(
+            false,
+            "Shortcut '%s' already exists! Cannot register duplicate shortcuts.",
+            shortcut_key
+        )
     end
 
     -- Assert the callback is valid (skip in test mode)
-    log.assert(callback ~= nil, "Callback cannot be nil for shortcut '%s'", shortcut_key)
-    log.assert(type(callback) == "function",
+    log.assert(
+        callback ~= nil,
+        "Callback cannot be nil for shortcut '%s'",
+        shortcut_key
+    )
+    log.assert(
+        type(callback) == "function",
         "Callback must be a function for shortcut '%s', got %s instead",
-        shortcut_key, type(callback))
+        shortcut_key,
+        type(callback)
+    )
 
     -- Create the shortcut data
     local shortcut = {
@@ -99,7 +116,7 @@ function keys.add_shortcut(key, opts)
         modifiers = modifiers,
         callback = callback,
         description = description,
-        scope = scope
+        scope = scope,
     }
 
     -- Store the shortcut
@@ -127,24 +144,26 @@ end
 -- @param scope string The scope to remove shortcuts for
 -- @return number The number of shortcuts removed
 function keys.remove_shortcuts_by_scope(scope)
-    if not scope then return 0 end
-    
+    if not scope then
+        return 0
+    end
+
     local count = 0
     local to_remove = {}
-    
+
     -- Find all shortcuts with the given scope
     for id, shortcut in pairs(keys.shortcuts) do
         if shortcut.scope == scope then
             table.insert(to_remove, id)
         end
     end
-    
+
     -- Remove all found shortcuts
     for _, id in ipairs(to_remove) do
         keys.shortcuts[id] = nil
         count = count + 1
     end
-    
+
     return count
 end
 
@@ -241,10 +260,10 @@ function keys.get_all_shortcuts()
             id = id,
             key = shortcut.key,
             modifiers = shortcut.modifiers,
-            description = shortcut.description
+            description = shortcut.description,
         })
     end
     return result
 end
 
-return keys 
+return keys
