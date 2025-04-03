@@ -5,11 +5,11 @@
 -- Provides interface for other game systems to interact with fog of war mechanics.
 
 local pos = require("src.base.pos")
-local fow_debug = require("src.map.fow_debug")
-local fow_reveal = require("src.map.fow_reveal")
-local fow_draw = require("src.map.fow_draw")
-local fow_keys = require("src.map.fow_keys")
-local fow_dither = require("src.map.fow_dither")
+local fow_debug = require("src.map.fow.fow_debug")
+local fow_reveal = require("src.map.fow.fow_reveal")
+local fow_draw = require("src.map.fow.fow_draw")
+local fow_keys = require("src.map.fow.fow_keys")
+local fow_dither = require("src.map.fow.fow_dither")
 
 ---@class FogOfWar
 ---@field grid number[][] Grid tracking tile visibility: 0=unseen, 1=edge/heavy dither, 2=medium dither, 3=light dither, 4=visible

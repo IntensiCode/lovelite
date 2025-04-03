@@ -46,6 +46,8 @@ local function parse_args()
     parser:option("--test", [[Run tests instead of the game.
 Optionally specify one or more test files separated by
 commas (e.g., --test=test_pos,test_keys).
+Optionally specify a single test case for a file by
+using <filename:test_name> instead of just <filename>.
 Omit the test/ prefix and the .lua suffix for
 filenames.]])
         :args("?")
@@ -72,15 +74,15 @@ end
 
 local function run_tests_and_quit(args, parser)
     log.dev = true -- To make log.assert fail
-    local test_runner = require("test")
-    local test_files = test_runner.parse_test_option(args.test)
-    if (test_files == nil) then
+    local runner = require("test")
+    runner.parse_test_option(args.test)
+    if (runner.invalid_spec()) then
         log.error("Invalid test option arguments\n")
         print(parser:get_help())
         love.event.quit(1)
         return
     end
-    local success = test_runner.run(test_files)
+    local success = runner.run()
     love.event.quit(success and 0 or 1)
 end
 

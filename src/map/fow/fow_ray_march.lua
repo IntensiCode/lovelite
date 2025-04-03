@@ -4,7 +4,7 @@
 -- Manages shadows and occlusion to prevent visibility through walls.
 
 local pos = require("src.base.pos")
-local fow_memory = require("src.map.fow_memory")
+local fow_memory = require("src.map.fow.fow_memory")
 
 local fow_ray_march = {}
 

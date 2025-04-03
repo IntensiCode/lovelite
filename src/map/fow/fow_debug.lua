@@ -4,7 +4,7 @@
 -- Registers console commands for toggling and manipulating fog settings.
 -- Includes a legend to help interpret visibility levels during development.
 
-local fow_dither = require("src.map.fow_dither")
+local fow_dither = require("src.map.fow.fow_dither")
 
 local fow_debug = {}
 

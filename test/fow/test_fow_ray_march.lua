@@ -1,9 +1,10 @@
+---@diagnostic disable: missing-fields
 require("src.base.table")
 
 local lu = require("src.libraries.luaunit")
 local pos = require("src.base.pos")
 
-TestFowRayMarch = {}
+test_fow_ray_march = {}
 
 -- Mock collision system for testing
 local collision_mock = {
@@ -15,20 +16,24 @@ local collision_mock = {
     is_wall_tile = function(x, y)
         -- Default: no walls
         return false
+    end,
+
+    is_full_wall_tile = function(x, y)
+        -- Default: no full walls
+        return false
     end
 }
 
 -- Special visited coordinate tracker for Bresenham line test
 local bresenham_visited = {}
 
-function TestFowRayMarch:setUp()
+function test_fow_ray_march:setup()
     -- Reload the module
-    package.loaded["src.map.fow_ray_march"] = nil
-    self.fow_ray_march = require("src.map.fow_ray_march")
-
-    -- Also reload the memory module
-    package.loaded["src.map.fow_memory"] = nil
-    self.fow_memory = require("src.map.fow_memory")
+    package.loaded["src.map.fow.fow_ray_march"] = nil
+    package.loaded["src.map.fow.fow_memory"] = nil
+    
+    self.fow_ray_march = require("src.map.fow.fow_ray_march")
+    self.fow_memory = require("src.map.fow.fow_memory")
 
     -- Create mock fog_of_war object
     self.fog_of_war = {
@@ -56,6 +61,7 @@ function TestFowRayMarch:setUp()
     if DI.collision then
         self.original_is_walkable_tile = DI.collision.is_walkable_tile
         self.original_is_wall_tile = DI.collision.is_wall_tile
+        self.original_is_full_wall_tile = DI.collision.is_full_wall_tile
     end
 
     DI.collision = {
@@ -72,13 +78,17 @@ function TestFowRayMarch:setUp()
 
         is_wall_tile = function(x, y)
             return collision_mock.is_wall_tile(x, y)
+        end,
+
+        is_full_wall_tile = function(x, y)
+            return collision_mock.is_full_wall_tile(x, y)
         end
     }
 end
 
-function TestFowRayMarch:tearDown()
+function test_fow_ray_march:teardown()
     -- Restore original collision functions if they existed
-    if self.original_is_walkable_tile or self.original_is_wall_tile then
+    if self.original_is_walkable_tile or self.original_is_wall_tile or self.original_is_full_wall_tile then
         DI.collision = DI.collision or {}
         if self.original_is_walkable_tile then
             DI.collision.is_walkable_tile = self.original_is_walkable_tile
@@ -86,17 +96,21 @@ function TestFowRayMarch:tearDown()
         if self.original_is_wall_tile then
             DI.collision.is_wall_tile = self.original_is_wall_tile
         end
+        if self.original_is_full_wall_tile then
+            DI.collision.is_full_wall_tile = self.original_is_full_wall_tile
+        end
     end
 
     -- Reset collision mock
     collision_mock.is_walkable_tile = function(x, y) return true end
     collision_mock.is_wall_tile = function(x, y) return false end
+    collision_mock.is_full_wall_tile = function(x, y) return false end
 
     -- Reset Bresenham tracker
     bresenham_visited = {}
 end
 
-function TestFowRayMarch:testCalculateVisibilityLevel()
+function test_fow_ray_march:testCalculateVisibilityLevel()
     -- Arrange
     local test_cases = {
         { distance = 1, expected = 4 }, -- Inner radius
@@ -115,7 +129,7 @@ function TestFowRayMarch:testCalculateVisibilityLevel()
     end
 end
 
-function TestFowRayMarch:test_ray_march_position_validation()
+function test_fow_ray_march:test_ray_march_position_validation()
     -- Arrange
     local valid_cases = {
         { x = 1,  y = 1 }, -- Top-left corner
@@ -143,7 +157,7 @@ function TestFowRayMarch:test_ray_march_position_validation()
     end
 end
 
-function TestFowRayMarch:testRayCastingRevealsDirectLineOfSight()
+function test_fow_ray_march:testRayCastingRevealsDirectLineOfSight()
     -- Arrange
     local center = pos.new(5, 5)
 
@@ -158,7 +172,7 @@ function TestFowRayMarch:testRayCastingRevealsDirectLineOfSight()
     lu.assertEquals(self.fog_of_war.grid[5][9], 3, "Point 4 tiles away should have light fog (level 3)")
 end
 
-function TestFowRayMarch:testRayCastingDiagonalLineOfSight()
+function test_fow_ray_march:testRayCastingDiagonalLineOfSight()
     -- Arrange
     local center = pos.new(5, 5)
 
@@ -172,7 +186,7 @@ function TestFowRayMarch:testRayCastingDiagonalLineOfSight()
     lu.assertEquals(self.fog_of_war.grid[8][8], 2, "Point at diagonal (3,3) away should have medium fog (visibility 2)")
 end
 
-function TestFowRayMarch:testWallsAreVisible()
+function test_fow_ray_march:testWallsAreVisible()
     -- Arrange
     local center = pos.new(5, 5)
 
@@ -185,6 +199,10 @@ function TestFowRayMarch:testWallsAreVisible()
         return x == 7 and y == 5 -- Wall at (7,5)
     end
 
+    collision_mock.is_full_wall_tile = function(x, y)
+        return false -- Non-full wall at (7,5)
+    end
+
     -- Act
     self.fow_ray_march.cast_rays(self.fog_of_war, center)
 
@@ -193,12 +211,12 @@ function TestFowRayMarch:testWallsAreVisible()
     lu.assertEquals(self.fog_of_war.grid[5][7], 4,
         "Wall should be visible based on its distance from the center")
 
-    -- Points beyond the wall should be in shadow (invisible)
+    -- Points beyond non-full wall should be in shadow (invisible)
     lu.assertEquals(self.fog_of_war.grid[5][8], 0,
-        "Point beyond wall should be in shadow (invisible)")
+        "Point beyond non-full wall should be invisible")
 end
 
-function TestFowRayMarch:testPointsBeyondWallsAreNotVisible()
+function test_fow_ray_march:testPointsBeyondWallsAreNotVisible()
     -- Arrange
     local center = pos.new(5, 5)
 
@@ -213,18 +231,23 @@ function TestFowRayMarch:testPointsBeyondWallsAreNotVisible()
         return (x == 7 and y == 5) or (x == 5 and y == 7)
     end
 
+    collision_mock.is_full_wall_tile = function(x, y)
+        -- Non-full walls
+        return false
+    end
+
     -- Act
     self.fow_ray_march.cast_rays(self.fog_of_war, center)
 
     -- Assert
-    -- Points beyond walls should be completely dark (shadowed)
+    -- Points beyond non-full walls should be completely dark (shadowed)
     lu.assertEquals(self.fog_of_war.grid[5][8], 0,
         "Point beyond horizontal wall should be invisible")
     lu.assertEquals(self.fog_of_war.grid[8][5], 0,
         "Point beyond vertical wall should be invisible")
 end
 
-function TestFowRayMarch:testLShapedWalls()
+function test_fow_ray_march:testLShapedWalls()
     -- Arrange
     local center = pos.new(5, 5)
 
@@ -243,6 +266,11 @@ function TestFowRayMarch:testLShapedWalls()
             (x == 7 and y >= 5 and y <= 7)
     end
 
+    collision_mock.is_full_wall_tile = function(x, y)
+        -- Non-full walls
+        return false
+    end
+
     -- Act
     self.fow_ray_march.cast_rays(self.fog_of_war, center)
 
@@ -256,12 +284,12 @@ function TestFowRayMarch:testLShapedWalls()
     lu.assertEquals(self.fog_of_war.grid[6][7], 4,
         "Vertical wall segment should be visible based on distance")
 
-    -- Points beyond the wall should be in shadow
+    -- Points beyond non-full walls should be in shadow
     lu.assertEquals(self.fog_of_war.grid[5][8], 0,
         "Point beyond horizontal wall should be invisible")
 end
 
-function TestFowRayMarch:test_rooftop_visibility_handling()
+function test_fow_ray_march:test_rooftop_visibility_handling()
     -- Arrange
     local center = pos.new(5, 5)
 
@@ -275,6 +303,11 @@ function TestFowRayMarch:test_rooftop_visibility_handling()
     -- Modify the wall detection for this test to ensure the system identifies walls correctly
     collision_mock.is_wall_tile = function(x, y)
         -- Only (7,5) is a wall, (5,7) is a rooftop
+        return x == 7 and y == 5
+    end
+
+    collision_mock.is_full_wall_tile = function(x, y)
+        -- Only (7,5) is a full wall
         return x == 7 and y == 5
     end
 
@@ -319,7 +352,7 @@ function TestFowRayMarch:test_rooftop_visibility_handling()
     lu.assertEquals(self.fog_of_war.grid[7][5], 4, "Rooftop should be visible based on its distance")
 end
 
-function TestFowRayMarch:testBresenhamLine()
+function test_fow_ray_march:testBresenhamLine()
     -- Arrange
     local center = pos.new(5, 5)
 
@@ -351,17 +384,21 @@ function TestFowRayMarch:testBresenhamLine()
         "Diagonal point (7,7) should be visited")
 end
 
-function TestFowRayMarch:test_upward_visibility_beyond_walls()
+function test_fow_ray_march:test_visibility_beyond_full_wall()
     -- Arrange
     local center = pos.new(5, 5)
 
-    -- Setup a wall one tile above the center
+    -- Setup a wall one tile from center
     collision_mock.is_walkable_tile = function(x, y)
-        return not (x == 5 and y == 4) -- Wall at (5,4), one tile above center
+        return not (x == 5 and y == 4) -- Wall at (5,4)
     end
 
     collision_mock.is_wall_tile = function(x, y)
         return x == 5 and y == 4 -- Wall at (5,4)
+    end
+
+    collision_mock.is_full_wall_tile = function(x, y)
+        return x == 5 and y == 4 -- Full wall at (5,4)
     end
 
     -- Reset the grid to ensure clean state
@@ -379,9 +416,9 @@ function TestFowRayMarch:test_upward_visibility_beyond_walls()
     lu.assertEquals(self.fog_of_war.grid[4][5], 4,
         "Wall should be visible")
 
-    -- The tile beyond the wall should be visible when looking upward (special rule)
+    -- The tile beyond the wall should be visible since it's a full wall
     lu.assertNotEquals(self.fog_of_war.grid[3][5], 0,
-        "Tile beyond wall should still be visible when looking upward")
+        "Tile beyond full wall should be visible")
 
     -- But a tile two steps beyond should not be visible
     if self.fog_of_war.size.y >= 2 then -- Check to prevent out of bounds
@@ -390,4 +427,4 @@ function TestFowRayMarch:test_upward_visibility_beyond_walls()
     end
 end
 
-return TestFowRayMarch
+return test_fow_ray_march

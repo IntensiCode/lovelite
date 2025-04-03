@@ -5,10 +5,10 @@ require("src.base.table")
 local lu = require("src.libraries.luaunit")
 
 -- Define the TestWalls class
-TestWalls = {}
+test_walls = {}
 
 -- Setup mock objects for each test
-function TestWalls:setUp()
+function test_walls:setup()
     -- Create a mock dungeon module
     self.dungeon = {
         map = {
@@ -16,8 +16,8 @@ function TestWalls:setUp()
             height = 10,
             layers = {},
             tileheight = 16,
-            tilewidth = 16
-        }
+            tilewidth = 16,
+        },
     }
 
     -- Create a mock collision module
@@ -30,7 +30,7 @@ function TestWalls:setUp()
         is_wall_tile = function(x, y)
             -- Default implementation that will be overridden in tests
             return not self.collision.is_walkable_tile(x, y)
-        end
+        end,
     }
 
     -- Save the original DI if it exists
@@ -39,7 +39,7 @@ function TestWalls:setUp()
     -- Set up our mocks in the dependency injection system
     DI = {
         dungeon = self.dungeon,
-        collision = self.collision
+        collision = self.collision,
     }
 
     -- Reload the walls module to test
@@ -48,13 +48,13 @@ function TestWalls:setUp()
 end
 
 -- Cleanup after each test
-function TestWalls:tearDown()
+function test_walls:teardown()
     -- Restore the original DI
     DI = self.original_DI
 end
 
 -- Shared helper function to set up walkable tiles from an ASCII diagram
-function TestWalls:setupWalkableMapFromAscii(ascii_diagram)
+function test_walls:setup_walkable_map_from_ascii(ascii_diagram)
     -- Split the diagram into lines and remove any trailing/leading whitespace
     local lines = {}
     for line in ascii_diagram:gmatch("[^\r\n]+") do
@@ -69,7 +69,7 @@ function TestWalls:setupWalkableMapFromAscii(ascii_diagram)
             local char = line:sub(x, x)
             -- ONLY '.' represents walkable floor, anything else is a wall
             -- '_' and 'F' were being treated as walls in previous tests
-            grid[y][x] = (char == '.') and 1 or 0
+            grid[y][x] = (char == ".") and 1 or 0
         end
     end
 
@@ -90,7 +90,7 @@ function TestWalls:setupWalkableMapFromAscii(ascii_diagram)
 end
 
 -- Shared helper function to visualize full wall detection
-function TestWalls:visualizeFullWallDetection()
+function test_walls:visualize_full_wall_detection()
     local full_wall_tiles = self.walls.full_wall_tiles
     local visualized_map = {}
 
@@ -116,7 +116,7 @@ function TestWalls:visualizeFullWallDetection()
 end
 
 -- Test each of the 16 possible patterns for full wall detection
-function TestWalls:test_pattern_1()
+function test_walls:test_pattern_1()
     local ascii_diagram = [[
 WWW
 WFW
@@ -124,7 +124,7 @@ WFW
 ]]
 
     -- Setup the walkable map with a 3x3 grid centered on the test tile
-    self:setupWalkableMapFromAscii(ascii_diagram)
+    self:setup_walkable_map_from_ascii(ascii_diagram)
 
     -- Check if the center tile is walkable (should be false)
     log.debug("Center tile (2,2) walkable:", self.collision.is_walkable_tile(2, 2))
@@ -139,10 +139,13 @@ WFW
     log.debug("is_full_wall_tile result:", result)
 
     -- Check if the center tile is a full wall
-    lu.assertTrue(self.walls.is_full_wall_tile(2, 2), "Pattern 1 should identify center as a full wall")
+    lu.assertTrue(
+        self.walls.is_full_wall_tile(2, 2),
+        "Pattern 1 should identify center as a full wall"
+    )
 end
 
-function TestWalls:test_pattern_2()
+function test_walls:test_pattern_2()
     local ascii_diagram = [[
 WW.
 WFW
@@ -150,13 +153,16 @@ WFW
 ]]
 
     -- Setup the walkable map with a 3x3 grid centered on the test tile
-    self:setupWalkableMapFromAscii(ascii_diagram)
+    self:setup_walkable_map_from_ascii(ascii_diagram)
 
     -- Check if the center tile is a full wall
-    lu.assertTrue(self.walls.is_full_wall_tile(2, 2), "Pattern 2 should identify center as a full wall")
+    lu.assertTrue(
+        self.walls.is_full_wall_tile(2, 2),
+        "Pattern 2 should identify center as a full wall"
+    )
 end
 
-function TestWalls:test_pattern_3()
+function test_walls:test_pattern_3()
     local ascii_diagram = [[
 .WW
 WFW
@@ -164,13 +170,16 @@ WFW
 ]]
 
     -- Setup the walkable map with a 3x3 grid centered on the test tile
-    self:setupWalkableMapFromAscii(ascii_diagram)
+    self:setup_walkable_map_from_ascii(ascii_diagram)
 
     -- Check if the center tile is a full wall
-    lu.assertTrue(self.walls.is_full_wall_tile(2, 2), "Pattern 3 should identify center as a full wall")
+    lu.assertTrue(
+        self.walls.is_full_wall_tile(2, 2),
+        "Pattern 3 should identify center as a full wall"
+    )
 end
 
-function TestWalls:test_pattern_4()
+function test_walls:test_pattern_4()
     local ascii_diagram = [[
 .W.
 WFW
@@ -178,13 +187,16 @@ WFW
 ]]
 
     -- Setup the walkable map with a 3x3 grid centered on the test tile
-    self:setupWalkableMapFromAscii(ascii_diagram)
+    self:setup_walkable_map_from_ascii(ascii_diagram)
 
     -- Check if the center tile is a full wall
-    lu.assertTrue(self.walls.is_full_wall_tile(2, 2), "Pattern 4 should identify center as a full wall")
+    lu.assertTrue(
+        self.walls.is_full_wall_tile(2, 2),
+        "Pattern 4 should identify center as a full wall"
+    )
 end
 
-function TestWalls:test_pattern_5()
+function test_walls:test_pattern_5()
     local ascii_diagram = [[
 WWW
 WFW
@@ -192,13 +204,16 @@ WFW
 ]]
 
     -- Setup the walkable map with a 3x3 grid centered on the test tile
-    self:setupWalkableMapFromAscii(ascii_diagram)
+    self:setup_walkable_map_from_ascii(ascii_diagram)
 
     -- Check if the center tile is a full wall
-    lu.assertTrue(self.walls.is_full_wall_tile(2, 2), "Pattern 5 should identify center as a full wall")
+    lu.assertTrue(
+        self.walls.is_full_wall_tile(2, 2),
+        "Pattern 5 should identify center as a full wall"
+    )
 end
 
-function TestWalls:test_pattern_6()
+function test_walls:test_pattern_6()
     local ascii_diagram = [[
 WWW
 WFW
@@ -206,13 +221,16 @@ W..
 ]]
 
     -- Setup the walkable map with a 3x3 grid centered on the test tile
-    self:setupWalkableMapFromAscii(ascii_diagram)
+    self:setup_walkable_map_from_ascii(ascii_diagram)
 
     -- Check if the center tile is a full wall
-    lu.assertTrue(self.walls.is_full_wall_tile(2, 2), "Pattern 6 should identify center as a full wall")
+    lu.assertTrue(
+        self.walls.is_full_wall_tile(2, 2),
+        "Pattern 6 should identify center as a full wall"
+    )
 end
 
-function TestWalls:test_pattern_7()
+function test_walls:test_pattern_7()
     -- First test with no walkable tile below (should fail)
     local ascii_diagram = [[
 WWW
@@ -221,11 +239,13 @@ WWW
 ]]
 
     -- Setup the walkable map with a 3x3 grid centered on the test tile
-    self:setupWalkableMapFromAscii(ascii_diagram)
+    self:setup_walkable_map_from_ascii(ascii_diagram)
 
     -- This should NOT be a full wall since there's no walkable tile below
-    lu.assertFalse(self.walls.is_full_wall_tile(2, 2),
-        "Pattern 7 should not identify center as a full wall (no floor below)")
+    lu.assertFalse(
+        self.walls.is_full_wall_tile(2, 2),
+        "Pattern 7 should not identify center as a full wall (no floor below)"
+    )
 
     -- Correct the pattern for test by adding a walkable tile below
     ascii_diagram = [[
@@ -234,13 +254,16 @@ WFW
 W.W
 ]]
 
-    self:setupWalkableMapFromAscii(ascii_diagram)
+    self:setup_walkable_map_from_ascii(ascii_diagram)
 
     -- Now it should be a full wall
-    lu.assertTrue(self.walls.is_full_wall_tile(2, 2), "Corrected Pattern 7 should identify center as a full wall")
+    lu.assertTrue(
+        self.walls.is_full_wall_tile(2, 2),
+        "Corrected Pattern 7 should identify center as a full wall"
+    )
 end
 
-function TestWalls:test_pattern_8()
+function test_walls:test_pattern_8()
     local ascii_diagram = [[
 WW.
 WFW
@@ -248,13 +271,16 @@ WFW
 ]]
 
     -- Setup the walkable map with a 3x3 grid centered on the test tile
-    self:setupWalkableMapFromAscii(ascii_diagram)
+    self:setup_walkable_map_from_ascii(ascii_diagram)
 
     -- Check if the center tile is a full wall
-    lu.assertTrue(self.walls.is_full_wall_tile(2, 2), "Pattern 8 should identify center as a full wall")
+    lu.assertTrue(
+        self.walls.is_full_wall_tile(2, 2),
+        "Pattern 8 should identify center as a full wall"
+    )
 end
 
-function TestWalls:test_pattern_9()
+function test_walls:test_pattern_9()
     local ascii_diagram = [[
 WW.
 WFW
@@ -262,13 +288,16 @@ W..
 ]]
 
     -- Setup the walkable map with a 3x3 grid centered on the test tile
-    self:setupWalkableMapFromAscii(ascii_diagram)
+    self:setup_walkable_map_from_ascii(ascii_diagram)
 
     -- Check if the center tile is a full wall
-    lu.assertTrue(self.walls.is_full_wall_tile(2, 2), "Pattern 9 should identify center as a full wall")
+    lu.assertTrue(
+        self.walls.is_full_wall_tile(2, 2),
+        "Pattern 9 should identify center as a full wall"
+    )
 end
 
-function TestWalls:test_pattern_10()
+function test_walls:test_pattern_10()
     -- First test with no walkable tile below (should fail)
     local ascii_diagram = [[
 WW.
@@ -277,11 +306,13 @@ WWW
 ]]
 
     -- Setup the walkable map with a 3x3 grid centered on the test tile
-    self:setupWalkableMapFromAscii(ascii_diagram)
+    self:setup_walkable_map_from_ascii(ascii_diagram)
 
     -- This should NOT be a full wall since there's no walkable tile below
-    lu.assertFalse(self.walls.is_full_wall_tile(2, 2),
-        "Pattern 10 should not identify center as a full wall (no floor below)")
+    lu.assertFalse(
+        self.walls.is_full_wall_tile(2, 2),
+        "Pattern 10 should not identify center as a full wall (no floor below)"
+    )
 
     -- Correct the pattern for test by adding a walkable tile below
     ascii_diagram = [[
@@ -290,13 +321,16 @@ WFW
 W.W
 ]]
 
-    self:setupWalkableMapFromAscii(ascii_diagram)
+    self:setup_walkable_map_from_ascii(ascii_diagram)
 
     -- Now it should be a full wall
-    lu.assertTrue(self.walls.is_full_wall_tile(2, 2), "Corrected Pattern 10 should identify center as a full wall")
+    lu.assertTrue(
+        self.walls.is_full_wall_tile(2, 2),
+        "Corrected Pattern 10 should identify center as a full wall"
+    )
 end
 
-function TestWalls:test_pattern_11_through_16()
+function test_walls:test_pattern_11_through_16()
     -- Define patterns with ASCII diagrams
     local patterns = {
         -- Pattern 11: .WW, WFW, ..W
@@ -339,21 +373,25 @@ W..
 .W.
 WFW
 W.W
-]], true }
+]], true },
     }
 
     -- Test each pattern
     for i, pattern in ipairs(patterns) do
         -- Setup the walkable map with the ASCII diagram
-        self:setupWalkableMapFromAscii(pattern[1])
+        self:setup_walkable_map_from_ascii(pattern[1])
 
         -- Check if the center tile is a full wall
         local result = self.walls.is_full_wall_tile(2, 2)
-        lu.assertEquals(result, pattern[2], "Pattern " .. (i + 10) .. " should give expected result")
+        lu.assertEquals(
+            result,
+            pattern[2],
+            "Pattern " .. (i + 10) .. " should give expected result"
+        )
     end
 end
 
-function TestWalls:test_counter_examples()
+function test_walls:test_counter_examples()
     -- Test cases where the center tile should NOT be a full wall
     local counter_examples = {
         -- No wall to the left
@@ -382,22 +420,25 @@ WWW
 WWW
 W.W
 ...
-]]
+]],
     }
 
     -- Test each counter example
     for i, example in ipairs(counter_examples) do
         -- Setup the walkable map with the ASCII diagram
-        self:setupWalkableMapFromAscii(example)
+        self:setup_walkable_map_from_ascii(example)
 
         -- Check that the center tile is NOT a full wall
         local result = self.walls.is_full_wall_tile(2, 2)
-        lu.assertFalse(result, "Counter example " .. i .. " should NOT be identified as a full wall")
+        lu.assertFalse(
+            result,
+            "Counter example " .. i .. " should NOT be identified as a full wall"
+        )
     end
 end
 
 -- Shared helper function to parse expected results from ASCII diagram
-function TestWalls:make_expected(expected_result)
+function test_walls:make_expected(expected_result)
     local expected_full_walls = {}
     local lines = {}
     for line in expected_result:gmatch("[^\r\n]+") do
@@ -417,15 +458,18 @@ function TestWalls:make_expected(expected_result)
 end
 
 -- Shared helper function to verify expected full wall tiles
-function TestWalls:verify_expected(expected_full_walls)
+function test_walls:verify_expected(expected_full_walls)
     for key, _ in pairs(expected_full_walls) do
         local x, y = key:match("(%d+),(%d+)")
         x, y = tonumber(x), tonumber(y)
-        lu.assertTrue(self.walls.full_wall_tiles[key], "Tile at (" .. x .. "," .. y .. ") should be a full wall")
+        lu.assertTrue(
+            self.walls.full_wall_tiles[key],
+            "Tile at (" .. x .. "," .. y .. ") should be a full wall"
+        )
     end
 end
 
-function TestWalls:test_horizontal_wall_detection()
+function test_walls:test_horizontal_wall_detection()
     -- Input walkable map
     local ascii_diagram = [[
 WWWWW
@@ -446,13 +490,13 @@ FFFFF
 ]]
 
     -- Setup the walkable map
-    self:setupWalkableMapFromAscii(ascii_diagram)
+    self:setup_walkable_map_from_ascii(ascii_diagram)
 
     -- Act
     self.walls.identify_full_wall_tiles()
 
     -- Visualize for debugging
-    self:visualizeFullWallDetection()
+    self:visualize_full_wall_detection()
 
     -- Parse and verify expected results
     local expected_full_walls = self:make_expected(expected_result)
@@ -460,12 +504,14 @@ FFFFF
 
     -- Row 1 should not have full walls (no floor below)
     for x = 1, 5 do
-        lu.assertFalse(self.walls.full_wall_tiles[x .. ",1"] or false,
-            "Tile at (" .. x .. ",1) should not be a full wall (no floor below)")
+        lu.assertFalse(
+            self.walls.full_wall_tiles[x .. ",1"] or false,
+            "Tile at (" .. x .. ",1) should not be a full wall (no floor below)"
+        )
     end
 end
 
-function TestWalls:test_multiple_horizontal_segments()
+function test_walls:test_multiple_horizontal_segments()
     -- Input walkable map
     local ascii_diagram = [[
 WWWWWWWWWW
@@ -485,20 +531,20 @@ FFW....WFF
 ]]
 
     -- Setup the walkable map
-    self:setupWalkableMapFromAscii(ascii_diagram)
+    self:setup_walkable_map_from_ascii(ascii_diagram)
 
     -- Act
     self.walls.identify_full_wall_tiles()
 
     -- Visualize for debugging
-    self:visualizeFullWallDetection()
+    self:visualize_full_wall_detection()
 
     -- Parse and verify expected results
     local expected_full_walls = self:make_expected(expected_result)
     self:verify_expected(expected_full_walls)
 end
 
-function TestWalls:test_room_with_corridor()
+function test_walls:test_room_with_corridor()
     -- Input walkable map
     local ascii_diagram = [[
 WWWWWWWWW
@@ -526,17 +572,17 @@ WWWWWWWWW
 ]]
 
     -- Setup the walkable map with the ASCII diagram
-    self:setupWalkableMapFromAscii(ascii_diagram)
+    self:setup_walkable_map_from_ascii(ascii_diagram)
 
     -- Act
     self.walls.identify_full_wall_tiles()
 
     -- Visualize for debugging
-    self:visualizeFullWallDetection()
+    self:visualize_full_wall_detection()
 
     -- Assert
     local expected_full_walls = self:make_expected(expected_result)
     self:verify_expected(expected_full_walls)
 end
 
-return TestWalls
+return test_walls

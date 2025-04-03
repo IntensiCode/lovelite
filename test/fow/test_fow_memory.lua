@@ -3,12 +3,12 @@ require("src.base.table")
 local lu = require("src.libraries.luaunit")
 local pos = require("src.base.pos")
 
-TestFowMemory = {}
+test_fow_memory = {}
 
-function TestFowMemory:setUp()
+function test_fow_memory:setup()
     -- Reload the modules to ensure clean state for each test
-    package.loaded["src.map.fow_memory"] = nil
-    self.fow_memory = require("src.map.fow_memory")
+    package.loaded["src.map.fow.fow_memory"] = nil
+    self.fow_memory = require("src.map.fow.fow_memory")
     
     -- Create a mock fog_of_war object with minimal requirements
     self.fog_of_war = {
@@ -28,7 +28,11 @@ function TestFowMemory:setUp()
     end
 end
 
-function TestFowMemory:testEnsureGridInitialization()
+function test_fow_memory:teardown()
+    -- No teardown needed for this test
+end
+
+function test_fow_memory:testEnsureGridInitialization()
     -- Arrange
     -- Act
     self.fow_memory.ensure_grid(self.fog_of_war)
@@ -49,7 +53,7 @@ function TestFowMemory:testEnsureGridInitialization()
     end
 end
 
-function TestFowMemory:testEnsureGridDoesNotReinitialize()
+function test_fow_memory:testEnsureGridDoesNotReinitialize()
     -- Arrange
     self.fow_memory.ensure_grid(self.fog_of_war)
     
@@ -64,7 +68,7 @@ function TestFowMemory:testEnsureGridDoesNotReinitialize()
                    "Memory grid should preserve existing values when ensure_grid is called again")
 end
 
-function TestFowMemory:testUpdate()
+function test_fow_memory:testUpdate()
     -- Arrange
     self.fow_memory.ensure_grid(self.fog_of_war)
     local x, y = 3, 3
@@ -91,7 +95,7 @@ function TestFowMemory:testUpdate()
                    "Memory grid should update to higher visibility values")
 end
 
-function TestFowMemory:testApplyToGrid()
+function test_fow_memory:testApplyToGrid()
     -- Arrange
     self.fow_memory.ensure_grid(self.fog_of_war)
     
@@ -125,7 +129,7 @@ function TestFowMemory:testApplyToGrid()
                    "Tiles already visible should remain at their current visibility")
 end
 
-function TestFowMemory:testRestoreToGrid()
+function test_fow_memory:testRestoreToGrid()
     -- Arrange
     self.fow_memory.ensure_grid(self.fog_of_war)
     
@@ -157,7 +161,7 @@ function TestFowMemory:testRestoreToGrid()
                    "Tiles without memory should keep current visibility")
 end
 
-function TestFowMemory:testMemoryRecordsMaxVisibility()
+function test_fow_memory:testMemoryRecordsMaxVisibility()
     -- Arrange
     self.fow_memory.ensure_grid(self.fog_of_war)
     local x, y = 3, 3
@@ -172,4 +176,4 @@ function TestFowMemory:testMemoryRecordsMaxVisibility()
                    "Memory grid should record maximum visibility ever achieved")
 end
 
-return TestFowMemory 
+return test_fow_memory 

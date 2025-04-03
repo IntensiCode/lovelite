@@ -5,9 +5,9 @@
 -- Delegates to specialized modules for memory, ray marching, and field of view.
 
 local pos = require("src.base.pos")
-local fow_ray_march = require("src.map.fow_ray_march")
-local fow_memory = require("src.map.fow_memory")
-local fow_fov = require("src.map.fow_fov")
+local fow_ray_march = require("src.map.fow.fow_ray_march")
+local fow_memory = require("src.map.fow.fow_memory")
+local fow_fov = require("src.map.fow.fow_fov")
 
 local fow_reveal = {}
 

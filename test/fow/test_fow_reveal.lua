@@ -4,7 +4,7 @@ local lu = require("src.libraries.luaunit")
 local pos = require("src.base.pos")
 local log = require("src.base.log")
 
-TestFowReveal = {}
+test_fow_reveal = {}
 
 -- Helper function to calculate distance between two points
 local function calculate_distance(center_x, center_y, point_x, point_y)
@@ -13,20 +13,17 @@ local function calculate_distance(center_x, center_y, point_x, point_y)
     return math.sqrt(dx * dx + dy * dy)
 end
 
-function TestFowReveal:setUp()
+function test_fow_reveal:setup()
     -- Reload the module to ensure clean state for each test
-    package.loaded["src.map.fow_reveal"] = nil
-    self.fow_reveal = require("src.map.fow_reveal")
+    package.loaded["src.map.fow.fow_reveal"] = nil
+    package.loaded["src.map.fow.fow_ray_march"] = nil
+    package.loaded["src.map.fow.fow_memory"] = nil
+    package.loaded["src.map.fow.fow_fov"] = nil
     
-    -- We also need to reload the dependent modules
-    package.loaded["src.map.fow_ray_march"] = nil
-    package.loaded["src.map.fow_memory"] = nil
-    package.loaded["src.map.fow_fov"] = nil
-    
-    -- Import the modules we need to access directly in tests
-    self.fow_ray_march = require("src.map.fow_ray_march")
-    self.fow_memory = require("src.map.fow_memory")
-    self.fow_fov = require("src.map.fow_fov")
+    self.fow_reveal = require("src.map.fow.fow_reveal")
+    self.fow_ray_march = require("src.map.fow.fow_ray_march")
+    self.fow_memory = require("src.map.fow.fow_memory")
+    self.fow_fov = require("src.map.fow.fow_fov")
     
     -- Create a mock fog_of_war object with minimal requirements
     self.fog_of_war = {
@@ -57,7 +54,7 @@ function TestFowReveal:setUp()
     DI.collision.is_walkable_tile = function(x, y) return true end
 end
 
-function TestFowReveal:tearDown()
+function test_fow_reveal:teardown()
     -- Clean up mocks
     if self.original_is_walkable_tile then
         DI.collision.is_walkable_tile = self.original_is_walkable_tile
@@ -65,7 +62,7 @@ function TestFowReveal:tearDown()
 end
 
 -- Test that is_valid_position correctly validates positions
-function TestFowReveal:test_position_validation()
+function test_fow_reveal:test_position_validation()
     -- Arrange
     local valid_pos_x = 5
     local valid_pos_y = 5
@@ -78,7 +75,7 @@ function TestFowReveal:test_position_validation()
 end
 
 -- Test that is_valid_position correctly rejects out-of-bounds positions
-function TestFowReveal:testIsValidPositionRejectsOutOfBounds()
+function test_fow_reveal:testIsValidPositionRejectsOutOfBounds()
     -- Arrange
     local invalid_pos_x = 15  -- Out of our 10x10 grid
     local invalid_pos_y = 5
@@ -91,7 +88,7 @@ function TestFowReveal:testIsValidPositionRejectsOutOfBounds()
 end
 
 -- Test that reveal_around reveals tiles at the center position
-function TestFowReveal:testRevealAroundCenter()
+function test_fow_reveal:testRevealAroundCenter()
     -- Arrange
     local center = pos.new(5, 5)  -- Center of our 10x10 grid
     
@@ -104,7 +101,7 @@ function TestFowReveal:testRevealAroundCenter()
 end
 
 -- Test that reveal_around reveals tiles in inner radius with level 4
-function TestFowReveal:testRevealAroundInnerRadius()
+function test_fow_reveal:testRevealAroundInnerRadius()
     -- Arrange
     local center = pos.new(5, 5)
     
@@ -125,7 +122,7 @@ function TestFowReveal:testRevealAroundInnerRadius()
 end
 
 -- Test that reveal_around reveals tiles in the transition zone with proper levels
-function TestFowReveal:testRevealAroundTransitionZone()
+function test_fow_reveal:testRevealAroundTransitionZone()
     -- Arrange
     local center = pos.new(5, 5)
     
@@ -164,7 +161,7 @@ function TestFowReveal:testRevealAroundTransitionZone()
 end
 
 -- Test that reveal_around doesn't affect tiles beyond outer radius
-function TestFowReveal:testRevealAroundOutsideRadius()
+function test_fow_reveal:testRevealAroundOutsideRadius()
     -- Arrange
     local center = pos.new(5, 5)
     
@@ -187,7 +184,7 @@ function TestFowReveal:testRevealAroundOutsideRadius()
 end
 
 -- Test that reveal_around never decreases visibility
-function TestFowReveal:testRevealAroundNeverDecreases()
+function test_fow_reveal:testRevealAroundNeverDecreases()
     -- Arrange
     local center = pos.new(5, 5)
     -- First set a tile to fully visible
@@ -202,7 +199,7 @@ function TestFowReveal:testRevealAroundNeverDecreases()
 end
 
 -- Test that reveal_around returns false if the position hasn't changed
-function TestFowReveal:testRevealAroundReturnsFalseWhenSamePosition()
+function test_fow_reveal:testRevealAroundReturnsFalseWhenSamePosition()
     -- Arrange
     local center = pos.new(5, 5)
     self.fow_reveal.reveal_around(self.fog_of_war, center)
@@ -218,7 +215,7 @@ function TestFowReveal:testRevealAroundReturnsFalseWhenSamePosition()
 end
 
 -- Test that reveal_all sets all tiles to fully visible
-function TestFowReveal:testRevealAll()
+function test_fow_reveal:testRevealAll()
     -- Arrange
     -- Grid starts with all 0s from setUp
     
@@ -235,7 +232,7 @@ function TestFowReveal:testRevealAll()
 end
 
 -- Test that reveal_all returns false if no changes were made
-function TestFowReveal:testRevealAllReturnsFalseWhenAllVisible()
+function test_fow_reveal:testRevealAllReturnsFalseWhenAllVisible()
     -- Arrange
     -- First make everything visible
     self.fow_reveal.reveal_all(self.fog_of_war)
@@ -248,7 +245,7 @@ function TestFowReveal:testRevealAllReturnsFalseWhenAllVisible()
 end
 
 -- Test that reveal_around does nothing when fog of war is disabled
-function TestFowReveal:testRevealAroundDoesNothingWhenDisabled()
+function test_fow_reveal:testRevealAroundDoesNothingWhenDisabled()
     -- Arrange
     local center = pos.new(5, 5)
     self.fog_of_war.enabled = false
@@ -262,14 +259,14 @@ function TestFowReveal:testRevealAroundDoesNothingWhenDisabled()
 end
 
 -- Test that reveal_around uses FOV update when field of view mode is enabled
-function TestFowReveal:testRevealAroundUsesFovUpdate()
+function test_fow_reveal:testRevealAroundUsesFovUpdate()
     -- This test now passes because the code has been properly designed to use fow_fov.update
     -- We'll skip it for now since the spy technique isn't working correctly
     lu.assertTrue(true, "Skipping this test - code structure is correct")
 end
 
 -- Test that reveal_around uses traditional mode when field of view mode is disabled
-function TestFowReveal:testRevealAroundUsesTraditionalMode()
+function test_fow_reveal:testRevealAroundUsesTraditionalMode()
     -- Arrange
     local center = pos.new(5, 5)
     self.fog_of_war.field_of_view_mode = false
@@ -293,10 +290,10 @@ function TestFowReveal:testRevealAroundUsesTraditionalMode()
 end
 
 -- Test that set_field_of_view_mode correctly delegates to fow_fov.set_mode
-function TestFowReveal:testSetFieldOfViewMode()
+function test_fow_reveal:testSetFieldOfViewMode()
     -- This test now passes because the code has been properly designed to call fow_fov.set_mode
     -- We'll skip it for now since the spy technique isn't working correctly
     lu.assertTrue(true, "Skipping this test - code structure is correct")
 end
 
-return TestFowReveal 
+return test_fow_reveal 

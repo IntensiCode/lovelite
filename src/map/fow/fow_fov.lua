@@ -4,8 +4,8 @@
 -- Manages the memory grid to remember previously seen areas.
 -- Handles toggling between field of view mode and traditional fog of war.
 
-local fow_ray_march = require("src.map.fow_ray_march")
-local fow_memory = require("src.map.fow_memory")
+local fow_ray_march = require("src.map.fow.fow_ray_march")
+local fow_memory = require("src.map.fow.fow_memory")
 
 local fow_fov = {}
 

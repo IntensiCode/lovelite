@@ -3,17 +3,17 @@ require("src.base.table")
 local lu = require("src.libraries.luaunit")
 local pos = require("src.base.pos")
 
-TestFowFov = {}
+test_fow_fov = {}
 
-function TestFowFov:setUp()
+function test_fow_fov:setup()
     -- Reload the module to ensure clean state for each test
-    package.loaded["src.map.fow_fov"] = nil
-    package.loaded["src.map.fow_ray_march"] = nil
-    package.loaded["src.map.fow_memory"] = nil
+    package.loaded["src.map.fow.fow_fov"] = nil
+    package.loaded["src.map.fow.fow_ray_march"] = nil
+    package.loaded["src.map.fow.fow_memory"] = nil
     
-    self.fow_fov = require("src.map.fow_fov")
-    self.fow_ray_march = require("src.map.fow_ray_march")
-    self.fow_memory = require("src.map.fow_memory")
+    self.fow_fov = require("src.map.fow.fow_fov")
+    self.fow_ray_march = require("src.map.fow.fow_ray_march")
+    self.fow_memory = require("src.map.fow.fow_memory")
     
     -- Create a mock fog_of_war object with minimal requirements
     self.fog_of_war = {
@@ -46,14 +46,14 @@ function TestFowFov:setUp()
     DI.collision.is_walkable_tile = function(x, y) return true end
 end
 
-function TestFowFov:tearDown()
+function test_fow_fov:teardown()
     -- Clean up mocks
     if self.original_is_walkable_tile then
         DI.collision.is_walkable_tile = self.original_is_walkable_tile
     end
 end
 
-function TestFowFov:testUpdateResetsVisibility()
+function test_fow_fov:testUpdateResetsVisibility()
     -- Arrange
     -- Set some tiles to visible
     for y = 1, self.fog_of_war.size.y do
@@ -75,7 +75,7 @@ function TestFowFov:testUpdateResetsVisibility()
                    "Center position should be visible")
 end
 
-function TestFowFov:testUpdateRayCasting()
+function test_fow_fov:testUpdateRayCasting()
     -- Arrange
     local center = pos.new(5, 5)
     
@@ -102,7 +102,7 @@ function TestFowFov:testUpdateRayCasting()
                    "Distant tile should remain hidden")
 end
 
-function TestFowFov:testUpdateUpdatesMemoryGrid()
+function test_fow_fov:testUpdateUpdatesMemoryGrid()
     -- Arrange
     local center = pos.new(5, 5)
     
@@ -119,7 +119,7 @@ function TestFowFov:testUpdateUpdatesMemoryGrid()
                       "Memory grid should record visibility for medium distance tiles")
 end
 
-function TestFowFov:testUpdateAppliesMemoryForPreviouslySeen()
+function test_fow_fov:testUpdateAppliesMemoryForPreviouslySeen()
     -- Arrange
     -- First reveal from center1
     local center1 = pos.new(3, 3)
@@ -143,7 +143,7 @@ function TestFowFov:testUpdateAppliesMemoryForPreviouslySeen()
                    "New center should be fully visible")
 end
 
-function TestFowFov:testSetModeEnabledDoesNothing()
+function test_fow_fov:testSetModeEnabledDoesNothing()
     -- Arrange
     self.fog_of_war.field_of_view_mode = true
     
@@ -154,7 +154,7 @@ function TestFowFov:testSetModeEnabledDoesNothing()
     lu.assertFalse(changed, "set_mode should return false when already in the requested mode")
 end
 
-function TestFowFov:testSetModeDisabledRestoresMemory()
+function test_fow_fov:testSetModeDisabledRestoresMemory()
     -- Arrange
     self.fog_of_war.field_of_view_mode = true
     
@@ -180,7 +180,7 @@ function TestFowFov:testSetModeDisabledRestoresMemory()
                    "Partially visible memory should be restored to grid")
 end
 
-function TestFowFov:testSetModeEnabledSavesMemory()
+function test_fow_fov:testSetModeEnabledSavesMemory()
     -- Arrange
     self.fog_of_war.field_of_view_mode = false
     
@@ -202,7 +202,7 @@ function TestFowFov:testSetModeEnabledSavesMemory()
                    "Memory should record current visibility when enabling FOV")
 end
 
-function TestFowFov:testFieldOfViewDarkensAreasOutsideView()
+function test_fow_fov:testFieldOfViewDarkensAreasOutsideView()
     -- Arrange
     local center1 = pos.new(3, 3)
     local center2 = pos.new(8, 8)
@@ -219,7 +219,7 @@ function TestFowFov:testFieldOfViewDarkensAreasOutsideView()
                       "Point outside field of view should be darkened")
 end
 
-function TestFowFov:testFieldOfViewMinimumVisibilityLevel()
+function test_fow_fov:testFieldOfViewMinimumVisibilityLevel()
     -- Arrange
     local center1 = pos.new(3, 3)
     local center2 = pos.new(8, 8)
@@ -237,4 +237,4 @@ function TestFowFov:testFieldOfViewMinimumVisibilityLevel()
                    "Previously seen areas should have minimum visibility level 1")
 end
 
-return TestFowFov 
+return test_fow_fov 

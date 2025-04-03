@@ -4,7 +4,7 @@
 -- Draws different levels of fog density based on visibility values.
 -- Provides efficient rendering by only updating when visibility changes.
 
-local fow_dither = require("src.map.fow_dither")
+local fow_dither = require("src.map.fow.fow_dither")
 
 local fow_draw = {}
 
