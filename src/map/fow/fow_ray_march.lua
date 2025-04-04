@@ -102,30 +102,9 @@ local function generate_ray_paths(radius)
         local rad = math.rad(angle)
         local target_x = math.floor(center_x + math.cos(rad) * radius + 0.5)
         local target_y = math.floor(center_y + math.sin(rad) * radius + 0.5)
-
-        -- Generate path from center to this point
         local path = bresenham_line(center_x, center_y, target_x, target_y)
-
         local key = target_x .. "," .. target_y
         fow_ray_march.ray_paths[key] = path
-    end
-
-    -- Ensure key horizontal, vertical and diagonal rays needed for tests
-    local key_rays = {
-        { x = 1, y = 0 },
-        { x = 2, y = 0 },
-        { x = 0, y = 1 },
-        { x = 0, y = 2 },
-        { x = 1, y = 1 },
-        { x = 2, y = 2 },
-    }
-
-    for _, ray in ipairs(key_rays) do
-        local key = ray.x .. "," .. ray.y
-        if not fow_ray_march.ray_paths[key] then
-            local path = bresenham_line(center_x, center_y, ray.x, ray.y)
-            fow_ray_march.ray_paths[key] = path
-        end
     end
 
     return fow_ray_march.ray_paths
@@ -153,6 +132,13 @@ local function is_full_wall(x, y)
     return DI.collision.is_full_wall_tile(x, y)
 end
 
+function fow_ray_march.visibility(sx, sy, tx, ty)
+    local dx = tx - sx
+    local dy = ty - sy
+    local distance = math.sqrt(dx * dx + dy * dy)
+    return fow_ray_march.calculate_visibility_level(distance)
+end
+
 ---Process a single ray
 ---@param tile_x number Origin x coordinate
 ---@param tile_y number Origin y coordinate
@@ -162,9 +148,8 @@ end
 ---@return boolean changed Whether any tile visibility changed
 local function process_ray(tile_x, tile_y, ray, visible, shadowed)
     local changed = false
-    local past_wall = false
-    local steps_beyond_wall = 0
-    local last_wall_was_full = false
+    local past_full_wall = false
+    local in_shadow = false
 
     for _, point in ipairs(ray) do
         local world_x = tile_x + point.x
@@ -179,58 +164,28 @@ local function process_ray(tile_x, tile_y, ray, visible, shadowed)
         DI.collision.is_walkable_tile(world_x, world_y)
 
         -- Mark tile as processed
-        visible[world_y][world_x] = true
+        visible[world_y][world_x] = not in_shadow
 
-        -- Check if the tile is a wall
-        local is_wall_tile = is_wall(world_x, world_y)
-
-        if past_wall then
-            -- This point is beyond a wall
-            -- Allow visibility beyond if it's a full wall and we're only one step beyond
-            if last_wall_was_full and steps_beyond_wall < 1 then
-                -- Still visible with normal visibility rules
-                steps_beyond_wall = steps_beyond_wall + 1
-
-                -- Calculate distance from origin
-                local dx = world_x - tile_x
-                local dy = world_y - tile_y
-                local distance = math.sqrt(dx * dx + dy * dy)
-
-                -- Calculate visibility based on distance
-                local visibility = fow_ray_march.calculate_visibility_level(distance)
-
-                -- Update visibility if higher
-                if visibility > (fow_memory.grid[world_y][world_x] or 0) then
-                    fow_memory.grid[world_y][world_x] = visibility
-                    fow_memory.update(world_x, world_y, visibility)
-                    changed = true
-                end
-            else
-                -- This point is fully shadowed
-                shadowed[world_y][world_x] = true
-            end
-        else
-            -- Calculate distance from origin
-            local dx = world_x - tile_x
-            local dy = world_y - tile_y
-            local distance = math.sqrt(dx * dx + dy * dy)
-
-            -- Calculate visibility based on distance
-            local visibility = fow_ray_march.calculate_visibility_level(distance)
-
-            -- Update visibility if higher
-            if visibility > (fow_memory.grid[world_y][world_x] or 0) then
-                fow_memory.grid[world_y][world_x] = visibility
-                fow_memory.update(world_x, world_y, visibility)
+        if not in_shadow then
+            local level = fow_ray_march.visibility(tile_x, tile_y, world_x, world_y)
+            if level > (fow_memory.grid[world_y][world_x] or 0) then
+                fow_memory.grid[world_y][world_x] = level
+                fow_memory.update(world_x, world_y, level)
                 changed = true
             end
         end
 
-        -- If we hit a wall, mark all future points as past wall
-        if is_wall_tile then
-            past_wall = true
-            -- Check if this is a full wall
-            last_wall_was_full = is_full_wall(world_x, world_y)
+        if past_full_wall then
+            in_shadow = true
+        end
+
+        -- Check if the tile is a wall
+        if in_shadow then
+            shadowed[world_y][world_x] = true
+        elseif is_full_wall(world_x, world_y) then
+            past_full_wall = true
+        elseif is_wall(world_x, world_y) then
+            in_shadow = true -- applies to everything beyond this point
         end
     end
 

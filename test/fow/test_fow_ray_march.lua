@@ -214,10 +214,8 @@ function test_fow_ray_march:test_rooftop_visibility_handling()
     -- Wall should be visible
     lu.assertEquals(fow_memory.get_visibility(7, 5), 4)
 
-    -- One tile beyond should be visible at full level since it's within inner_radius
-    lu.assertEquals(fow_memory.get_visibility(8, 5), 4)
-
-    -- Two tiles beyond should be dark (shadowed)
+    -- Points beyond should be dark (shadowed) when viewed horizontally
+    lu.assertEquals(fow_memory.get_visibility(8, 5), 0)
     lu.assertEquals(fow_memory.get_visibility(9, 5), 0)
 end
 
@@ -254,10 +252,8 @@ function test_fow_ray_march:test_visibility_beyond_full_wall()
     -- Wall should be visible
     lu.assertEquals(fow_memory.get_visibility(7, 5), 4)
 
-    -- One tile beyond should be visible at full level since it's within inner_radius
-    lu.assertEquals(fow_memory.get_visibility(8, 5), 4)
-
-    -- Two tiles beyond should be dark (shadowed)
+    -- Points beyond should be dark (shadowed) when viewed horizontally
+    lu.assertEquals(fow_memory.get_visibility(8, 5), 0)
     lu.assertEquals(fow_memory.get_visibility(9, 5), 0)
 end
 
