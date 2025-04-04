@@ -76,12 +76,6 @@ local function run_tests_and_quit(args, parser)
     log.dev = true -- To make log.assert fail
     local runner = require("test")
     runner.parse_test_option(args.test)
-    if (runner.invalid_spec()) then
-        log.error("Invalid test option arguments\n")
-        print(parser:get_help())
-        love.event.quit(1)
-        return
-    end
     local success = runner.run()
     love.event.quit(success and 0 or 1)
 end

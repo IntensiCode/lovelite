@@ -45,22 +45,17 @@ function runner.reset_results()
 end
 
 function runner._accept_test_file(file_name)
-    local file_base = file_name:gsub("%.lua$", "")
     if #runner.test_files == 0 then
         return true
-    elseif table.contains(runner.test_files, file_base) then
-        return true
-    else
-        return false
     end
-end
 
-function runner.invalid_spec()
-    for _, file in ipairs(runner.test_files) do
-        if file:match("test/") or file:match("%.lua$") then
+    -- Check if any requested test file is a substring of this file_name
+    for _, test_file in ipairs(runner.test_files) do
+        if file_name:find(test_file, 1, true) then
             return true
         end
     end
+
     return false
 end
 
