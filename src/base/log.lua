@@ -19,18 +19,9 @@ log = {
 }
 
 -- Helper function to format log messages
-local function format_message(level, ...)
+local function format_message(level, msg, ...)
     local timestamp = os.date("%H:%M:%S")
-    local args = { ... }
-    local message = ""
-
-    for i, v in ipairs(args) do
-        message = message .. tostring(v)
-        if i < #args then
-            message = message .. " "
-        end
-    end
-
+    local message = string.format(tostring(msg), ...)
     return string.format("[%s] [%s] %s", timestamp, level, message)
 end
 
@@ -54,34 +45,34 @@ local function get_level_color(level)
 end
 
 -- Error level logging
-function log.error(...)
+function log.error(msg, ...)
     if log.level >= LOG_LEVELS.ERROR then
         local color_start, color_end = get_level_color("ERROR")
-        print(color_start .. format_message("ERROR", ...) .. color_end)
+        print(color_start .. format_message("ERROR", msg, ...) .. color_end)
     end
 end
 
 -- Warning level logging
-function log.warn(...)
+function log.warn(msg, ...)
     if log.level >= LOG_LEVELS.WARN then
         local color_start, color_end = get_level_color("WARN")
-        print(color_start .. format_message("WARN", ...) .. color_end)
+        print(color_start .. format_message("WARN", msg, ...) .. color_end)
     end
 end
 
 -- Info level logging
-function log.info(...)
+function log.info(msg, ...)
     if log.level >= LOG_LEVELS.INFO then
         local color_start, color_end = get_level_color("INFO")
-        print(color_start .. format_message("INFO", ...) .. color_end)
+        print(color_start .. format_message("INFO", msg, ...) .. color_end)
     end
 end
 
 -- Debug level logging
-function log.debug(...)
+function log.debug(msg, ...)
     if log.level >= LOG_LEVELS.DEBUG then
         local color_start, color_end = get_level_color("DEBUG")
-        print(color_start .. format_message("DEBUG", ...) .. color_end)
+        print(color_start .. format_message("DEBUG", msg, ...) .. color_end)
     end
 end
 
