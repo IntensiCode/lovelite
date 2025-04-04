@@ -27,11 +27,6 @@ end
 ---@param distance number Distance from player
 ---@return number visibility_level The calculated visibility level (0-4)
 function fow_ray_march.calculate_visibility_level(fog_of_war, distance)
-    -- Special case for test compatibility - distance 4.0 needs to be level 3 in tests
-    if math.abs(distance - 4.0) < 0.001 and fog_of_war._is_test_case then
-        return 3
-    end
-
     if distance <= fow_config.inner_radius then
         -- Fully visible zone
         return 4

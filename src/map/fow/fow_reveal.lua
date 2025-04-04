@@ -49,13 +49,6 @@ local function process_traditional_mode(fog_of_war, center_pos)
     
     for y = 1, fow_config.size.y do
         for x = 1, fow_config.size.x do
-            -- Skip the special test coordinates which were already handled
-            if fog_of_war._is_test_case and 
-               center_pos.x == 5 and center_pos.y == 5 and
-               ((x == 9 and y == 5) or (x == 10 and y == 8)) then
-                goto continue
-            end
-            
             -- Calculate distance and visibility level
             local distance = calculate_distance(center_pos.x, center_pos.y, x, y)
             local visibility = calculate_visibility_for_traditional_mode(fog_of_war, distance)
@@ -104,13 +97,7 @@ function fow_reveal.reveal_around(fog_of_war, center_pos)
         return fow_fov.update(fog_of_war, center_pos)
     end
     
-    -- Traditional FOW mode - process differently based on whether it's a test case
-    if fog_of_war._is_test_case then
-        return process_traditional_mode(fog_of_war, center_pos)
-    else
-        -- For gameplay, use ray marching for better handling of walls and shadows
-        return fow_ray_march.cast_rays(fog_of_war, center_pos)
-    end
+    return fow_ray_march.cast_rays(fog_of_war, center_pos)
 end
 
 ---Reveal the entire map

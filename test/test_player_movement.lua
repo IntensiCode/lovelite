@@ -261,12 +261,4 @@ function test_player_movement:test_no_movement_when_both_sliding_attempts_fail()
     )
 end
 
--- Run tests
-if not arg then
-    arg = {}
-end
-if arg[1] == "test" then
-    lu.LuaUnit.run("test_player_movement")
-end
-
 return test_player_movement

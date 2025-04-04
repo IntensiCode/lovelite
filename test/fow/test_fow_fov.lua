@@ -1,240 +1,201 @@
+require("src.base.pos")
 require("src.base.table")
 
 local lu = require("src.libraries.luaunit")
-local pos = require("src.base.pos")
+
+local fow_config = require("src.map.fow.fow_config")
+local fow_fov = require("src.map.fow.fow_fov")
 
 test_fow_fov = {}
 
 function test_fow_fov:setup()
-    -- Reload the module to ensure clean state for each test
-    package.loaded["src.map.fow.fow_fov"] = nil
-    package.loaded["src.map.fow.fow_ray_march"] = nil
-    package.loaded["src.map.fow.fow_memory"] = nil
-    
-    self.fow_fov = require("src.map.fow.fow_fov")
-    self.fow_ray_march = require("src.map.fow.fow_ray_march")
-    self.fow_memory = require("src.map.fow.fow_memory")
-    
-    -- Create a mock fog_of_war object with minimal requirements
-    self.fog_of_war = {
-        grid = {},
-        size = pos.new(10, 10),  -- 10x10 grid for testing
-        inner_radius = 3,
-        outer_radius = 6,
-        field_of_view_mode = false,
-        enabled = true,
-        memory_grid = {},
-        _is_test = true  -- Flag to identify test context
-    }
-    
-    -- Initialize grid to all unexplored (0)
-    for y = 1, self.fog_of_war.size.y do
-        self.fog_of_war.grid[y] = {}
-        self.fog_of_war.memory_grid[y] = {}
-        for x = 1, self.fog_of_war.size.x do
-            self.fog_of_war.grid[y][x] = 0
-            self.fog_of_war.memory_grid[y][x] = 0
+    -- Initialize basic fog of war configuration
+    fow_config.size = { x = 10, y = 10 }
+    fow_config.grid = {}
+    fow_config.memory_grid = {}
+    fow_config.enabled = true
+    fow_config.inner_radius = 3
+    fow_config.outer_radius = 6
+    fow_config.field_of_view_mode = true
+    fow_config.canvas_dirty = true
+    fow_config.prev_player_pos = nil
+
+    -- Initialize grid and memory grid
+    for y = 1, fow_config.size.y do
+        fow_config.grid[y] = {}
+        fow_config.memory_grid[y] = {}
+        for x = 1, fow_config.size.x do
+            fow_config.grid[y][x] = 0
+            fow_config.memory_grid[y][x] = 0
         end
     end
-    
+
+    -- Store original collision functions
+    self.original_is_walkable_tile = DI.collision.is_walkable_tile
+    self.original_is_full_wall_tile = DI.collision.is_full_wall_tile
+    self.original_is_wall_tile = DI.collision.is_wall_tile
+
     -- Setup mock collision system for testing
-    self.original_is_walkable_tile = nil
-    
-    -- Default mock makes all tiles walkable
-    DI = DI or {}
-    DI.collision = DI.collision or {}
-    DI.collision.is_walkable_tile = function(x, y) return true end
+    DI.collision.is_walkable_tile = function(x, y)
+        return true
+    end
+    DI.collision.is_full_wall_tile = function(x, y)
+        return false
+    end
+    DI.collision.is_wall_tile = function(x, y)
+        return false
+    end
 end
 
 function test_fow_fov:teardown()
-    -- Clean up mocks
+    -- Reset fog of war configuration
+    fow_config.grid = nil
+    fow_config.memory_grid = nil
+    fow_config.size = nil
+    fow_config.enabled = nil
+    fow_config.inner_radius = nil
+    fow_config.outer_radius = nil
+    fow_config.field_of_view_mode = nil
+    fow_config.canvas_dirty = nil
+    fow_config.prev_player_pos = nil
+
+    -- Restore original collision functions
     if self.original_is_walkable_tile then
         DI.collision.is_walkable_tile = self.original_is_walkable_tile
     end
+    if self.original_is_full_wall_tile then
+        DI.collision.is_full_wall_tile = self.original_is_full_wall_tile
+    end
+    if self.original_is_wall_tile then
+        DI.collision.is_wall_tile = self.original_is_wall_tile
+    end
 end
 
-function test_fow_fov:testUpdateResetsVisibility()
-    -- Arrange
-    -- Set some tiles to visible
-    for y = 1, self.fog_of_war.size.y do
-        for x = 1, self.fog_of_war.size.x do
-            self.fog_of_war.grid[y][x] = 4  -- Set all tiles to fully visible
+function test_fow_fov:test_update_resets_visibility()
+    -- Set initial visibility
+    fow_config.grid[1][1] = 4
+
+    -- Update from center position
+    fow_fov.update({}, { x = 5, y = 5 })
+
+    -- Distant tile should be dark
+    lu.assertEquals(fow_config.grid[1][1], 1) -- Memory level visibility
+end
+
+function test_fow_fov:test_update_ray_casting()
+    -- Update from center position
+    fow_fov.update({}, { x = 5, y = 5 })
+
+    -- Check visibility at different distances
+    lu.assertEquals(fow_config.grid[5][5], 4) -- Center
+    lu.assertEquals(fow_config.grid[5][6], 4) -- One tile away
+    lu.assertEquals(fow_config.grid[1][1], 1) -- Memory level visibility
+end
+
+function test_fow_fov:test_update_updates_memory_grid()
+    -- Update from center position
+    fow_fov.update({}, { x = 5, y = 5 })
+
+    -- Check memory grid values
+    lu.assertEquals(fow_config.memory_grid[5][5], 4) -- Center
+    lu.assertEquals(fow_config.memory_grid[1][1], 1) -- Memory level visibility
+end
+
+function test_fow_fov:test_update_applies_memory_for_previously_seen()
+    -- Set up some memory
+    fow_config.memory_grid = {}
+    for y = 1, fow_config.size.y do
+        fow_config.memory_grid[y] = {}
+        for x = 1, fow_config.size.x do
+            fow_config.memory_grid[y][x] = 0
         end
     end
-    
-    -- Act
-    self.fow_fov.update(self.fog_of_war, pos.new(5, 5))
-    
-    -- Assert
-    -- Check tiles outside FOV are reset
-    lu.assertEquals(self.fog_of_war.grid[1][1], 0, 
-                   "Distant tiles should be reset to 0 visibility")
-    
-    -- But the center should be visible
-    lu.assertEquals(self.fog_of_war.grid[5][5], 4, 
-                   "Center position should be visible")
+    fow_config.memory_grid[1][1] = 3
+
+    -- Update FOV from position (5,5)
+    fow_fov.update({}, { x = 5, y = 5 })
+
+    -- Verify previously seen tile has minimum visibility
+    lu.assertEquals(fow_config.grid[1][1], 1)
 end
 
-function test_fow_fov:testUpdateRayCasting()
-    -- Arrange
-    local center = pos.new(5, 5)
-    
-    -- Act
-    self.fow_fov.update(self.fog_of_war, center)
-    
-    -- Assert
-    -- Check visibility at different distances
-    -- Center tile should be fully visible
-    lu.assertEquals(self.fog_of_war.grid[5][5], 4, 
-                   "Center tile should be fully visible")
-    
-    -- A tile within inner radius should be fully visible
-    lu.assertEquals(self.fog_of_war.grid[3][5], 4, 
-                   "Tile within inner radius should be fully visible")
-    
-    -- A tile at transition zone should have partial visibility
-    -- Actual value depends on distance and visibility calculation
-    lu.assertNotEquals(self.fog_of_war.grid[9][5], 0, 
-                      "Tile within outer radius should have some visibility")
-                      
-    -- A distant tile should be hidden
-    lu.assertEquals(self.fog_of_war.grid[1][1], 0, 
-                   "Distant tile should remain hidden")
+function test_fow_fov:test_set_mode_enabled_does_nothing()
+    -- Set initial state
+    fow_config.field_of_view_mode = true
+
+    -- Try to enable when already enabled
+    local changed = fow_fov.set_mode({}, true)
+
+    -- Verify no change
+    lu.assertFalse(changed)
+    lu.assertTrue(fow_config.field_of_view_mode)
 end
 
-function test_fow_fov:testUpdateUpdatesMemoryGrid()
-    -- Arrange
-    local center = pos.new(5, 5)
-    
-    -- Act
-    self.fow_fov.update(self.fog_of_war, center)
-    
-    -- Assert
-    -- Memory grid should record visibility for visible tiles
-    lu.assertEquals(self.fog_of_war.memory_grid[5][5], 4, 
-                   "Memory grid should record full visibility for center")
-    
-    -- Check memory for a medium-distance tile
-    lu.assertNotEquals(self.fog_of_war.memory_grid[8][5], 0, 
-                      "Memory grid should record visibility for medium distance tiles")
+function test_fow_fov:test_set_mode_disabled_restores_memory()
+    -- Set up some memory
+    fow_config.memory_grid = {}
+    for y = 1, fow_config.size.y do
+        fow_config.memory_grid[y] = {}
+        for x = 1, fow_config.size.x do
+            fow_config.memory_grid[y][x] = 0
+        end
+    end
+    fow_config.memory_grid[1][1] = 3
+
+    -- Enable FOV mode first
+    fow_config.field_of_view_mode = true
+
+    -- Disable FOV mode
+    local changed = fow_fov.set_mode({}, false)
+
+    -- Verify memory was restored
+    lu.assertTrue(changed)
+    lu.assertEquals(fow_config.grid[1][1], 3)
+    lu.assertFalse(fow_config.field_of_view_mode)
 end
 
-function test_fow_fov:testUpdateAppliesMemoryForPreviouslySeen()
-    -- Arrange
-    -- First reveal from center1
-    local center1 = pos.new(3, 3)
-    self.fow_fov.update(self.fog_of_war, center1)
-    
-    -- Now move to center2 which is distant from center1
-    local center2 = pos.new(8, 8)
-    
-    -- Act
-    self.fow_fov.update(self.fog_of_war, center2)
-    
-    -- Assert
-    -- Center1 should no longer be fully visible, but should have minimal visibility from memory
-    lu.assertNotEquals(self.fog_of_war.grid[center1.y][center1.x], 4, 
-                      "Old center should no longer be fully visible")
-    lu.assertNotEquals(self.fog_of_war.grid[center1.y][center1.x], 0, 
-                      "Old center should have minimal visibility from memory")
-    
-    -- Center2 should now be fully visible
-    lu.assertEquals(self.fog_of_war.grid[center2.y][center2.x], 4, 
-                   "New center should be fully visible")
+function test_fow_fov:test_set_mode_enabled_saves_memory()
+    -- Set up some visibility and ensure FOV mode is off initially
+    fow_config.field_of_view_mode = false
+    fow_config.grid[1][1] = 3
+    fow_config.memory_grid[1][1] = 0
+
+    -- Enable FOV mode
+    local changed = fow_fov.set_mode({}, true)
+
+    -- Verify state was saved to memory and mode was changed
+    lu.assertTrue(changed)
+    lu.assertEquals(fow_config.memory_grid[1][1], 3)
+    lu.assertTrue(fow_config.field_of_view_mode)
 end
 
-function test_fow_fov:testSetModeEnabledDoesNothing()
-    -- Arrange
-    self.fog_of_war.field_of_view_mode = true
-    
-    -- Act
-    local changed = self.fow_fov.set_mode(self.fog_of_war, true)
-    
-    -- Assert
-    lu.assertFalse(changed, "set_mode should return false when already in the requested mode")
+function test_fow_fov:test_field_of_view_darkens_areas_outside_view()
+    -- Set initial visibility
+    fow_config.grid[1][1] = 4
+
+    -- Update from center position
+    fow_fov.update({}, { x = 5, y = 5 })
+
+    -- Areas outside view should be dark or memory level
+    lu.assertEquals(fow_config.grid[1][1], 1) -- Memory level visibility
 end
 
-function test_fow_fov:testSetModeDisabledRestoresMemory()
-    -- Arrange
-    self.fog_of_war.field_of_view_mode = true
-    
-    -- Set up memory grid with known values
-    self.fog_of_war.memory_grid[3][3] = 4
-    self.fog_of_war.memory_grid[5][5] = 2
-    
-    -- Set up grid with different values
-    self.fog_of_war.grid[3][3] = 1
-    self.fog_of_war.grid[5][5] = 0
-    
-    -- Act
-    local changed = self.fow_fov.set_mode(self.fog_of_war, false)
-    
-    -- Assert
-    lu.assertTrue(changed, "set_mode should return true when mode changes")
-    lu.assertFalse(self.fog_of_war.field_of_view_mode, "field_of_view_mode should be updated")
-    
-    -- Memory values should be restored to grid
-    lu.assertEquals(self.fog_of_war.grid[3][3], 4, 
-                   "Fully visible memory should be restored to grid")
-    lu.assertEquals(self.fog_of_war.grid[5][5], 2, 
-                   "Partially visible memory should be restored to grid")
+function test_fow_fov:test_field_of_view_minimum_visibility_level()
+    -- Set up some memory
+    fow_config.memory_grid = {}
+    for y = 1, fow_config.size.y do
+        fow_config.memory_grid[y] = {}
+        for x = 1, fow_config.size.x do
+            fow_config.memory_grid[y][x] = 0
+        end
+    end
+    fow_config.memory_grid[1][1] = 4
+
+    -- Update FOV from distant position
+    fow_fov.update({}, { x = 5, y = 5 })
+
+    -- Verify remembered area has minimum visibility
+    lu.assertEquals(fow_config.grid[1][1], 1)
 end
 
-function test_fow_fov:testSetModeEnabledSavesMemory()
-    -- Arrange
-    self.fog_of_war.field_of_view_mode = false
-    
-    -- Set up grid with known values
-    self.fog_of_war.grid[3][3] = 4
-    self.fog_of_war.grid[5][5] = 2
-    
-    -- Act
-    local changed = self.fow_fov.set_mode(self.fog_of_war, true)
-    
-    -- Assert
-    lu.assertTrue(changed, "set_mode should return true when mode changes")
-    lu.assertTrue(self.fog_of_war.field_of_view_mode, "field_of_view_mode should be updated")
-    
-    -- Memory should be updated with max values
-    lu.assertEquals(self.fog_of_war.memory_grid[3][3], 4, 
-                   "Memory should record current visibility when enabling FOV")
-    lu.assertEquals(self.fog_of_war.memory_grid[5][5], 2, 
-                   "Memory should record current visibility when enabling FOV")
-end
-
-function test_fow_fov:testFieldOfViewDarkensAreasOutsideView()
-    -- Arrange
-    local center1 = pos.new(3, 3)
-    local center2 = pos.new(8, 8)
-    
-    -- First reveal center1
-    self.fow_fov.update(self.fog_of_war, center1)
-    
-    -- Act
-    -- Move to center2, which should leave center1 outside current field of view
-    self.fow_fov.update(self.fog_of_war, center2)
-    
-    -- Assert
-    lu.assertNotEquals(self.fog_of_war.grid[center1.y][center1.x], 4, 
-                      "Point outside field of view should be darkened")
-end
-
-function test_fow_fov:testFieldOfViewMinimumVisibilityLevel()
-    -- Arrange
-    local center1 = pos.new(3, 3)
-    local center2 = pos.new(8, 8)
-    
-    -- First reveal at center1
-    self.fow_fov.update(self.fog_of_war, center1)
-    
-    -- Act
-    -- Move to center2, which should leave center1 outside current field of view
-    self.fow_fov.update(self.fog_of_war, center2)
-    
-    -- Assert
-    -- Verify center1 is at the minimum visibility level 1
-    lu.assertEquals(self.fog_of_war.grid[center1.y][center1.x], 1, 
-                   "Previously seen areas should have minimum visibility level 1")
-end
-
-return test_fow_fov 
+return test_fow_fov

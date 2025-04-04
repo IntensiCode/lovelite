@@ -115,7 +115,6 @@ function test_walls:visualize_full_wall_detection()
     end
 end
 
--- Test each of the 16 possible patterns for full wall detection
 function test_walls:test_pattern_1()
     local ascii_diagram = [[
 WWW
@@ -254,12 +253,13 @@ WFW
 W.W
 ]]
 
+    -- Setup the walkable map with a 3x3 grid centered on the test tile
     self:setup_walkable_map_from_ascii(ascii_diagram)
 
     -- Now it should be a full wall
     lu.assertTrue(
         self.walls.is_full_wall_tile(2, 2),
-        "Corrected Pattern 7 should identify center as a full wall"
+        "Pattern 7 should identify center as a full wall (with floor below)"
     )
 end
 

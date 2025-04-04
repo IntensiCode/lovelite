@@ -1,8 +1,11 @@
+require("src.base.log")
+require("src.base.pos")
 require("src.base.table")
 
 local lu = require("src.libraries.luaunit")
-local pos = require("src.base.pos")
-local log = require("src.base.log")
+
+local fow_config = require("src.map.fow.fow_config")
+local fow_reveal = require("src.map.fow.fow_reveal")
 
 test_fow_reveal = {}
 
@@ -14,286 +17,224 @@ local function calculate_distance(center_x, center_y, point_x, point_y)
 end
 
 function test_fow_reveal:setup()
-    -- Reload the module to ensure clean state for each test
-    package.loaded["src.map.fow.fow_reveal"] = nil
-    package.loaded["src.map.fow.fow_ray_march"] = nil
-    package.loaded["src.map.fow.fow_memory"] = nil
-    package.loaded["src.map.fow.fow_fov"] = nil
-    
-    self.fow_reveal = require("src.map.fow.fow_reveal")
-    self.fow_ray_march = require("src.map.fow.fow_ray_march")
-    self.fow_memory = require("src.map.fow.fow_memory")
-    self.fow_fov = require("src.map.fow.fow_fov")
-    
-    -- Create a mock fog_of_war object with minimal requirements
-    self.fog_of_war = {
-        grid = {},
-        size = pos.new(10, 10),  -- 10x10 grid for testing
-        inner_radius = 3,
-        outer_radius = 6,
-        enabled = true,
-        field_of_view_mode = false,
-        prev_player_pos = nil,
-        memory_grid = {}
-    }
-    
-    -- Initialize grid to all unexplored (0)
-    for y = 1, self.fog_of_war.size.y do
-        self.fog_of_war.grid[y] = {}
-        self.fog_of_war.memory_grid[y] = {}
-        for x = 1, self.fog_of_war.size.x do
-            self.fog_of_war.grid[y][x] = 0
-            self.fog_of_war.memory_grid[y][x] = 0
+    -- Initialize basic fog of war configuration
+    fow_config.size = { x = 10, y = 10 }
+    fow_config.grid = {}
+    fow_config.memory_grid = {}
+    fow_config.enabled = true
+    fow_config.inner_radius = 3
+    fow_config.outer_radius = 6
+    fow_config.field_of_view_mode = false
+    fow_config.canvas_dirty = true
+    fow_config.prev_player_pos = nil
+
+    -- Initialize grid and memory grid
+    for y = 1, fow_config.size.y do
+        fow_config.grid[y] = {}
+        fow_config.memory_grid[y] = {}
+        for x = 1, fow_config.size.x do
+            fow_config.grid[y][x] = 0
+            fow_config.memory_grid[y][x] = 0
         end
     end
+
+    -- Store original collision functions
+    self.original_is_walkable_tile = DI.collision.is_walkable_tile
+    self.original_is_full_wall_tile = DI.collision.is_full_wall_tile
+    self.original_is_wall_tile = DI.collision.is_wall_tile
     
     -- Setup mock collision system for testing
-    self.original_is_walkable_tile = nil
-    DI = DI or {}
-    DI.collision = DI.collision or {}
-    DI.collision.is_walkable_tile = function(x, y) return true end
+    DI.collision.is_walkable_tile = function(x, y)
+        return true
+    end
+    DI.collision.is_full_wall_tile = function(x, y)
+        return false
+    end
+    DI.collision.is_wall_tile = function(x, y)
+        return false
+    end
 end
 
 function test_fow_reveal:teardown()
-    -- Clean up mocks
+    -- Reset fog of war configuration
+    fow_config.grid = nil
+    fow_config.memory_grid = nil
+    fow_config.size = nil
+    fow_config.enabled = nil
+    fow_config.inner_radius = nil
+    fow_config.outer_radius = nil
+    fow_config.field_of_view_mode = nil
+    fow_config.canvas_dirty = nil
+    fow_config.prev_player_pos = nil
+
+    -- Restore original collision functions
     if self.original_is_walkable_tile then
         DI.collision.is_walkable_tile = self.original_is_walkable_tile
     end
-end
-
--- Test that is_valid_position correctly validates positions
-function test_fow_reveal:test_position_validation()
-    -- Arrange
-    local valid_pos_x = 5
-    local valid_pos_y = 5
-    
-    -- Act
-    local result = self.fow_reveal.is_valid_position(self.fog_of_war, valid_pos_x, valid_pos_y)
-    
-    -- Assert
-    lu.assertTrue(result, "Position within grid should be valid")
-end
-
--- Test that is_valid_position correctly rejects out-of-bounds positions
-function test_fow_reveal:testIsValidPositionRejectsOutOfBounds()
-    -- Arrange
-    local invalid_pos_x = 15  -- Out of our 10x10 grid
-    local invalid_pos_y = 5
-    
-    -- Act
-    local result = self.fow_reveal.is_valid_position(self.fog_of_war, invalid_pos_x, invalid_pos_y)
-    
-    -- Assert
-    lu.assertFalse(result, "Position outside grid should be invalid")
-end
-
--- Test that reveal_around reveals tiles at the center position
-function test_fow_reveal:testRevealAroundCenter()
-    -- Arrange
-    local center = pos.new(5, 5)  -- Center of our 10x10 grid
-    
-    -- Act
-    local changed = self.fow_reveal.reveal_around(self.fog_of_war, center)
-    
-    -- Assert
-    lu.assertTrue(changed, "reveal_around should indicate changes were made")
-    lu.assertEquals(self.fog_of_war.grid[5][5], 4, "Center tile should be fully visible (level 4)")
-end
-
--- Test that reveal_around reveals tiles in inner radius with level 4
-function test_fow_reveal:testRevealAroundInnerRadius()
-    -- Arrange
-    local center = pos.new(5, 5)
-    
-    -- Act
-    self.fow_reveal.reveal_around(self.fog_of_war, center)
-    
-    -- Assert
-    -- Test a point within inner radius (inner radius is 3)
-    local x, y = 3, 5
-    local distance = calculate_distance(center.x, center.y, x, y)
-    
-    -- Verify the distance is within inner radius
-    lu.assertTrue(distance <= self.fog_of_war.inner_radius, 
-                  "Point distance should be within inner radius (expected <= " .. self.fog_of_war.inner_radius .. ", got " .. distance .. ")")
-    
-    -- Verify visibility level is correct
-    lu.assertEquals(self.fog_of_war.grid[y][x], 4, "Tile within inner radius should be fully visible (level 4)")
-end
-
--- Test that reveal_around reveals tiles in the transition zone with proper levels
-function test_fow_reveal:testRevealAroundTransitionZone()
-    -- Arrange
-    local center = pos.new(5, 5)
-    
-    -- Act
-    self.fow_reveal.reveal_around(self.fog_of_war, center)
-    
-    -- Simply test points at various distances from center
-    
-    -- Center position should be fully visible (level 4)
-    lu.assertEquals(self.fog_of_war.grid[5][5], 4, 
-                    "Center tile should be fully visible (level 4)")
-    
-    -- A point in inner radius should be fully visible (level 4)
-    -- (5,3) is distance 2 from center
-    lu.assertEquals(self.fog_of_war.grid[3][5], 4, 
-                    "Tile within inner radius should be fully visible (level 4)")
-    
-    -- A point just beyond inner radius should have medium/light fog (level 2-3)
-    -- (5,1) is distance 4 from center (5,5)
-    local distance_from_center = calculate_distance(center.x, center.y, 5, 1)
-    log.debug(string.format("Distance from center to (5,1): %.2f", distance_from_center))
-    
-    -- Due to the transition zone calculations, this point could be level 2 or 3
-    -- depending on exact implementation - we just verify it's partially visible
-    local visibility = self.fog_of_war.grid[1][5]
-    lu.assertTrue(visibility >= 2 and visibility <= 3, 
-                  "Tile just beyond inner radius should have partial visibility (levels 2-3)")
-    
-    -- A point near outer edge should have heavy fog (level 1)
-    lu.assertEquals(self.fog_of_war.grid[8][10], 1, 
-                    "Tile near outer edge should have heavy fog (level 1)")
-    
-    -- A point outside visibility radius should be unseen (level 0)
-    lu.assertEquals(self.fog_of_war.grid[10][1], 0,
-                    "Tile outside visibility radius should be unseen (level 0)")
-end
-
--- Test that reveal_around doesn't affect tiles beyond outer radius
-function test_fow_reveal:testRevealAroundOutsideRadius()
-    -- Arrange
-    local center = pos.new(5, 5)
-    
-    -- Act
-    self.fow_reveal.reveal_around(self.fog_of_war, center)
-    
-    -- A point at corner should be outside outer radius (6) from center (5,5)
-    local outside_x = 1
-    local outside_y = 10
-    local distance = calculate_distance(center.x, center.y, outside_x, outside_y)
-    
-    -- Verify the distance is beyond outer radius
-    lu.assertTrue(distance > self.fog_of_war.outer_radius,
-                 "Point distance should be beyond outer radius (expected > " .. self.fog_of_war.outer_radius .. 
-                 ", got " .. distance .. ")")
-    
-    -- Verify visibility level is correct
-    lu.assertEquals(self.fog_of_war.grid[outside_y][outside_x], 0, 
-                    "Tile outside outer radius should remain unseen (level 0)")
-end
-
--- Test that reveal_around never decreases visibility
-function test_fow_reveal:testRevealAroundNeverDecreases()
-    -- Arrange
-    local center = pos.new(5, 5)
-    -- First set a tile to fully visible
-    self.fog_of_war.grid[10][10] = 4
-    
-    -- Act
-    self.fow_reveal.reveal_around(self.fog_of_war, center)
-    
-    -- Assert
-    lu.assertEquals(self.fog_of_war.grid[10][10], 4, 
-                    "Previously visible tile should remain fully visible")
-end
-
--- Test that reveal_around returns false if the position hasn't changed
-function test_fow_reveal:testRevealAroundReturnsFalseWhenSamePosition()
-    -- Arrange
-    local center = pos.new(5, 5)
-    self.fow_reveal.reveal_around(self.fog_of_war, center)
-    
-    -- Set previous position to current, simulating no movement
-    self.fog_of_war.prev_player_pos = pos.new(center.x, center.y)
-    
-    -- Act
-    local changed = self.fow_reveal.reveal_around(self.fog_of_war, center)
-    
-    -- Assert
-    lu.assertFalse(changed, "reveal_around should return false when position hasn't changed")
-end
-
--- Test that reveal_all sets all tiles to fully visible
-function test_fow_reveal:testRevealAll()
-    -- Arrange
-    -- Grid starts with all 0s from setUp
-    
-    -- Act
-    local changed = self.fow_reveal.reveal_all(self.fog_of_war)
-    
-    -- Assert
-    lu.assertTrue(changed, "reveal_all should indicate changes were made")
-    
-    -- Check a few tiles to make sure they're all visible
-    lu.assertEquals(self.fog_of_war.grid[1][1], 4, "Corner tile should be fully visible after reveal_all")
-    lu.assertEquals(self.fog_of_war.grid[5][5], 4, "Center tile should be fully visible after reveal_all")
-    lu.assertEquals(self.fog_of_war.grid[10][10], 4, "Opposite corner should be fully visible after reveal_all")
-end
-
--- Test that reveal_all returns false if no changes were made
-function test_fow_reveal:testRevealAllReturnsFalseWhenAllVisible()
-    -- Arrange
-    -- First make everything visible
-    self.fow_reveal.reveal_all(self.fog_of_war)
-    
-    -- Act
-    local changed = self.fow_reveal.reveal_all(self.fog_of_war)
-    
-    -- Assert
-    lu.assertFalse(changed, "reveal_all should return false when all tiles were already visible")
-end
-
--- Test that reveal_around does nothing when fog of war is disabled
-function test_fow_reveal:testRevealAroundDoesNothingWhenDisabled()
-    -- Arrange
-    local center = pos.new(5, 5)
-    self.fog_of_war.enabled = false
-    
-    -- Act
-    local changed = self.fow_reveal.reveal_around(self.fog_of_war, center)
-    
-    -- Assert
-    lu.assertFalse(changed, "reveal_around should return false when fog of war is disabled")
-    lu.assertEquals(self.fog_of_war.grid[5][5], 0, "No tiles should be revealed when fog of war is disabled")
-end
-
--- Test that reveal_around uses FOV update when field of view mode is enabled
-function test_fow_reveal:testRevealAroundUsesFovUpdate()
-    -- This test now passes because the code has been properly designed to use fow_fov.update
-    -- We'll skip it for now since the spy technique isn't working correctly
-    lu.assertTrue(true, "Skipping this test - code structure is correct")
-end
-
--- Test that reveal_around uses traditional mode when field of view mode is disabled
-function test_fow_reveal:testRevealAroundUsesTraditionalMode()
-    -- Arrange
-    local center = pos.new(5, 5)
-    self.fog_of_war.field_of_view_mode = false
-    
-    -- Create a spy on fow_fov.update
-    local original_fov_update = self.fow_fov.update
-    local fov_update_called = false
-    self.fow_fov.update = function(...)
-        fov_update_called = true
-        return original_fov_update(...)
+    if self.original_is_full_wall_tile then
+        DI.collision.is_full_wall_tile = self.original_is_full_wall_tile
     end
-    
-    -- Act
-    self.fow_reveal.reveal_around(self.fog_of_war, center)
-    
-    -- Assert
-    lu.assertFalse(fov_update_called, "fow_fov.update should not be called when field_of_view_mode is false")
-    
-    -- Restore original function
-    self.fow_fov.update = original_fov_update
+    if self.original_is_wall_tile then
+        DI.collision.is_wall_tile = self.original_is_wall_tile
+    end
 end
 
--- Test that set_field_of_view_mode correctly delegates to fow_fov.set_mode
-function test_fow_reveal:testSetFieldOfViewMode()
-    -- This test now passes because the code has been properly designed to call fow_fov.set_mode
-    -- We'll skip it for now since the spy technique isn't working correctly
-    lu.assertTrue(true, "Skipping this test - code structure is correct")
+function test_fow_reveal:test_position_validation()
+    -- Test valid positions
+    lu.assertTrue(fow_reveal.is_valid_position({}, 1, 1))
+    lu.assertTrue(fow_reveal.is_valid_position({}, 10, 10))
+
+    -- Test invalid positions
+    lu.assertFalse(fow_reveal.is_valid_position({}, 0, 1))
+    lu.assertFalse(fow_reveal.is_valid_position({}, 1, 0))
+    lu.assertFalse(fow_reveal.is_valid_position({}, 11, 1))
+    lu.assertFalse(fow_reveal.is_valid_position({}, 1, 11))
+end
+
+function test_fow_reveal:test_is_valid_position_rejects_out_of_bounds()
+    -- Test positions outside grid
+    lu.assertFalse(fow_reveal.is_valid_position({}, 0, 5))
+    lu.assertFalse(fow_reveal.is_valid_position({}, 5, 0))
+    lu.assertFalse(fow_reveal.is_valid_position({}, 11, 5))
+    lu.assertFalse(fow_reveal.is_valid_position({}, 5, 11))
+end
+
+function test_fow_reveal:test_reveal_around_center()
+    -- Reveal around center position
+    local changed = fow_reveal.reveal_around({}, { x = 5, y = 5 })
+
+    -- Verify changes were made
+    lu.assertTrue(changed)
+    lu.assertEquals(fow_config.grid[5][5], 4) -- Center should be fully visible
+    lu.assertEquals(fow_config.grid[5][6], 4) -- Adjacent tile should be visible
+    lu.assertEquals(fow_config.grid[1][1], 1) -- Distant tile should have memory level visibility
+end
+
+function test_fow_reveal:test_reveal_around_inner_radius()
+    -- Reveal around center position
+    fow_reveal.reveal_around({}, { x = 5, y = 5 })
+
+    -- Check visibility within inner radius
+    lu.assertEquals(fow_config.grid[5][5], 4) -- Center
+    lu.assertEquals(fow_config.grid[5][6], 4) -- One tile away
+    lu.assertEquals(fow_config.grid[5][7], 4) -- Two tiles away
+    lu.assertEquals(fow_config.grid[5][8], 4) -- Three tiles away
+end
+
+function test_fow_reveal:test_reveal_around_transition_zone()
+    -- Reveal around center position
+    fow_reveal.reveal_around({}, { x = 5, y = 5 })
+
+    -- Check visibility in transition zone
+    lu.assertEquals(fow_config.grid[5][5], 4) -- Center tile should be fully visible
+    lu.assertEquals(fow_config.grid[5][8], 4) -- Edge of inner radius
+    lu.assertEquals(fow_config.grid[5][9], 2) -- Medium fog zone
+    lu.assertEquals(fow_config.grid[5][10], 2) -- Still medium fog zone
+end
+
+function test_fow_reveal:test_reveal_around_outside_radius()
+    -- Reveal around center position
+    fow_reveal.reveal_around({}, { x = 5, y = 5 })
+
+    -- Check visibility beyond outer radius (outer_radius is 6)
+    -- Points at (1,1), (2,1), (3,1) are about 5.7 tiles away from (5,5)
+    -- We need to check points that are > 6 tiles away
+    lu.assertEquals(fow_config.grid[1][10], 0) -- About 7.1 tiles away
+    lu.assertEquals(fow_config.grid[10][1], 0) -- About 7.1 tiles away
+    lu.assertEquals(fow_config.grid[10][10], 0) -- About 7.1 tiles away
+end
+
+function test_fow_reveal:test_reveal_around_never_decreases()
+    -- Set initial visibility
+    fow_config.grid[5][5] = 4
+
+    -- Reveal around different position
+    fow_reveal.reveal_around({}, { x = 8, y = 8 })
+
+    -- Verify visibility wasn't decreased
+    lu.assertEquals(fow_config.grid[5][5], 4)
+end
+
+function test_fow_reveal:test_reveal_around_returns_false_when_same_position()
+    -- First reveal
+    fow_reveal.reveal_around({}, { x = 5, y = 5 })
+
+    -- Second reveal at same position
+    local changed = fow_reveal.reveal_around({}, { x = 5, y = 5 })
+
+    -- Verify no changes were made
+    lu.assertFalse(changed)
+end
+
+function test_fow_reveal:test_reveal_all()
+    -- Reveal entire map
+    local changed = fow_reveal.reveal_all({})
+
+    -- Verify all tiles are fully visible
+    lu.assertTrue(changed)
+    for y = 1, fow_config.size.y do
+        for x = 1, fow_config.size.x do
+            lu.assertEquals(fow_config.grid[y][x], 4)
+        end
+    end
+end
+
+function test_fow_reveal:test_reveal_all_returns_false_when_all_visible()
+    -- First reveal
+    fow_reveal.reveal_all({})
+
+    -- Second reveal
+    local changed = fow_reveal.reveal_all({})
+
+    -- Verify no changes were made
+    lu.assertFalse(changed)
+end
+
+function test_fow_reveal:test_reveal_around_does_nothing_when_disabled()
+    -- Disable fog of war
+    fow_config.enabled = false
+
+    -- Try to reveal
+    local changed = fow_reveal.reveal_around({}, { x = 5, y = 5 })
+
+    -- Verify no changes were made
+    lu.assertFalse(changed)
+    lu.assertEquals(fow_config.grid[5][5], 0)
+end
+
+function test_fow_reveal:test_reveal_around_uses_fov_update()
+    -- Enable field of view mode
+    fow_config.field_of_view_mode = true
+
+    -- Reveal around position
+    local changed = fow_reveal.reveal_around({}, { x = 5, y = 5 })
+
+    -- Verify FOV update was used
+    lu.assertTrue(changed)
+    lu.assertEquals(fow_config.grid[5][5], 4) -- Center should be visible
+    lu.assertEquals(fow_config.grid[1][1], 1) -- Distant tile should have memory level visibility
+end
+
+function test_fow_reveal:test_reveal_around_uses_traditional_mode()
+    -- Ensure field of view mode is disabled
+    fow_config.field_of_view_mode = false
+
+    -- Reveal around position
+    local changed = fow_reveal.reveal_around({}, { x = 5, y = 5 })
+
+    -- Verify traditional mode was used
+    lu.assertTrue(changed)
+    lu.assertEquals(fow_config.grid[5][5], 4) -- Center should be visible
+    lu.assertNotEquals(fow_config.grid[5][6], 0) -- Adjacent tile should have some visibility
+end
+
+function test_fow_reveal:test_set_field_of_view_mode()
+    -- Enable field of view mode
+    local changed = fow_reveal.set_field_of_view_mode({}, true)
+
+    -- Verify mode was changed
+    lu.assertTrue(changed)
+    lu.assertTrue(fow_config.field_of_view_mode)
 end
 
 return test_fow_reveal 

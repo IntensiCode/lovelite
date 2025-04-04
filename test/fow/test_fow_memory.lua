@@ -1,179 +1,148 @@
+require("src.base.pos")
 require("src.base.table")
 
 local lu = require("src.libraries.luaunit")
-local pos = require("src.base.pos")
+
+local fow_config = require("src.map.fow.fow_config")
+local fow_memory = require("src.map.fow.fow_memory")
 
 test_fow_memory = {}
 
 function test_fow_memory:setup()
-    -- Reload the modules to ensure clean state for each test
-    package.loaded["src.map.fow.fow_memory"] = nil
-    self.fow_memory = require("src.map.fow.fow_memory")
-    
-    -- Create a mock fog_of_war object with minimal requirements
-    self.fog_of_war = {
-        grid = {},
-        size = pos.new(10, 10),  -- 10x10 grid for testing
-        inner_radius = 3,
-        outer_radius = 6,
-        enabled = true
-    }
-    
-    -- Initialize grid to all unexplored (0)
-    for y = 1, self.fog_of_war.size.y do
-        self.fog_of_war.grid[y] = {}
-        for x = 1, self.fog_of_war.size.x do
-            self.fog_of_war.grid[y][x] = 0
+    -- Initialize basic fog of war configuration
+    fow_config.size = { x = 10, y = 10 }
+    fow_config.grid = {}
+    fow_config.memory_grid = nil
+
+    -- Initialize grid
+    for y = 1, fow_config.size.y do
+        fow_config.grid[y] = {}
+        for x = 1, fow_config.size.x do
+            fow_config.grid[y][x] = 0
         end
     end
 end
 
 function test_fow_memory:teardown()
-    -- No teardown needed for this test
+    fow_config.grid = nil
+    fow_config.memory_grid = nil
+    fow_config.size = nil
 end
 
-function test_fow_memory:testEnsureGridInitialization()
-    -- Arrange
-    -- Act
-    self.fow_memory.ensure_grid(self.fog_of_war)
-    
-    -- Assert
-    lu.assertNotNil(self.fog_of_war.memory_grid, "Memory grid should be created")
-    
-    -- Check that memory grid has correct dimensions and default values
-    lu.assertEquals(#self.fog_of_war.memory_grid, self.fog_of_war.size.y, "Memory grid should have correct height")
-    lu.assertEquals(#self.fog_of_war.memory_grid[1], self.fog_of_war.size.x, "Memory grid should have correct width")
-    
-    -- Verify values are initialized to 0
-    for y = 1, self.fog_of_war.size.y do
-        for x = 1, self.fog_of_war.size.x do
-            lu.assertEquals(self.fog_of_war.memory_grid[y][x], 0, 
-                           string.format("Memory grid at (%d,%d) should be initialized to 0", x, y))
+function test_fow_memory:test_ensure_grid_initialization()
+    -- Test initial state
+    lu.assertNil(fow_config.memory_grid)
+
+    -- Initialize memory grid
+    fow_memory.ensure_grid({})
+
+    -- Verify grid was created
+    lu.assertNotNil(fow_config.memory_grid)
+    lu.assertEquals(#fow_config.memory_grid, fow_config.size.y)
+    lu.assertEquals(#fow_config.memory_grid[1], fow_config.size.x)
+
+    -- Verify all cells are initialized to 0
+    for y = 1, fow_config.size.y do
+        for x = 1, fow_config.size.x do
+            lu.assertEquals(fow_config.memory_grid[y][x], 0)
         end
     end
 end
 
-function test_fow_memory:testEnsureGridDoesNotReinitialize()
-    -- Arrange
-    self.fow_memory.ensure_grid(self.fog_of_war)
-    
-    -- Set a specific memory value
-    self.fog_of_war.memory_grid[5][5] = 4
-    
-    -- Act
-    self.fow_memory.ensure_grid(self.fog_of_war)
-    
-    -- Assert
-    lu.assertEquals(self.fog_of_war.memory_grid[5][5], 4, 
-                   "Memory grid should preserve existing values when ensure_grid is called again")
+function test_fow_memory:test_ensure_grid_does_not_reinitialize()
+    -- First initialization
+    fow_memory.ensure_grid({})
+
+    -- Modify a value
+    fow_config.memory_grid[1][1] = 4
+
+    -- Call ensure_grid again
+    fow_memory.ensure_grid({})
+
+    -- Verify value was preserved
+    lu.assertEquals(fow_config.memory_grid[1][1], 4)
 end
 
-function test_fow_memory:testUpdate()
-    -- Arrange
-    self.fow_memory.ensure_grid(self.fog_of_war)
-    local x, y = 3, 3
-    
-    -- Act
-    self.fow_memory.update(self.fog_of_war, x, y, 2)
-    
-    -- Assert
-    lu.assertEquals(self.fog_of_war.memory_grid[y][x], 2, 
-                   "Memory grid should update to the new visibility value")
-    
-    -- Act again with lower value
-    self.fow_memory.update(self.fog_of_war, x, y, 1)
-    
-    -- Assert
-    lu.assertEquals(self.fog_of_war.memory_grid[y][x], 2, 
-                   "Memory grid should keep the maximum visibility ever achieved")
-    
-    -- Act again with higher value
-    self.fow_memory.update(self.fog_of_war, x, y, 4)
-    
-    -- Assert
-    lu.assertEquals(self.fog_of_war.memory_grid[y][x], 4, 
-                   "Memory grid should update to higher visibility values")
+function test_fow_memory:test_update()
+    -- Initialize grid
+    fow_memory.ensure_grid({})
+
+    -- Update a position
+    fow_memory.update({}, 1, 1, 3)
+
+    -- Verify update
+    lu.assertEquals(fow_config.memory_grid[1][1], 3)
+
+    -- Update with lower value
+    fow_memory.update({}, 1, 1, 2)
+
+    -- Verify maximum is kept
+    lu.assertEquals(fow_config.memory_grid[1][1], 3)
+
+    -- Update with higher value
+    fow_memory.update({}, 1, 1, 4)
+
+    -- Verify new maximum
+    lu.assertEquals(fow_config.memory_grid[1][1], 4)
 end
 
-function test_fow_memory:testApplyToGrid()
-    -- Arrange
-    self.fow_memory.ensure_grid(self.fog_of_war)
-    
-    -- Set up memory values
-    self.fog_of_war.memory_grid[3][3] = 4  -- Fully visible before
-    self.fog_of_war.memory_grid[5][5] = 2  -- Medium fog before
-    
-    -- All grid values start at 0 (unexplored)
-    
-    -- Act
-    self.fow_memory.apply_to_grid(self.fog_of_war)
-    
-    -- Assert
-    lu.assertEquals(self.fog_of_war.grid[3][3], 1, 
-                   "Tiles with memory but not currently visible should get minimal visibility")
-    lu.assertEquals(self.fog_of_war.grid[5][5], 1, 
-                   "All previously seen tiles should have same minimal visibility regardless of previous level")
-    
-    -- Test that tiles without memory remain unexplored
-    lu.assertEquals(self.fog_of_war.grid[7][7], 0, 
-                   "Tiles without memory should remain unexplored")
-    
-    -- Test that setting grid value before applying memory keeps current value
-    self.fog_of_war.grid[3][3] = 0  -- Reset to unexplored
-    self.fog_of_war.grid[9][9] = 4  -- Set to fully visible
-    self.fow_memory.apply_to_grid(self.fog_of_war)
-    
-    lu.assertEquals(self.fog_of_war.grid[3][3], 1, 
-                   "Memory should still apply to tiles reset to unexplored")
-    lu.assertEquals(self.fog_of_war.grid[9][9], 4, 
-                   "Tiles already visible should remain at their current visibility")
+function test_fow_memory:test_apply_to_grid()
+    -- Initialize grid
+    fow_memory.ensure_grid({})
+
+    -- Set some memory values
+    fow_memory.update({}, 1, 1, 3)
+    fow_memory.update({}, 2, 2, 2)
+
+    -- Apply memory to grid
+    fow_memory.apply_to_grid({})
+
+    -- Verify remembered areas get minimum visibility
+    lu.assertEquals(fow_config.grid[1][1], 1)
+    lu.assertEquals(fow_config.grid[2][2], 1)
+
+    -- Verify unremembered areas stay dark
+    lu.assertEquals(fow_config.grid[3][3], 0)
 end
 
-function test_fow_memory:testRestoreToGrid()
-    -- Arrange
-    self.fow_memory.ensure_grid(self.fog_of_war)
-    
-    -- Set up memory values
-    self.fog_of_war.memory_grid[3][3] = 4  -- Fully visible before
-    self.fog_of_war.memory_grid[5][5] = 2  -- Medium fog before
-    
-    -- Act
-    self.fow_memory.restore_to_grid(self.fog_of_war)
-    
-    -- Assert
-    lu.assertEquals(self.fog_of_war.grid[3][3], 4, 
-                   "Tiles with memory should be restored to their maximum visibility")
-    lu.assertEquals(self.fog_of_war.grid[5][5], 2, 
-                   "Tiles with partial visibility in memory should be restored to that level")
-    
-    -- Test that tiles without memory remain unexplored
-    lu.assertEquals(self.fog_of_war.grid[7][7], 0, 
-                   "Tiles without memory should remain unexplored")
-    
-    -- Test interaction with existing grid values
-    self.fog_of_war.grid[3][3] = 1  -- Set to minimal visibility
-    self.fog_of_war.grid[9][9] = 4  -- Set to fully visible
-    self.fow_memory.restore_to_grid(self.fog_of_war)
-    
-    lu.assertEquals(self.fog_of_war.grid[3][3], 4, 
-                   "Restore should overwrite current grid values with memory values")
-    lu.assertEquals(self.fog_of_war.grid[9][9], 4, 
-                   "Tiles without memory should keep current visibility")
+function test_fow_memory:test_restore_to_grid()
+    -- Initialize grid
+    fow_memory.ensure_grid({})
+
+    -- Set some memory values
+    fow_memory.update({}, 1, 1, 3)
+    fow_memory.update({}, 2, 2, 2)
+
+    -- Restore memory to grid
+    fow_memory.restore_to_grid({})
+
+    -- Verify full memory values are restored
+    lu.assertEquals(fow_config.grid[1][1], 3)
+    lu.assertEquals(fow_config.grid[2][2], 2)
+
+    -- Verify unremembered areas stay dark
+    lu.assertEquals(fow_config.grid[3][3], 0)
 end
 
-function test_fow_memory:testMemoryRecordsMaxVisibility()
-    -- Arrange
-    self.fow_memory.ensure_grid(self.fog_of_war)
-    local x, y = 3, 3
-    
-    -- Act - multiple updates with different visibility levels
-    self.fow_memory.update(self.fog_of_war, x, y, 2)
-    self.fow_memory.update(self.fog_of_war, x, y, 4)
-    self.fow_memory.update(self.fog_of_war, x, y, 1)
-    
-    -- Assert
-    lu.assertEquals(self.fog_of_war.memory_grid[y][x], 4, 
-                   "Memory grid should record maximum visibility ever achieved")
+function test_fow_memory:test_memory_records_max_visibility()
+    -- Initialize grid
+    fow_memory.ensure_grid({})
+
+    -- Update with increasing values
+    fow_memory.update({}, 1, 1, 2)
+    fow_memory.update({}, 1, 1, 3)
+    fow_memory.update({}, 1, 1, 4)
+
+    -- Verify maximum is recorded
+    lu.assertEquals(fow_config.memory_grid[1][1], 4)
+
+    -- Update with decreasing values
+    fow_memory.update({}, 1, 1, 3)
+    fow_memory.update({}, 1, 1, 2)
+    fow_memory.update({}, 1, 1, 1)
+
+    -- Verify maximum is preserved
+    lu.assertEquals(fow_config.memory_grid[1][1], 4)
 end
 
-return test_fow_memory 
+return test_fow_memory
