@@ -1,7 +1,7 @@
 local pos = require("src.base.pos")
 
 ---@class Camera
----@field canvas love.Canvas
+---@field canvas love.Canvas|nil
 ---@field width number
 ---@field height number
 ---@field scale number

@@ -10,7 +10,7 @@ local function init_di(debug_mode)
     log.info("Initializing DI system")
 
     DI.lg = love.graphics
-    DI.camera = require("src.camera")
+    DI.camera = require("src.base.camera")
     DI.font = require("src.base.font")
     DI.fade = require("src.base.fade")
     DI.screen = require("src.base.screen")
