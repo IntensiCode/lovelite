@@ -60,11 +60,9 @@ function particles.update(dt)
         -- Check if particle should be removed
         if particle.life <= 0 then
             table.remove(particles.active, i)
-            goto continue
+        else
+            i = i + 1
         end
-
-        i = i + 1
-        ::continue::
     end
 end
 
