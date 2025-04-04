@@ -100,6 +100,7 @@ end
 14. MUST consider refactoring before complex changes
 15. MUST complete significant refactors before implementing new features
 16. MUST do minor refactorings alongside requested changes
+17. MUST use assert instead of "if something return default"
 
 ## Lua OOP Patterns
 ```lua
