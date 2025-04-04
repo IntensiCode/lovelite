@@ -1,4 +1,4 @@
----@diagnostic disable: missing-fields
+---@diagnostic disable: missing-fields, duplicate-set-field
 require("src.base.log")
 require("src.base.pos")
 require("src.base.table")
@@ -8,6 +8,12 @@ local lu = require("src.libraries.luaunit")
 local fow_config = require("src.map.fow.fow_config")
 local fow_ray_march = require("src.map.fow.fow_ray_march")
 local fow_draw = require("src.map.fow.fow_draw")
+local fow_memory = require("src.map.fow.fow_memory")
+
+-- Mock DI system for tests
+DI = {
+    collision = {}
+}
 
 test_fow_ray_march = {}
 
@@ -35,24 +41,14 @@ local bresenham_visited = {}
 function test_fow_ray_march:setup()
     -- Initialize basic fog of war configuration
     fow_config.size = { x = 10, y = 10 }
-    fow_config.grid = {}
-    fow_config.memory_grid = {}
     fow_config.enabled = true
     fow_config.inner_radius = 3
     fow_config.outer_radius = 6
     fow_config.field_of_view_mode = false
-    fow_draw.mark_dirty()
     fow_config.prev_player_pos = nil
 
-    -- Initialize grid and memory grid
-    for y = 1, fow_config.size.y do
-        fow_config.grid[y] = {}
-        fow_config.memory_grid[y] = {}
-        for x = 1, fow_config.size.x do
-            fow_config.grid[y][x] = 0
-            fow_config.memory_grid[y][x] = 0
-        end
-    end
+    -- Initialize memory grids
+    fow_memory.init(0)
 
     -- Store original collision functions
     self.original_is_walkable_tile = DI.collision.is_walkable_tile
@@ -73,8 +69,6 @@ end
 
 function test_fow_ray_march:teardown()
     -- Reset fog of war configuration
-    fow_config.grid = nil
-    fow_config.memory_grid = nil
     fow_config.size = nil
     fow_config.enabled = nil
     fow_config.inner_radius = nil
@@ -111,44 +105,44 @@ end
 
 function test_fow_ray_march:test_ray_march_position_validation()
     -- Test valid positions
-    lu.assertTrue(fow_ray_march.is_valid_position({}, 1, 1))
-    lu.assertTrue(fow_ray_march.is_valid_position({}, 10, 10))
+    lu.assertTrue(fow_ray_march.is_valid_position(1, 1))
+    lu.assertTrue(fow_ray_march.is_valid_position(10, 10))
 
     -- Test invalid positions
-    lu.assertFalse(fow_ray_march.is_valid_position({}, 0, 1))
-    lu.assertFalse(fow_ray_march.is_valid_position({}, 1, 0))
-    lu.assertFalse(fow_ray_march.is_valid_position({}, 11, 1))
-    lu.assertFalse(fow_ray_march.is_valid_position({}, 1, 11))
+    lu.assertFalse(fow_ray_march.is_valid_position(0, 1))
+    lu.assertFalse(fow_ray_march.is_valid_position(1, 0))
+    lu.assertFalse(fow_ray_march.is_valid_position(11, 1))
+    lu.assertFalse(fow_ray_march.is_valid_position(1, 11))
 end
 
 function test_fow_ray_march:test_calculate_visibility_level()
     -- Test visibility at different distances
-    lu.assertEquals(fow_ray_march.calculate_visibility_level({}, 2.0), 4) -- Within inner radius
-    lu.assertEquals(fow_ray_march.calculate_visibility_level({}, 4.0), 2) -- Medium fog (was expecting 3)
-    lu.assertEquals(fow_ray_march.calculate_visibility_level({}, 5.0), 2) -- Medium fog
-    lu.assertEquals(fow_ray_march.calculate_visibility_level({}, 5.9), 1) -- Heavy fog
-    lu.assertEquals(fow_ray_march.calculate_visibility_level({}, 7.0), 0) -- Beyond outer radius
+    lu.assertEquals(fow_ray_march.calculate_visibility_level(2.0), 4) -- Within inner radius
+    lu.assertEquals(fow_ray_march.calculate_visibility_level(4.0), 2) -- Medium fog (was expecting 3)
+    lu.assertEquals(fow_ray_march.calculate_visibility_level(5.0), 2) -- Medium fog
+    lu.assertEquals(fow_ray_march.calculate_visibility_level(5.9), 1) -- Heavy fog
+    lu.assertEquals(fow_ray_march.calculate_visibility_level(7.0), 0) -- Beyond outer radius
 end
 
 function test_fow_ray_march:test_ray_casting_reveals_direct_line_of_sight()
     -- Cast rays from center
-    fow_ray_march.cast_rays({}, { x = 5, y = 5 })
+    fow_ray_march.cast_rays({ x = 5, y = 5 })
 
     -- Check visibility at different distances
-    lu.assertEquals(fow_config.grid[5][5], 4) -- Center
-    lu.assertEquals(fow_config.grid[5][6], 4) -- One tile away
-    lu.assertEquals(fow_config.grid[5][8], 4) -- Still within inner radius
-    lu.assertEquals(fow_config.grid[5][10], 2) -- Far distance (medium fog zone)
+    lu.assertEquals(fow_memory.get_visibility(5, 5), 4) -- Center
+    lu.assertEquals(fow_memory.get_visibility(5, 6), 4) -- One tile away
+    lu.assertEquals(fow_memory.get_visibility(5, 8), 4) -- Still within inner radius
+    lu.assertEquals(fow_memory.get_visibility(5, 10), 2) -- Far distance (medium fog zone)
 end
 
 function test_fow_ray_march:test_ray_casting_diagonal_line_of_sight()
     -- Cast rays from center
-    fow_ray_march.cast_rays({}, { x = 5, y = 5 })
+    fow_ray_march.cast_rays({ x = 5, y = 5 })
 
     -- Check diagonal visibility
-    lu.assertEquals(fow_config.grid[6][6], 4) -- Close diagonal
-    lu.assertEquals(fow_config.grid[7][7], 4) -- Still within inner radius
-    lu.assertEquals(fow_config.grid[8][8], 2) -- Far diagonal (medium fog zone)
+    lu.assertEquals(fow_memory.get_visibility(6, 6), 4) -- Close diagonal
+    lu.assertEquals(fow_memory.get_visibility(7, 7), 4) -- Still within inner radius
+    lu.assertEquals(fow_memory.get_visibility(8, 8), 2) -- Far diagonal (medium fog zone)
 end
 
 function test_fow_ray_march:test_walls_are_visible()
@@ -158,10 +152,10 @@ function test_fow_ray_march:test_walls_are_visible()
     end
 
     -- Cast rays from center
-    fow_ray_march.cast_rays({}, { x = 5, y = 5 })
+    fow_ray_march.cast_rays({ x = 5, y = 5 })
 
     -- Wall should be visible based on distance
-    lu.assertEquals(fow_config.grid[5][7], 4)
+    lu.assertEquals(fow_memory.get_visibility(7, 5), 4)
 end
 
 function test_fow_ray_march:test_points_beyond_walls_are_not_visible()
@@ -174,11 +168,11 @@ function test_fow_ray_march:test_points_beyond_walls_are_not_visible()
     end
 
     -- Cast rays from center
-    fow_ray_march.cast_rays({}, { x = 5, y = 5 })
+    fow_ray_march.cast_rays({ x = 5, y = 5 })
 
     -- Points beyond wall should be dark
-    lu.assertEquals(fow_config.grid[5][8], 0)
-    lu.assertEquals(fow_config.grid[5][9], 0)
+    lu.assertEquals(fow_memory.get_visibility(8, 5), 0)
+    lu.assertEquals(fow_memory.get_visibility(9, 5), 0)
 end
 
 function test_fow_ray_march:test_l_shaped_walls()
@@ -191,15 +185,15 @@ function test_fow_ray_march:test_l_shaped_walls()
     end
 
     -- Cast rays from center
-    fow_ray_march.cast_rays({}, { x = 5, y = 5 })
+    fow_ray_march.cast_rays({ x = 5, y = 5 })
 
     -- Both wall segments should be visible
-    lu.assertEquals(fow_config.grid[5][7], 4) -- Horizontal segment
-    lu.assertEquals(fow_config.grid[6][7], 4) -- Vertical segment
+    lu.assertEquals(fow_memory.get_visibility(7, 5), 4) -- Horizontal segment
+    lu.assertEquals(fow_memory.get_visibility(7, 6), 4) -- Vertical segment
 
     -- Points beyond both segments should be dark
-    lu.assertEquals(fow_config.grid[5][8], 0)
-    lu.assertEquals(fow_config.grid[6][8], 0)
+    lu.assertEquals(fow_memory.get_visibility(8, 5), 0)
+    lu.assertEquals(fow_memory.get_visibility(8, 6), 0)
 end
 
 function test_fow_ray_march:test_rooftop_visibility_handling()
@@ -215,21 +209,21 @@ function test_fow_ray_march:test_rooftop_visibility_handling()
     end
 
     -- Cast rays from center
-    fow_ray_march.cast_rays({}, { x = 5, y = 5 })
+    fow_ray_march.cast_rays({ x = 5, y = 5 })
 
     -- Wall should be visible
-    lu.assertEquals(fow_config.grid[5][7], 4)
+    lu.assertEquals(fow_memory.get_visibility(7, 5), 4)
 
     -- One tile beyond should be visible at full level since it's within inner_radius
-    lu.assertEquals(fow_config.grid[5][8], 4)
+    lu.assertEquals(fow_memory.get_visibility(8, 5), 4)
 
     -- Two tiles beyond should be dark (shadowed)
-    lu.assertEquals(fow_config.grid[5][9], 0)
+    lu.assertEquals(fow_memory.get_visibility(9, 5), 0)
 end
 
 function test_fow_ray_march:test_bresenham_line()
     -- Cast rays from center
-    fow_ray_march.cast_rays({}, { x = 5, y = 5 })
+    fow_ray_march.cast_rays({ x = 5, y = 5 })
 
     -- Check horizontal line
     lu.assertTrue(DI.collision.is_walkable_tile(6, 5))
@@ -255,16 +249,16 @@ function test_fow_ray_march:test_visibility_beyond_full_wall()
     end
 
     -- Cast rays from center
-    fow_ray_march.cast_rays({}, { x = 5, y = 5 })
+    fow_ray_march.cast_rays({ x = 5, y = 5 })
 
     -- Wall should be visible
-    lu.assertEquals(fow_config.grid[5][7], 4)
+    lu.assertEquals(fow_memory.get_visibility(7, 5), 4)
 
     -- One tile beyond should be visible at full level since it's within inner_radius
-    lu.assertEquals(fow_config.grid[5][8], 4)
+    lu.assertEquals(fow_memory.get_visibility(8, 5), 4)
 
     -- Two tiles beyond should be dark (shadowed)
-    lu.assertEquals(fow_config.grid[5][9], 0)
+    lu.assertEquals(fow_memory.get_visibility(9, 5), 0)
 end
 
 return test_fow_ray_march

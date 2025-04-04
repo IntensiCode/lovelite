@@ -3,37 +3,40 @@
 -- Handles visibility calculation based on distance from player and line of sight.
 -- Manages shadows and occlusion to prevent visibility through walls.
 
-local pos = require("src.base.pos")
-local fow_memory = require("src.map.fow.fow_memory")
 local fow_config = require("src.map.fow.fow_config")
+local fow_memory = require("src.map.fow.fow_memory")
 
-local fow_ray_march = {}
-
--- We'll store precomputed ray paths for efficiency
-local ray_paths = nil
+local fow_ray_march = {
+    ray_paths = nil,
+}
 
 ---Check if a position is valid in the grid
----@param fog_of_war table The fog of war module
 ---@param x number X coordinate to check
 ---@param y number Y coordinate to check
 ---@return boolean is_valid Whether the position is within bounds
-function fow_ray_march.is_valid_position(fog_of_war, x, y)
-    return x >= 1 and x <= fow_config.size.x and
-        y >= 1 and y <= fow_config.size.y
+function fow_ray_march.is_valid_position(x, y)
+    return x >= 1 and x <= fow_config.size.x and y >= 1 and y <= fow_config.size.y
 end
 
 ---Calculate visibility level based on distance from player
----@param fog_of_war table The main fog of war module
 ---@param distance number Distance from player
 ---@return number visibility_level The calculated visibility level (0-4)
-function fow_ray_march.calculate_visibility_level(fog_of_war, distance)
+function fow_ray_march.calculate_visibility_level(distance)
     if distance <= fow_config.inner_radius then
         -- Fully visible zone
         return 4
-    elseif distance <= fow_config.inner_radius + (fow_config.outer_radius - fow_config.inner_radius) * 0.33 then
+    elseif
+        distance
+        <= fow_config.inner_radius
+            + (fow_config.outer_radius - fow_config.inner_radius) * 0.33
+    then
         -- Light fog zone (33% of transition zone)
         return 3
-    elseif distance <= fow_config.inner_radius + (fow_config.outer_radius - fow_config.inner_radius) * 0.67 then
+    elseif
+        distance
+        <= fow_config.inner_radius
+            + (fow_config.outer_radius - fow_config.inner_radius) * 0.67
+    then
         -- Medium fog zone (67% of transition zone)
         return 2
     elseif distance <= fow_config.outer_radius then
@@ -84,11 +87,11 @@ end
 ---@param radius number Maximum radius for rays
 ---@return table paths Table of precomputed ray paths
 local function generate_ray_paths(radius)
-    if ray_paths then
-        return ray_paths
+    if fow_ray_march.ray_paths then
+        return fow_ray_march.ray_paths
     end
 
-    ray_paths = {}
+    fow_ray_march.ray_paths = {}
 
     -- Center point (origin of all rays)
     local center_x, center_y = 0, 0
@@ -104,7 +107,7 @@ local function generate_ray_paths(radius)
         local path = bresenham_line(center_x, center_y, target_x, target_y)
 
         local key = target_x .. "," .. target_y
-        ray_paths[key] = path
+        fow_ray_march.ray_paths[key] = path
     end
 
     -- Ensure key horizontal, vertical and diagonal rays needed for tests
@@ -119,13 +122,13 @@ local function generate_ray_paths(radius)
 
     for _, ray in ipairs(key_rays) do
         local key = ray.x .. "," .. ray.y
-        if not ray_paths[key] then
+        if not fow_ray_march.ray_paths[key] then
             local path = bresenham_line(center_x, center_y, ray.x, ray.y)
-            ray_paths[key] = path
+            fow_ray_march.ray_paths[key] = path
         end
     end
 
-    return ray_paths
+    return fow_ray_march.ray_paths
 end
 
 ---Checks if a tile is a wall
@@ -151,25 +154,24 @@ local function is_full_wall(x, y)
 end
 
 ---Process a single ray
----@param fog_of_war table The fog of war module
 ---@param tile_x number Origin x coordinate
 ---@param tile_y number Origin y coordinate
 ---@param ray table Array of points along the ray
 ---@param visible table Grid of visible tiles
 ---@param shadowed table Grid of shadowed tiles
 ---@return boolean changed Whether any tile visibility changed
-local function process_ray(fog_of_war, tile_x, tile_y, ray, visible, shadowed)
+local function process_ray(tile_x, tile_y, ray, visible, shadowed)
     local changed = false
     local past_wall = false
     local steps_beyond_wall = 0
     local last_wall_was_full = false
 
-    for i, point in ipairs(ray) do
+    for _, point in ipairs(ray) do
         local world_x = tile_x + point.x
         local world_y = tile_y + point.y
 
         -- Skip if out of bounds
-        if not fow_ray_march.is_valid_position(fog_of_war, world_x, world_y) then
+        if not fow_ray_march.is_valid_position(world_x, world_y) then
             break
         end
 
@@ -195,12 +197,12 @@ local function process_ray(fog_of_war, tile_x, tile_y, ray, visible, shadowed)
                 local distance = math.sqrt(dx * dx + dy * dy)
 
                 -- Calculate visibility based on distance
-                local visibility = fow_ray_march.calculate_visibility_level(fog_of_war, distance)
+                local visibility = fow_ray_march.calculate_visibility_level(distance)
 
                 -- Update visibility if higher
-                if visibility > (fow_config.grid[world_y][world_x] or 0) then
-                    fow_config.grid[world_y][world_x] = visibility
-                    fow_memory.update(fog_of_war, world_x, world_y, visibility)
+                if visibility > (fow_memory.grid[world_y][world_x] or 0) then
+                    fow_memory.grid[world_y][world_x] = visibility
+                    fow_memory.update(world_x, world_y, visibility)
                     changed = true
                 end
             else
@@ -214,12 +216,12 @@ local function process_ray(fog_of_war, tile_x, tile_y, ray, visible, shadowed)
             local distance = math.sqrt(dx * dx + dy * dy)
 
             -- Calculate visibility based on distance
-            local visibility = fow_ray_march.calculate_visibility_level(fog_of_war, distance)
+            local visibility = fow_ray_march.calculate_visibility_level(distance)
 
             -- Update visibility if higher
-            if visibility > (fow_config.grid[world_y][world_x] or 0) then
-                fow_config.grid[world_y][world_x] = visibility
-                fow_memory.update(fog_of_war, world_x, world_y, visibility)
+            if visibility > (fow_memory.grid[world_y][world_x] or 0) then
+                fow_memory.grid[world_y][world_x] = visibility
+                fow_memory.update(world_x, world_y, visibility)
                 changed = true
             end
         end
@@ -236,19 +238,19 @@ local function process_ray(fog_of_war, tile_x, tile_y, ray, visible, shadowed)
 end
 
 ---Apply final visibility rules
----@param fog_of_war table The fog of war module
----@param visible table Grid of visible tiles
 ---@param shadowed table Grid of shadowed tiles
 ---@return boolean changed Whether any tile visibility changed
-local function apply_visibility_rules(fog_of_war, visible, shadowed)
+local function apply_visibility_rules(shadowed)
     local changed = false
+
+    -- TODO memory?
 
     -- Make shadowed areas completely dark
     for y = 1, fow_config.size.y do
         for x = 1, fow_config.size.x do
             if shadowed[y][x] then
-                if fow_config.grid[y][x] ~= 0 then
-                    fow_config.grid[y][x] = 0 -- Completely dark
+                if fow_memory.grid[y][x] ~= 0 then
+                    fow_memory.grid[y][x] = 0 -- Completely dark
                     changed = true
                 end
             end
@@ -259,10 +261,10 @@ local function apply_visibility_rules(fog_of_war, visible, shadowed)
 end
 
 ---Cast rays in all directions and update visibility based on line of sight
----@param fog_of_war table The main fog of war module
 ---@param center_pos pos Center position to cast rays from
 ---@return boolean changed Whether any tiles were updated
-function fow_ray_march.cast_rays(fog_of_war, center_pos)
+function fow_ray_march.cast_rays(center_pos)
+    assert(center_pos, "center_pos is required")
     local changed = false
 
     -- Convert to tile coordinates
@@ -282,23 +284,23 @@ function fow_ray_march.cast_rays(fog_of_war, center_pos)
     end
 
     -- Ensure center tile is always visible
-    if fow_ray_march.is_valid_position(fog_of_war, tile_x, tile_y) then
+    if fow_ray_march.is_valid_position(tile_x, tile_y) then
         visible[tile_y][tile_x] = true
-        fow_config.grid[tile_y][tile_x] = 4
-        fow_memory.update(fog_of_war, tile_x, tile_y, 4)
+        fow_memory.grid[tile_y][tile_x] = 4
+        fow_memory.update(tile_x, tile_y, 4)
         changed = true
     end
 
     -- Cast rays in all directions within outer radius
-    for ray_key, ray in pairs(paths) do
-        local ray_changed = process_ray(fog_of_war, tile_x, tile_y, ray, visible, shadowed)
+    for _, ray in pairs(paths) do
+        local ray_changed = process_ray(tile_x, tile_y, ray, visible, shadowed)
         if ray_changed then
             changed = true
         end
     end
 
     -- Apply final visibility rules
-    local rules_changed = apply_visibility_rules(fog_of_war, visible, shadowed)
+    local rules_changed = apply_visibility_rules(shadowed)
     if rules_changed then
         changed = true
     end
