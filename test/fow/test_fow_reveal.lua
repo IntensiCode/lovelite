@@ -6,6 +6,7 @@ local lu = require("src.libraries.luaunit")
 
 local fow_config = require("src.map.fow.fow_config")
 local fow_reveal = require("src.map.fow.fow_reveal")
+local fow_draw = require("src.map.fow.fow_draw")
 
 test_fow_reveal = {}
 
@@ -25,7 +26,7 @@ function test_fow_reveal:setup()
     fow_config.inner_radius = 3
     fow_config.outer_radius = 6
     fow_config.field_of_view_mode = false
-    fow_config.canvas_dirty = true
+    fow_draw.mark_dirty()
     fow_config.prev_player_pos = nil
 
     -- Initialize grid and memory grid
@@ -64,7 +65,7 @@ function test_fow_reveal:teardown()
     fow_config.inner_radius = nil
     fow_config.outer_radius = nil
     fow_config.field_of_view_mode = nil
-    fow_config.canvas_dirty = nil
+    fow_draw.canvas_dirty = nil
     fow_config.prev_player_pos = nil
 
     -- Restore original collision functions

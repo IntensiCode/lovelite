@@ -45,12 +45,7 @@ function fog_of_war.load(opts)
         fow_config.size = pos.new(map_width, map_height)
 
         -- Create canvas for drawing the fog
-        if love.graphics.isCreated then
-            fow_config.canvas = love.graphics.newCanvas(
-                map_width * fow_config.tile_size,
-                map_height * fow_config.tile_size
-            )
-        end
+        fow_draw.init_canvas(map_width * fow_config.tile_size, map_height * fow_config.tile_size)
 
         -- Set options
         if opts.inner_radius then
@@ -73,7 +68,7 @@ function fog_of_war.load(opts)
         fow_dither.create_sprite_sheet()
 
         -- Reset state
-        fow_config.canvas_dirty = true
+        fow_draw.mark_dirty()
         fow_config.prev_player_pos = nil
 
         -- Register debug commands
@@ -99,7 +94,7 @@ end
 function fog_of_war.reveal_around(center_pos)
     local changed = fow_reveal.reveal_around(fog_of_war, center_pos)
     if changed then
-        fow_config.canvas_dirty = true
+        fow_draw.mark_dirty()
     end
 end
 
@@ -107,7 +102,7 @@ end
 function fog_of_war.reveal_all()
     local changed = fow_reveal.reveal_all(fog_of_war)
     if changed then
-        fow_config.canvas_dirty = true
+        fow_draw.mark_dirty()
         fow_draw.update_canvas(fog_of_war)
     end
     log.debug("Revealed entire map")
@@ -120,7 +115,7 @@ function fog_of_war.set_enabled(enabled)
     if fow_config.enabled == enabled then return end
 
     fow_config.enabled = enabled
-    fow_config.canvas_dirty = true
+    fow_draw.mark_dirty()
 
     -- Always update the canvas immediately after toggling
     fow_draw.update_canvas(fog_of_war)
@@ -133,7 +128,7 @@ function fog_of_war.set_field_of_view_mode(enabled)
     local changed = fow_reveal.set_field_of_view_mode(fog_of_war, enabled)
     
     if changed then
-        fow_config.canvas_dirty = true
+        fow_draw.mark_dirty()
         
         -- Force an update based on player position
         if DI.player then
@@ -165,7 +160,7 @@ function fog_of_war.set_hide_rooftops(enabled)
     if fow_config.hide_rooftops == enabled then return end
 
     fow_config.hide_rooftops = enabled
-    fow_config.canvas_dirty = true
+    fow_draw.mark_dirty()
     
     -- Force an update based on player position
     if DI.player then
@@ -198,7 +193,7 @@ function fog_of_war.update(dt)
     fog_of_war.reveal_around(DI.player.pos)
 
     -- Always update the canvas during the first few frames to ensure it's visible
-    if fow_config.canvas_dirty or not fow_config.prev_player_pos then
+    if fow_draw.canvas_dirty or not fow_config.prev_player_pos then
         fow_draw.update_canvas(fog_of_war)
     end
 end
@@ -207,7 +202,7 @@ end
 ---@param translation_x number Camera translation X
 ---@param translation_y number Camera translation Y
 function fog_of_war.draw(translation_x, translation_y)
-    if not fow_config.enabled or not fow_config.canvas then return end
+    if not fow_config.enabled or not fow_draw.has_canvas() then return end
     fow_draw.draw(fog_of_war)
 end
 

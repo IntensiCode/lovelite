@@ -9,12 +9,10 @@ local pos = require("src.base.pos")
 ---@field size pos The size of the grid in tiles
 ---@field inner_radius number Radius of full visibility around player (in tiles)
 ---@field outer_radius number Radius of partial visibility around player (in tiles)
----@field canvas love.Canvas The canvas to draw the fog on
 ---@field tile_size number Size of a tile in pixels
 ---@field enabled boolean Whether fog of war is enabled
 ---@field field_of_view_mode boolean Whether field of view mode is enabled (areas outside view are darkened)
 ---@field hide_rooftops boolean Whether rooftops should be hidden with medium fog
----@field canvas_dirty boolean Whether the canvas needs to be redrawn
 ---@field prev_player_pos pos The last position where the player was
 local fow_config = {
     grid = {},
@@ -22,12 +20,10 @@ local fow_config = {
     size = pos.new(0, 0),
     inner_radius = 4,
     outer_radius = 8, -- Increased to accommodate more fog levels
-    canvas = nil,
     tile_size = 0,
     enabled = true,
     field_of_view_mode = true, -- Default to field of view mode
     hide_rooftops = true, -- Default to hiding rooftops
-    canvas_dirty = true,
     prev_player_pos = nil
 }
 

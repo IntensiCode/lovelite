@@ -1,4 +1,5 @@
 ---@diagnostic disable: missing-fields
+require("src.base.log")
 require("src.base.pos")
 require("src.base.table")
 
@@ -6,6 +7,7 @@ local lu = require("src.libraries.luaunit")
 
 local fow_config = require("src.map.fow.fow_config")
 local fow_ray_march = require("src.map.fow.fow_ray_march")
+local fow_draw = require("src.map.fow.fow_draw")
 
 test_fow_ray_march = {}
 
@@ -34,12 +36,12 @@ function test_fow_ray_march:setup()
     -- Initialize basic fog of war configuration
     fow_config.size = { x = 10, y = 10 }
     fow_config.grid = {}
-    fow_config.memory_grid = {}  -- Initialize memory grid
+    fow_config.memory_grid = {}
     fow_config.enabled = true
     fow_config.inner_radius = 3
     fow_config.outer_radius = 6
-    fow_config.field_of_view_mode = false  -- Ensure field of view mode is off
-    fow_config.canvas_dirty = true
+    fow_config.field_of_view_mode = false
+    fow_draw.mark_dirty()
     fow_config.prev_player_pos = nil
 
     -- Initialize grid and memory grid
@@ -56,7 +58,7 @@ function test_fow_ray_march:setup()
     self.original_is_walkable_tile = DI.collision.is_walkable_tile
     self.original_is_full_wall_tile = DI.collision.is_full_wall_tile
     self.original_is_wall_tile = DI.collision.is_wall_tile
-
+    
     -- Setup mock collision system for testing
     DI.collision.is_walkable_tile = function(x, y)
         return true
@@ -78,7 +80,7 @@ function test_fow_ray_march:teardown()
     fow_config.inner_radius = nil
     fow_config.outer_radius = nil
     fow_config.field_of_view_mode = nil
-    fow_config.canvas_dirty = nil
+    fow_draw.canvas_dirty = nil
     fow_config.prev_player_pos = nil
 
     -- Restore original collision functions
