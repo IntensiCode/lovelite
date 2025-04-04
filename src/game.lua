@@ -2,10 +2,13 @@ local game = {
     blink_timer = 0,
     blink_visible = true,
     initialized = false,
-    space_shortcut_registered = false -- Flag to track if space shortcut is registered
+    space_shortcut_registered = false, -- Flag to track if space shortcut is registered
 }
 
 function game.exit_to_title()
+    if DI.fade.on_fade_done then
+        return
+    end
     DI.fade.on_fade_done = function()
         DI.screen.switch_to("title")
     end
@@ -14,21 +17,27 @@ end
 
 function game.register_shortcuts()
     DI.keys.add_shortcut("escape", {
-        callback = function() game.exit_to_title() end,
+        callback = function()
+            game.exit_to_title()
+        end,
         description = "Exit to title screen",
-        scope = "game"
+        scope = "game",
     })
 
     DI.keys.add_shortcut("kp0", {
-        callback = function() DI.debug.toggle() end,
+        callback = function()
+            DI.debug.toggle()
+        end,
         description = "Toggle debug overlay",
-        scope = "game"
+        scope = "game",
     })
 
     DI.keys.add_shortcut("`", {
-        callback = function() DI.debug_console:toggle() end,
+        callback = function()
+            DI.debug_console:toggle()
+        end,
         description = "Toggle debug console",
-        scope = "game"
+        scope = "game",
     })
 end
 
@@ -36,9 +45,11 @@ end
 function game.set_space_for_exit(enabled)
     if enabled and not game.space_shortcut_registered then
         DI.keys.add_shortcut("space", {
-            callback = function() game.exit_to_title() end,
+            callback = function()
+                game.exit_to_title()
+            end,
             description = "Continue when dead",
-            scope = "game"
+            scope = "game",
         })
         game.space_shortcut_registered = true
     elseif not enabled and game.space_shortcut_registered then
@@ -121,7 +132,8 @@ function game.update_blink_timer(dt)
 end
 
 local function update_space_key()
-    local is_player_dead = DI.player.is_dead and (DI.player.death_time == nil or DI.player.death_time <= 0)
+    local is_player_dead = DI.player.is_dead
+        and (DI.player.death_time == nil or DI.player.death_time <= 0)
     game.set_space_for_exit(is_player_dead)
 end
 
@@ -194,7 +206,10 @@ function game.draw()
     DI.debug_console:draw()
 
     -- Draw game over overlay if player is dead
-    if DI.player.is_dead and (DI.player.death_time == nil or DI.player.death_time <= 0) then
+    if
+        DI.player.is_dead
+        and (DI.player.death_time == nil or DI.player.death_time <= 0)
+    then
         game.draw_game_over_overlay()
     end
 
@@ -214,13 +229,27 @@ function game.draw_game_over_overlay()
     love.graphics.setColor(1, 1, 1, 1)
 
     -- Draw "GAME OVER" and "YOU DIED"
-    DI.font.draw_text("GAME OVER", DI.camera.width / 2, DI.camera.height / 2 - 80, DI.font.anchor.center)
-    DI.font.draw_text("YOU DIED", DI.camera.width / 2, DI.camera.height / 2 - 60, DI.font.anchor.center)
+    DI.font.draw_text(
+        "GAME OVER",
+        DI.camera.width / 2,
+        DI.camera.height / 2 - 80,
+        DI.font.anchor.center
+    )
+    DI.font.draw_text(
+        "YOU DIED",
+        DI.camera.width / 2,
+        DI.camera.height / 2 - 60,
+        DI.font.anchor.center
+    )
 
     -- Draw "Press SPACE to continue" at the bottom (only when visible)
     if game.blink_visible then
-        DI.font.draw_text("Press SPACE to continue", DI.camera.width / 2, DI.camera.height - 8,
-            DI.font.anchor.bottom_center)
+        DI.font.draw_text(
+            "Press SPACE to continue",
+            DI.camera.width / 2,
+            DI.camera.height - 8,
+            DI.font.anchor.bottom_center
+        )
     end
 end
 

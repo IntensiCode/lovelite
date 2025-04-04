@@ -1,10 +1,11 @@
+---@diagnostic disable: duplicate-set-field
 local title = {}
 
 local PADDING = 8
 
 local FLAME_POSITIONS = {
-    { x = 50,  y = 90 }, -- Left flame
-    { x = 270, y = 90 }  -- Right flame
+    { x = 50, y = 90 }, -- Left flame
+    { x = 270, y = 90 }, -- Right flame
 }
 
 local FIRE_SHADER = [[
@@ -39,6 +40,9 @@ function title.switch_to_game()
 end
 
 function title.fade_and_quit()
+    if DI.fade.on_fade_done then
+        return
+    end
     DI.fade.on_fade_done = function()
         love.event.quit()
     end
@@ -47,14 +51,18 @@ end
 
 function title.attach()
     DI.keys.add_shortcut("space", {
-        callback = function() title.switch_to_game() end,
+        callback = function()
+            title.switch_to_game()
+        end,
         description = "Start game",
-        scope = "title"
+        scope = "title",
     })
     DI.keys.add_shortcut("escape", {
-        callback = function() title.fade_and_quit() end,
+        callback = function()
+            title.fade_and_quit()
+        end,
         description = "Exit game",
-        scope = "title"
+        scope = "title",
     })
 end
 
@@ -138,8 +146,8 @@ function title.draw()
 
         -- Draw with scaling from bottom point
         DI.lg.push()
-        DI.lg.translate(pos.x, pos.y)                                          -- Move to bottom center
-        DI.lg.scale(1, scale_y)                                                -- Scale vertically
+        DI.lg.translate(pos.x, pos.y) -- Move to bottom center
+        DI.lg.scale(1, scale_y) -- Scale vertically
         DI.lg.translate(-title.flame:getWidth() / 2, -title.flame:getHeight()) -- Offset for bottom-center alignment
         DI.lg.draw(title.flame, 0, 0)
         DI.lg.pop()
@@ -152,7 +160,12 @@ function title.draw()
     -- Draw "Press SPACE to start" text (only when visible)
     if title.blink_visible then
         local text = "Press SPACE to start"
-        DI.font.draw_text(text, DI.camera.width / 2, DI.camera.height - PADDING, DI.font.anchor.bottom_center)
+        DI.font.draw_text(
+            text,
+            DI.camera.width / 2,
+            DI.camera.height - PADDING,
+            DI.font.anchor.bottom_center
+        )
     end
 
     -- Draw fade overlay last
