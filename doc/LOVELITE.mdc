@@ -1,7 +1,7 @@
 ---
-description: Comprehensive development guidelines for the LoveLite project
+description: 
 globs: 
-alwaysApply: true
+alwaysApply: false
 ---
 
 # LoveLite Development Guidelines

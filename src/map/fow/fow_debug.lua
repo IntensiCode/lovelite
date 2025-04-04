@@ -5,6 +5,7 @@
 -- Includes a legend to help interpret visibility levels during development.
 
 local fow_dither = require("src.map.fow.fow_dither")
+local fow_config = require("src.map.fow.fow_config")
 
 local fow_debug = {}
 
@@ -24,14 +25,14 @@ function fow_debug.draw_grid(fog_of_war)
     -- Draw grid background
     love.graphics.setColor(0, 0, 0, 0.5)
     love.graphics.rectangle("fill", offsetX - 2, offsetY - 2, 
-        (fog_of_war.size.x * scale) + 4, 
-        (fog_of_war.size.y * scale) + 4
+        (fow_config.size.x * scale) + 4, 
+        (fow_config.size.y * scale) + 4
     )
     
     -- Draw grid cells
-    for y = 1, fog_of_war.size.y do
-        for x = 1, fog_of_war.size.x do
-            local value = fog_of_war.grid[y][x]
+    for y = 1, fow_config.size.y do
+        for x = 1, fow_config.size.x do
+            local value = fow_config.grid[y][x]
             if value == 0 then
                 -- Unseen - black
                 love.graphics.setColor(0, 0, 0, 1)
@@ -76,10 +77,10 @@ function fow_debug.draw_grid(fog_of_war)
     love.graphics.setColor(1, 1, 1, 1)
     
     -- Draw fog status with tiny font
-    DI.font.draw_text("Fog: " .. (fog_of_war.enabled and "ON" or "OFF"), offsetX, offsetY - 20, DI.font.anchor.top_left, DI.font.tiny)
+    DI.font.draw_text("Fog: " .. (fow_config.enabled and "ON" or "OFF"), offsetX, offsetY - 20, DI.font.anchor.top_left, DI.font.tiny)
     
     -- Draw fog level legend
-    local legendX = offsetX + fog_of_war.size.x * scale + 10
+    local legendX = offsetX + fow_config.size.x * scale + 10
     local legendY = offsetY
     local legendWidth = 16
     local legendHeight = 16
@@ -136,9 +137,9 @@ function fow_debug.register_commands(fog_of_war)
     end, "Reveals the entire fog of war map")
     
     DI.debug.add_command("fog_toggle", function()
-        local was_enabled = fog_of_war.enabled
+        local was_enabled = fow_config.enabled
         fog_of_war.set_enabled(not was_enabled)
-        return "Fog of war " .. (fog_of_war.enabled and "enabled" or "disabled")
+        return "Fog of war " .. (fow_config.enabled and "enabled" or "disabled")
     end, "Toggles fog of war on/off")
     
     DI.debug.add_command("fog_status", function()
@@ -152,7 +153,7 @@ function fow_debug.register_commands(fog_of_war)
             local px = math.floor(DI.player.pos.x)
             local py = math.floor(DI.player.pos.y)
             if fog_of_war.is_valid_position(px, py) then
-                local level = fog_of_war.grid[py][px]
+                local level = fow_config.grid[py][px]
                 local level_name = "Unknown"
                 if level == 0 then level_name = "Unseen"
                 elseif level == 1 then level_name = "Heavy Fog"
@@ -164,10 +165,10 @@ function fow_debug.register_commands(fog_of_war)
             end
         end
         
-        return "Fog enabled: " .. tostring(fog_of_war.enabled) .. 
-               "\nField of view mode: " .. tostring(fog_of_war.field_of_view_mode) ..
-               "\nInner radius: " .. fog_of_war.inner_radius .. 
-               "\nOuter radius: " .. fog_of_war.outer_radius ..
+        return "Fog enabled: " .. tostring(fow_config.enabled) .. 
+               "\nField of view mode: " .. tostring(fow_config.field_of_view_mode) ..
+               "\nInner radius: " .. fow_config.inner_radius .. 
+               "\nOuter radius: " .. fow_config.outer_radius ..
                "\n" .. playerPos ..
                "\n" .. visibility
     end, "Shows fog of war status information")

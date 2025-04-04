@@ -5,6 +5,7 @@
 
 local pos = require("src.base.pos")
 local fow_memory = require("src.map.fow.fow_memory")
+local fow_config = require("src.map.fow.fow_config")
 
 local fow_ray_march = {}
 
@@ -17,8 +18,8 @@ local ray_paths = nil
 ---@param y number Y coordinate to check
 ---@return boolean is_valid Whether the position is within bounds
 function fow_ray_march.is_valid_position(fog_of_war, x, y)
-    return x >= 1 and x <= fog_of_war.size.x and
-        y >= 1 and y <= fog_of_war.size.y
+    return x >= 1 and x <= fow_config.size.x and
+        y >= 1 and y <= fow_config.size.y
 end
 
 ---Calculate visibility level based on distance from player
@@ -31,16 +32,16 @@ function fow_ray_march.calculate_visibility_level(fog_of_war, distance)
         return 3
     end
 
-    if distance <= fog_of_war.inner_radius then
+    if distance <= fow_config.inner_radius then
         -- Fully visible zone
         return 4
-    elseif distance <= fog_of_war.inner_radius + (fog_of_war.outer_radius - fog_of_war.inner_radius) * 0.33 then
+    elseif distance <= fow_config.inner_radius + (fow_config.outer_radius - fow_config.inner_radius) * 0.33 then
         -- Light fog zone (33% of transition zone)
         return 3
-    elseif distance <= fog_of_war.inner_radius + (fog_of_war.outer_radius - fog_of_war.inner_radius) * 0.67 then
+    elseif distance <= fow_config.inner_radius + (fow_config.outer_radius - fow_config.inner_radius) * 0.67 then
         -- Medium fog zone (67% of transition zone)
         return 2
-    elseif distance <= fog_of_war.outer_radius then
+    elseif distance <= fow_config.outer_radius then
         -- Heavy fog zone (100% of transition zone)
         return 1
     end
@@ -202,8 +203,8 @@ local function process_ray(fog_of_war, tile_x, tile_y, ray, visible, shadowed)
                 local visibility = fow_ray_march.calculate_visibility_level(fog_of_war, distance)
 
                 -- Update visibility if higher
-                if visibility > (fog_of_war.grid[world_y][world_x] or 0) then
-                    fog_of_war.grid[world_y][world_x] = visibility
+                if visibility > (fow_config.grid[world_y][world_x] or 0) then
+                    fow_config.grid[world_y][world_x] = visibility
                     fow_memory.update(fog_of_war, world_x, world_y, visibility)
                     changed = true
                 end
@@ -221,8 +222,8 @@ local function process_ray(fog_of_war, tile_x, tile_y, ray, visible, shadowed)
             local visibility = fow_ray_march.calculate_visibility_level(fog_of_war, distance)
 
             -- Update visibility if higher
-            if visibility > (fog_of_war.grid[world_y][world_x] or 0) then
-                fog_of_war.grid[world_y][world_x] = visibility
+            if visibility > (fow_config.grid[world_y][world_x] or 0) then
+                fow_config.grid[world_y][world_x] = visibility
                 fow_memory.update(fog_of_war, world_x, world_y, visibility)
                 changed = true
             end
@@ -248,11 +249,11 @@ local function apply_visibility_rules(fog_of_war, visible, shadowed)
     local changed = false
 
     -- Make shadowed areas completely dark
-    for y = 1, fog_of_war.size.y do
-        for x = 1, fog_of_war.size.x do
+    for y = 1, fow_config.size.y do
+        for x = 1, fow_config.size.x do
             if shadowed[y][x] then
-                if fog_of_war.grid[y][x] ~= 0 then
-                    fog_of_war.grid[y][x] = 0 -- Completely dark
+                if fow_config.grid[y][x] ~= 0 then
+                    fow_config.grid[y][x] = 0 -- Completely dark
                     changed = true
                 end
             end
@@ -274,13 +275,13 @@ function fow_ray_march.cast_rays(fog_of_war, center_pos)
     local tile_y = math.floor(center_pos.y)
 
     -- Get precomputed ray paths
-    local paths = generate_ray_paths(fog_of_war.outer_radius)
+    local paths = generate_ray_paths(fow_config.outer_radius)
 
     -- Initialize tracking grids
     local visible = {}
     local shadowed = {}
 
-    for y = 1, fog_of_war.size.y do
+    for y = 1, fow_config.size.y do
         visible[y] = {}
         shadowed[y] = {}
     end
@@ -288,7 +289,7 @@ function fow_ray_march.cast_rays(fog_of_war, center_pos)
     -- Ensure center tile is always visible
     if fow_ray_march.is_valid_position(fog_of_war, tile_x, tile_y) then
         visible[tile_y][tile_x] = true
-        fog_of_war.grid[tile_y][tile_x] = 4
+        fow_config.grid[tile_y][tile_x] = 4
         fow_memory.update(fog_of_war, tile_x, tile_y, 4)
         changed = true
     end

@@ -1,7 +1,7 @@
 ---
 description: 
 globs: 
-alwaysApply: true
+alwaysApply: false
 ---
 # LoveLite Testing Guidelines
 
@@ -27,13 +27,13 @@ alwaysApply: true
 - Examples:
   ```lua
   -- Good: Descriptive name in snake_case
-  function TestModule:test_player_takes_damage_when_hit_by_enemy()
+  function test_module:test_player_takes_damage_when_hit_by_enemy()
   
   -- Bad: Camel case instead of snake_case
-  function TestModule:testPlayerTakesDamageWhenHitByEnemy()
+  function test_module:testPlayerTakesDamageWhenHitByEnemy()
   
   -- Bad: Not descriptive enough
-  function TestModule:test_damage()
+  function test_module:test_damage()
   ```
 
 ## Test Structure
@@ -42,7 +42,7 @@ alwaysApply: true
 - Test files should be named with the `test_` prefix (e.g., `test_screen.lua`, `test_pos.lua`)
 - Follow the Arrange-Act-Assert pattern with explicit comments:
   ```lua
-  function TestModule:test_something_happens()
+  function test_module:test_something_happens()
       -- Arrange
       local input = setup_test_data()
       
@@ -70,8 +70,8 @@ These principles should guide all future test development and should be used to 
 
 ## Examples of Proper Test Structure
 
-```
-   function TestModule:testFieldOfViewDarkensAreasOutsideView()
+```lua
+   function test_module:test_something()
        -- Arrange
        local center1 = pos.new(3, 3)
        local center2 = pos.new(8, 8)
@@ -103,11 +103,15 @@ These principles should guide all future test development and should be used to 
   local module_name = "src.base.module"
   local module = require(module_name)
   
-  function TestModule:setUp()
+  function test_module:setup()
       -- Reload the module for each test to ensure clean state
       package.loaded[module_name] = nil
       module = require(module_name)
   end
+
+  function test_module:teardown() {
+      package.loaded[module_name] = nil
+  }
   ```
 - Module reloading ensures test isolation by providing a fresh module state for each test
 - Don't use module reloading when:

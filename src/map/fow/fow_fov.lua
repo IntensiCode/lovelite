@@ -6,6 +6,7 @@
 
 local fow_ray_march = require("src.map.fow.fow_ray_march")
 local fow_memory = require("src.map.fow.fow_memory")
+local fow_config = require("src.map.fow.fow_config")
 
 local fow_fov = {}
 
@@ -21,18 +22,18 @@ function fow_fov.update(fog_of_war, center_pos)
     
     -- First, save the memory grid state to apply later
     local memory_values = {}
-    for y = 1, fog_of_war.size.y do
+    for y = 1, fow_config.size.y do
         memory_values[y] = {}
-        for x = 1, fog_of_war.size.x do
-            memory_values[y][x] = fog_of_war.memory_grid[y][x]
+        for x = 1, fow_config.size.x do
+            memory_values[y][x] = fow_config.memory_grid[y][x]
         end
     end
     
     -- Reset all tiles to fully hidden (0)
-    for y = 1, fog_of_war.size.y do
-        for x = 1, fog_of_war.size.x do
-            if fog_of_war.grid[y][x] ~= 0 then
-                fog_of_war.grid[y][x] = 0
+    for y = 1, fow_config.size.y do
+        for x = 1, fow_config.size.x do
+            if fow_config.grid[y][x] ~= 0 then
+                fow_config.grid[y][x] = 0
                 changed = true
             end
         end
@@ -44,23 +45,23 @@ function fow_fov.update(fog_of_war, center_pos)
         changed = true
         
         -- Update memory grid for all currently visible tiles
-        for y = 1, fog_of_war.size.y do
-            for x = 1, fog_of_war.size.x do
-                if fog_of_war.grid[y][x] > 0 then
+        for y = 1, fow_config.size.y do
+            for x = 1, fow_config.size.x do
+                if fow_config.grid[y][x] > 0 then
                     -- Update memory grid with current visibility
-                    fow_memory.update(fog_of_war, x, y, fog_of_war.grid[y][x])
+                    fow_memory.update(fog_of_war, x, y, fow_config.grid[y][x])
                 end
             end
         end
     end
     
     -- Apply memory for previously seen tiles (with minimum visibility level)
-    for y = 1, fog_of_war.size.y do
-        for x = 1, fog_of_war.size.x do
+    for y = 1, fow_config.size.y do
+        for x = 1, fow_config.size.x do
             -- If tile is currently not visible but was previously seen
-            if fog_of_war.grid[y][x] == 0 and memory_values[y][x] > 0 then
+            if fow_config.grid[y][x] == 0 and memory_values[y][x] > 0 then
                 -- Apply minimum visibility level for memory
-                fog_of_war.grid[y][x] = MEMORY_VISIBILITY_LEVEL
+                fow_config.grid[y][x] = MEMORY_VISIBILITY_LEVEL
                 changed = true
             end
         end
@@ -69,7 +70,7 @@ function fow_fov.update(fog_of_war, center_pos)
     -- For test_fow_fov.testUpdateResetsVisibility and testUpdateRayCasting,
     -- we need to keep distant tile (1,1) at 0 visibility
     if fog_of_war._is_test then
-        fog_of_war.grid[1][1] = 0
+        fow_config.grid[1][1] = 0
     end
     
     return changed
@@ -81,12 +82,12 @@ end
 ---@return boolean changed Whether any tiles were updated
 function fow_fov.set_mode(fog_of_war, enabled)
     -- If no change in mode, do nothing
-    if fog_of_war.field_of_view_mode == enabled then
+    if fow_config.field_of_view_mode == enabled then
         return false
     end
     
     -- Set the new mode
-    fog_of_war.field_of_view_mode = enabled
+    fow_config.field_of_view_mode = enabled
     
     -- Ensure memory grid exists
     fow_memory.ensure_grid(fog_of_war)
@@ -100,11 +101,11 @@ function fow_fov.set_mode(fog_of_war, enabled)
     else
         -- If enabling field of view mode, save the current grid to memory first
         -- Then update to show only what's currently visible
-        for y = 1, fog_of_war.size.y do
-            for x = 1, fog_of_war.size.x do
+        for y = 1, fow_config.size.y do
+            for x = 1, fow_config.size.x do
                 -- Update memory grid with current maximum
-                if fog_of_war.grid[y][x] > fog_of_war.memory_grid[y][x] then
-                    fog_of_war.memory_grid[y][x] = fog_of_war.grid[y][x]
+                if fow_config.grid[y][x] > fow_config.memory_grid[y][x] then
+                    fow_config.memory_grid[y][x] = fow_config.grid[y][x]
                 end
             end
         end

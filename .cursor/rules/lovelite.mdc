@@ -34,7 +34,7 @@ Note: Running single test cases is not supported.
 
 ## Code Pattern
 ```lua
-function TestModule:test_<behavior_description>()
+function test_module:test_<behavior_description>()
     -- Arrange
     local input = setup_test_data()
     
@@ -48,12 +48,12 @@ end
 
 ## Module Reloading Pattern
 ```lua
-function TestModule:setUp()
+function test_module:setup()
     package.loaded[module_name] = nil
     module = require(module_name)
 end
 
-function TestModule:tearDown()
+function test_module:teardown()
     package.loaded[module_name] = nil
 end
 ```
